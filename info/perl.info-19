@@ -1,0 +1,1104 @@
+This is Info file perl.info, produced by Makeinfo-1.64 from the input
+file Pmaster.texi.
+
+
+File: perl.info,  Node: perlform,  Next: perllocale,  Prev: perlmodlib,  Up: Top
+
+NAME
+====
+
+perlform - Perl formats
+
+DESCRIPTION
+===========
+
+Perl has a mechanism to help you generate simple reports and charts.  To
+facilitate this, Perl helps you code up your output page close to how it
+will look when it's printed.  It can keep track of things like how many
+lines are on a page, what page you're on, when to print page headers,
+etc.  Keywords are borrowed from FORTRAN: format() to declare and
+write() to execute; see their entries in *Note Perlfunc: perlfunc.
+Fortunately, the layout is much more legible, more like BASIC's PRINT
+USING statement.  Think of it as a poor man's nroff(1).
+
+Formats, like packages and subroutines, are declared rather than
+executed, so they may occur at any point in your program.  (Usually it's
+best to keep them all together though.) They have their own namespace
+apart from all the other "types" in Perl.  This means that if you have a
+function named "Foo", it is not the same thing as having a format named
+"Foo".  However, the default name for the format associated with a given
+filehandle is the same as the name of the filehandle.  Thus, the default
+format for STDOUT is name "STDOUT", and the default format for
+filehandle TEMP is name "TEMP".  They just look the same.  They aren't.
+
+Output record formats are declared as follows:
+
+     format NAME =
+     FORMLIST
+     .
+
+If name is omitted, format "STDOUT" is defined.  FORMLIST consists of a
+sequence of lines, each of which may be one of three types:
+
+  1. A comment, indicated by putting a '#' in the first column.
+
+  2. A "picture" line giving the format for one output line.
+
+  3. An argument line supplying values to plug into the previous
+     picture line.
+
+     Picture lines are printed exactly as they look, except for certain
+fields that substitute values into the line.  Each field in a picture
+line starts with either "@" (at) or "^" (caret).  These lines do not
+undergo any kind of variable interpolation.  The at field (not to be
+confused with the array marker @) is the normal kind of field; the
+other kind, caret fields, are used to do rudimentary multi-line text
+block filling.  The length of the field is supplied by padding out the
+field with multiple "<", ">", or "|" characters to specify,
+respectively, left justification, right justification, or centering.
+If the variable would exceed the width specified, it is truncated.
+
+As an alternate form of right justification, you may also use "#"
+characters (with an optional ".") to specify a numeric field.  This way
+you can line up the decimal points.  If any value supplied for these
+fields contains a newline, only the text up to the newline is printed.
+Finally, the special field "@*" can be used for printing multi-line,
+nontruncated values; it should appear by itself on a line.
+
+The values are specified on the following line in the same order as the
+picture fields.  The expressions providing the values should be
+separated by commas.  The expressions are all evaluated in a list
+context before the line is processed, so a single list expression could
+produce multiple list elements.  The expressions may be spread out to
+more than one line if enclosed in braces.  If so, the opening brace
+must be the first token on the first line.  If an expression evaluates
+to a number with a decimal part, and if the corresponding picture
+specifies that the decimal part should appear in the output (that is,
+any picture except multiple "#" characters *without* an embedded "."),
+the character used for the decimal point is *always* determined by the
+current LC_NUMERIC locale.  This means that, if, for example, the
+run-time environment happens to specify a German locale, "," will be
+used instead of the default ".".  See *Note Perllocale: perllocale, and
+`"WARNINGS"' in this node for more information.
+
+Picture fields that begin with ^ rather than @ are treated specially.
+With a # field, the field is blanked out if the value is undefined.  For
+other field types, the caret enables a kind of fill mode.  Instead of an
+arbitrary expression, the value supplied must be a scalar variable name
+that contains a text string.  Perl puts as much text as it can into the
+field, and then chops off the front of the string so that the next time
+the variable is referenced, more of the text can be printed.  (Yes, this
+means that the variable itself is altered during execution of the
+write() call, and is not returned.)  Normally you would use a sequence
+of fields in a vertical stack to print out a block of text.  You might
+wish to end the final field with the text "...", which will appear in
+the output if the text was too long to appear in its entirety.  You can
+change which characters are legal to break on by changing the variable
+$: (that's $FORMAT_LINE_BREAK_CHARACTERS if you're using the English
+module) to a list of the desired characters.
+
+Using caret fields can produce variable length records.  If the text to
+be formatted is short, you can suppress blank lines by putting a "~"
+(tilde) character anywhere in the line.  The tilde will be translated
+to a space upon output.  If you put a second tilde contiguous to the
+first, the line will be repeated until all the fields on the line are
+exhausted.  (If you use a field of the at variety, the expression you
+supply had better not give the same value every time forever!)
+
+Top-of-form processing is by default handled by a format with the same
+name as the current filehandle with "_TOP" concatenated to it.  It's
+triggered at the top of each page.  See `write', *Note Perlfunc:
+perlfunc.
+
+Examples:
+
+     # a report on the /etc/passwd file
+     format STDOUT_TOP =
+                             Passwd File
+     Name                Login    Office   Uid   Gid Home
+     ------------------------------------------------------------------
+     .
+     format STDOUT =
+     @<<<<<<<<<<<<<<<<<< @||||||| @<<<<<<@>>>> @>>>> @<<<<<<<<<<<<<<<<<
+     $name,              $login,  $office,$uid,$gid, $home
+     .
+     
+     # a report from a bug report form
+     format STDOUT_TOP =
+                             Bug Reports
+     @<<<<<<<<<<<<<<<<<<<<<<<     @|||         @>>>>>>>>>>>>>>>>>>>>>>>
+     $system,                      $%,         $date
+     ------------------------------------------------------------------
+     .
+     format STDOUT =
+     Subject: @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+              $subject
+     Index: @<<<<<<<<<<<<<<<<<<<<<<<<<<<< ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            $index,                       $description
+     Priority: @<<<<<<<<<< Date: @<<<<<<< ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+               $priority,        $date,   $description
+     From: @<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+           $from,                         $description
+     Assigned to: @<<<<<<<<<<<<<<<<<<<<<< ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                  $programmer,            $description
+     ~                                    ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                                          $description
+     ~                                    ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                                          $description
+     ~                                    ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                                          $description
+     ~                                    ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                                          $description
+     ~                                    ^<<<<<<<<<<<<<<<<<<<<<<<...
+                                          $description
+     .
+
+It is possible to intermix print()s with write()s on the same output
+channel, but you'll have to handle $- ($FORMAT_LINES_LEFT) yourself.
+
+Format Variables
+----------------
+
+The current format name is stored in the variable $~ ($FORMAT_NAME),
+and the current top of form format name is in $^ ($FORMAT_TOP_NAME).
+The current output page number is stored in $% ($FORMAT_PAGE_NUMBER),
+and the number of lines on the page is in $= ($FORMAT_LINES_PER_PAGE).
+Whether to autoflush output on this handle is stored in $|
+($OUTPUT_AUTOFLUSH).  The string output before each top of page (except
+the first) is stored in $^L ($FORMAT_FORMFEED).  These variables are
+set on a per-filehandle basis, so you'll need to select() into a
+different one to affect them:
+
+     select((select(OUTF),
+                 $~ = "My_Other_Format",
+                 $^ = "My_Top_Format"
+                )[0]);
+
+Pretty ugly, eh?  It's a common idiom though, so don't be too surprised
+when you see it.  You can at least use a temporary variable to hold the
+previous filehandle: (this is a much better approach in general,
+because not only does legibility improve, you now have intermediary
+stage in the expression to single-step the debugger through):
+
+     $ofh = select(OUTF);
+     $~ = "My_Other_Format";
+     $^ = "My_Top_Format";
+     select($ofh);
+
+If you use the English module, you can even read the variable names:
+
+     use English;
+     $ofh = select(OUTF);
+     $FORMAT_NAME     = "My_Other_Format";
+     $FORMAT_TOP_NAME = "My_Top_Format";
+     select($ofh);
+
+But you still have those funny select()s.  So just use the FileHandle
+module.  Now, you can access these special variables using lowercase
+method names instead:
+
+     use FileHandle;
+     format_name     OUTF "My_Other_Format";
+     format_top_name OUTF "My_Top_Format";
+
+Much better!
+
+NOTES
+=====
+
+Because the values line may contain arbitrary expressions (for at
+fields, not caret fields), you can farm out more sophisticated
+processing to other functions, like sprintf() or one of your own.  For
+example:
+
+     format Ident =
+             @<<<<<<<<<<<<<<<
+             &commify($n)
+     .
+
+To get a real at or caret into the field, do this:
+
+     format Ident =
+     I have an @ here.
+                 "@"
+     .
+
+To center a whole line of text, do something like this:
+
+     format Ident =
+     @|||||||||||||||||||||||||||||||||||||||||||||||
+                 "Some text line"
+     .
+
+There is no builtin way to say "float this to the right hand side of
+the page, however wide it is."  You have to specify where it goes.  The
+truly desperate can generate their own format on the fly, based on the
+current number of columns, and then eval() it:
+
+     $format  = "format STDOUT = \n";
+              . '^' . '<' x $cols . "\n";
+              . '$entry' . "\n";
+              . "\t^" . "<" x ($cols-8) . "~~\n";
+              . '$entry' . "\n";
+              . ".\n";
+     print $format if $Debugging;
+     eval $format;
+     die $@ if $@;
+
+Which would generate a format looking something like this:
+
+     format STDOUT =
+     ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     $entry
+             ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<~~
+     $entry
+     .
+
+Here's a little program that's somewhat like fmt(1):
+
+     format =
+     ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ~~
+     $_
+     
+     .
+     
+     $/ = '';
+     while (<>) {
+         s/\s*\n\s*/ /g;
+         write;
+     }
+
+Footers
+-------
+
+While $FORMAT_TOP_NAME contains the name of the current header format,
+there is no corresponding mechanism to automatically do the same thing
+for a footer.  Not knowing how big a format is going to be until you
+evaluate it is one of the major problems.  It's on the TODO list.
+
+Here's one strategy:  If you have a fixed-size footer, you can get
+footers by checking $FORMAT_LINES_LEFT before each write() and print
+the footer yourself if necessary.
+
+Here's another strategy: Open a pipe to yourself, using `open(MYSELF,
+"|-")' (see `open()', *Note Perlfunc: perlfunc,) and always write() to
+MYSELF instead of STDOUT.  Have your child process massage its STDIN to
+rearrange headers and footers however you like.  Not very convenient,
+but doable.
+
+Accessing Formatting Internals
+------------------------------
+
+For low-level access to the formatting mechanism.  you may use
+formline() and access $^A (the $ACCUMULATOR variable) directly.
+
+For example:
+
+     $str = formline <<'END', 1,2,3;
+     @<<<  @|||  @>>>
+     END
+     
+     print "Wow, I just stored `$^A' in the accumulator!\n";
+
+Or to make an swrite() subroutine which is to write() what sprintf() is
+to printf(), do this:
+
+     use Carp;
+     sub swrite {
+             croak "usage: swrite PICTURE ARGS" unless @_;
+             my $format = shift;
+             $^A = "";
+             formline($format,@_);
+             return $^A;
+     }
+     
+     $string = swrite(<<'END', 1, 2, 3);
+      Check me out
+      @<<<  @|||  @>>>
+      END
+     print $string;
+
+WARNINGS
+========
+
+The lone dot that ends a format can also prematurely end an email
+message passing through a misconfigured Internet mailer (and based on
+experience, such misconfiguration is the rule, not the exception).  So
+when sending format code through email, you should indent it so that
+the format-ending dot is not on the left margin; this will prevent
+email cutoff.
+
+Lexical variables (declared with "my") are not visible within a format
+unless the format is declared within the scope of the lexical variable.
+(They weren't visible at all before version 5.001.)
+
+Formats are the only part of Perl which unconditionally use information
+from a program's locale; if a program's environment specifies an
+LC_NUMERIC locale, it is always used to specify the decimal point
+character in formatted output.  Perl ignores all other aspects of locale
+handling unless the `use locale' pragma is in effect.  Formatted output
+cannot be controlled by `use locale' because the pragma is tied to the
+block structure of the program, and, for historical reasons, formats
+exist outside that block structure.  See *Note Perllocale: perllocale,
+for further discussion of locale handling.
+
+
+File: perl.info,  Node: perllocale,  Next: perlref,  Prev: perlform,  Up: Top
+
+NAME
+====
+
+perllocale - Perl locale handling (internationalization and
+localization)
+
+DESCRIPTION
+===========
+
+Perl supports language-specific notions of data such as "is this a
+letter", "what is the uppercase equivalent of this letter", and "which
+of these letters comes first".  These are important issues, especially
+for languages other than English - but also for English: it would be
+very naE<iuml>ve to think that `A-Za-z' defines all the "letters". Perl
+is also aware that some character other than '.' may be preferred as a
+decimal point, and that output date representations may be
+language-specific.  The process of making an application take account of
+its users' preferences in such matters is called *internationalization*
+(often abbreviated as *i18n*); telling such an application about a
+particular set of preferences is known as *localization* (*l10n*).
+
+Perl can understand language-specific data via the standardized (ISO C,
+XPG4, POSIX 1.c) method called "the locale system". The locale system is
+controlled per application using one pragma, one function call, and
+several environment variables.
+
+NOTE: This feature is new in Perl 5.004, and does not apply unless an
+application specifically requests it - see `Backward compatibility' in
+this node.  The one exception is that write() now *always* uses the
+current locale - see `"NOTES"' in this node.
+
+PREPARING TO USE LOCALES
+========================
+
+If Perl applications are to be able to understand and present your data
+correctly according a locale of your choice, *all* of the following
+must be true:
+
+   * *Your operating system must support the locale system*.  If it
+     does, you should find that the setlocale() function is a
+     documented part of its C library.
+
+   * *Definitions for the locales which you use must be installed*.
+     You, or your system administrator, must make sure that this is the
+     case. The available locales, the location in which they are kept,
+     and the manner in which they are installed, vary from system to
+     system.  Some systems provide only a few, hard-wired, locales, and
+     do not allow more to be added; others allow you to add "canned"
+     locales provided by the system supplier; still others allow you or
+     the system administrator to define and add arbitrary locales.
+     (You may have to ask your supplier to provide canned locales which
+     are not delivered with your operating system.)  Read your system
+     documentation for further illumination.
+
+   * *Perl must believe that the locale system is supported*.  If it
+     does, `perl -V:d_setlocale' will say that the value for
+     `d_setlocale' is `define'.
+
+If you want a Perl application to process and present your data
+according to a particular locale, the application code should include
+the S<`use locale'> pragma (see `The use locale pragma' in this node)
+where appropriate, and *at least one* of the following must be true:
+
+   * B<The locale-determining environment variables (see
+     `"ENVIRONMENT"' in this node) must be correctly set up>, either by
+     yourself, or by the person who set up your system account, at the
+     time the application is started.
+
+   * *The application must set its own locale* using the method
+     described in `The setlocale function' in this node.
+
+USING LOCALES
+=============
+
+The use locale pragma
+---------------------
+
+By default, Perl ignores the current locale.  The S<`use locale'>
+pragma tells Perl to use the current locale for some operations:
+
+   * *The comparison operators* (`lt', `le', `cmp', `ge', and `gt') and
+     the POSIX string collation functions strcoll() and strxfrm() use
+     LC_COLLATE.  sort() is also affected if it is used without an
+     explicit comparison function because it uses `cmp' by default.
+
+     *Note:* `eq' and `ne' are unaffected by the locale: they always
+     perform a byte-by-byte comparison of their scalar operands.  What's
+     more, if `cmp' finds that its operands are equal according to the
+     collation sequence specified by the current locale, it goes on to
+     perform a byte-by-byte comparison, and only returns *0* (equal) if
+     the operands are bit-for-bit identical.  If you really want to
+     know whether two strings - which `eq' and `cmp' may consider
+     different - are equal as far as collation in the locale is
+     concerned, see the discussion in `Category LC_COLLATE: Collation'
+     in this node.
+
+   * *Regular expressions and case-modification functions* (uc(), lc(),
+     ucfirst(), and lcfirst()) use LC_CTYPE
+
+   * *The formatting functions* (printf(), sprintf() and write()) use
+     LC_NUMERIC
+
+   * *The POSIX date formatting function* (strftime()) uses LC_TIME.
+
+LC_COLLATE, LC_CTYPE, and so on, are discussed further in `LOCALE
+CATEGORIES' in this node.
+
+The default behavior returns with S<`no locale'> or on reaching the end
+of the enclosing block.
+
+Note that the string result of any operation that uses locale
+information is tainted, as it is possible for a locale to be
+untrustworthy.  See `"SECURITY"' in this node.
+
+The setlocale function
+----------------------
+
+You can switch locales as often as you wish at run time with the
+POSIX::setlocale() function:
+
+     # This functionality not usable prior to Perl 5.004
+     require 5.004;
+     
+     # Import locale-handling tool set from POSIX module.
+     # This example uses: setlocale -- the function call
+     #                    LC_CTYPE -- explained below
+     use POSIX qw(locale_h);
+     
+     # query and save the old locale
+     $old_locale = setlocale(LC_CTYPE);
+     
+     setlocale(LC_CTYPE, "fr_CA.ISO8859-1");
+     # LC_CTYPE now in locale "French, Canada, codeset ISO 8859-1"
+     
+     setlocale(LC_CTYPE, "");
+     # LC_CTYPE now reset to default defined by LC_ALL/LC_CTYPE/LANG
+     # environment variables.  See below for documentation.
+     
+     # restore the old locale
+     setlocale(LC_CTYPE, $old_locale);
+
+The first argument of setlocale() gives the *category*, the second the
+locale.  The category tells in what aspect of data processing you want
+to apply locale-specific rules.  Category names are discussed in
+`LOCALE CATEGORIES' in this node and `"ENVIRONMENT"' in this node.  The
+locale is the name of a collection of customization information
+corresponding to a particular combination of language, country or
+territory, and codeset.  Read on for hints on the naming of locales:
+not all systems name locales as in the example.
+
+If no second argument is provided, the function returns a string naming
+the current locale for the category.  You can use this value as the
+second argument in a subsequent call to setlocale().  If a second
+argument is given and it corresponds to a valid locale, the locale for
+the category is set to that value, and the function returns the
+now-current locale value.  You can use this in a subsequent call to
+setlocale().  (In some implementations, the return value may sometimes
+differ from the value you gave as the second argument - think of it as
+an alias for the value that you gave.)
+
+As the example shows, if the second argument is an empty string, the
+category's locale is returned to the default specified by the
+corresponding environment variables.  Generally, this results in a
+return to the default which was in force when Perl started up: changes
+to the environment made by the application after startup may or may not
+be noticed, depending on the implementation of your system's C library.
+
+If the second argument does not correspond to a valid locale, the locale
+for the category is not changed, and the function returns undef.
+
+For further information about the categories, consult `setlocale(3)' in
+this node.  For the locales available in your system, also consult
+`setlocale(3)' in this node and see whether it leads you to the list of
+the available locales (search for the SEE ALSO section).  If that
+fails, try the following command lines:
+
+     locale -a
+     
+     nlsinfo
+     
+     ls /usr/lib/nls/loc
+     
+     ls /usr/lib/locale
+     
+     ls /usr/lib/nls
+
+and see whether they list something resembling these
+
+     en_US.ISO8859-1     de_DE.ISO8859-1     ru_RU.ISO8859-5
+     en_US               de_DE               ru_RU
+     en                  de                  ru
+     english             german              russian
+     english.iso88591    german.iso88591     russian.iso88595
+
+Sadly, even though the calling interface for setlocale() has been
+standardized, the names of the locales and the directories where the
+configuration is, have not.  The basic form of the name is
+*language_country/territory*.*codeset*, but the latter parts are not
+always present.
+
+Two special locales are worth particular mention: "C" and "POSIX".
+Currently these are effectively the same locale: the difference is
+mainly that the first one is defined by the C standard and the second by
+the POSIX standard.  What they define is the *default locale* in which
+every program starts in the absence of locale information in its
+environment.  (The default default locale, if you will.)  Its language
+is (American) English and its character codeset ASCII.
+
+NOTE: Not all systems have the "POSIX" locale (not all systems are
+POSIX-conformant), so use "C" when you need explicitly to specify this
+default locale.
+
+The localeconv function
+-----------------------
+
+The POSIX::localeconv() function allows you to get particulars of the
+locale-dependent numeric formatting information specified by the current
+LC_NUMERIC and LC_MONETARY locales.  (If you just want the name of the
+current locale for a particular category, use POSIX::setlocale() with a
+single parameter - see `The setlocale function' in this node.)
+
+     use POSIX qw(locale_h);
+     
+     # Get a reference to a hash of locale-dependent info
+     $locale_values = localeconv();
+     
+     # Output sorted list of the values
+     for (sort keys %$locale_values) {
+         printf "%-20s = %s\n", $_, $locale_values->{$_}
+     }
+
+localeconv() takes no arguments, and returns *a reference to* a hash.
+The keys of this hash are formatting variable names such as
+`decimal_point' and `thousands_sep'; the values are the corresponding
+values.  See `POSIX (3)' in this node for a longer example, which lists
+all the categories an implementation might be expected to provide; some
+provide more and others fewer, however.  Note that you don't need `use
+locale': as a function with the job of querying the locale, localeconv()
+always observes the current locale.
+
+Here's a simple-minded example program which rewrites its command line
+parameters as integers formatted correctly in the current locale:
+
+     # See comments in previous example
+     require 5.004;
+     use POSIX qw(locale_h);
+     
+     # Get some of locale's numeric formatting parameters
+     my ($thousands_sep, $grouping) =
+          @{localeconv()}{'thousands_sep', 'grouping'};
+     
+     # Apply defaults if values are missing
+     $thousands_sep = ',' unless $thousands_sep;
+     $grouping = 3 unless $grouping;
+     
+     # Format command line params for current locale
+     for (@ARGV) {
+         $_ = int;    # Chop non-integer part
+         1 while
+         s/(\d)(\d{$grouping}($|$thousands_sep))/$1$thousands_sep$2/;
+         print "$_";
+     }
+     print "\n";
+
+LOCALE CATEGORIES
+=================
+
+The subsections which follow describe basic locale categories.  As well
+as these, there are some combination categories which allow the
+manipulation of more than one basic category at a time.  See
+`"ENVIRONMENT"' in this node for a discussion of these.
+
+Category LC_COLLATE: Collation
+------------------------------
+
+When in the scope of S<`use locale'>, Perl looks to the LC_COLLATE
+environment variable to determine the application's notions on the
+collation (ordering) of characters.  ('b' follows 'a' in Latin
+alphabets, but where do 'E<aacute>' and 'E<aring>' belong?)
+
+Here is a code snippet that will tell you what are the alphanumeric
+characters in the current locale, in the locale order:
+
+     use locale;
+     print +(sort grep /\w/, map { chr() } 0..255), "\n";
+
+Compare this with the characters that you see and their order if you
+state explicitly that the locale should be ignored:
+
+     no locale;
+     print +(sort grep /\w/, map { chr() } 0..255), "\n";
+
+This machine-native collation (which is what you get unless S<`use
+locale'> has appeared earlier in the same block) must be used for
+sorting raw binary data, whereas the locale-dependent collation of the
+first example is useful for natural text.
+
+As noted in `USING LOCALES' in this node, `cmp' compares according to
+the current collation locale when `use locale' is in effect, but falls
+back to a byte-by-byte comparison for strings which the locale says are
+equal. You can use POSIX::strcoll() if you don't want this fall-back:
+
+     use POSIX qw(strcoll);
+     $equal_in_locale =
+         !strcoll("space and case ignored", "SpaceAndCaseIgnored");
+
+$equal_in_locale will be true if the collation locale specifies a
+dictionary-like ordering which ignores space characters completely, and
+which folds case.
+
+If you have a single string which you want to check for "equality in
+locale" against several others, you might think you could gain a little
+efficiency by using POSIX::strxfrm() in conjunction with `eq':
+
+     use POSIX qw(strxfrm);
+     $xfrm_string = strxfrm("Mixed-case string");
+     print "locale collation ignores spaces\n"
+         if $xfrm_string eq strxfrm("Mixed-casestring");
+     print "locale collation ignores hyphens\n"
+         if $xfrm_string eq strxfrm("Mixedcase string");
+     print "locale collation ignores case\n"
+         if $xfrm_string eq strxfrm("mixed-case string");
+
+strxfrm() takes a string and maps it into a transformed string for use
+in byte-by-byte comparisons against other transformed strings during
+collation.  "Under the hood", locale-affected Perl comparison operators
+call strxfrm() for both their operands, then do a byte-by-byte
+comparison of the transformed strings.  By calling strxfrm() explicitly,
+and using a non locale-affected comparison, the example attempts to save
+a couple of transformations.  In fact, it doesn't save anything: Perl
+magic (see `Magic Variables', *Note Perlguts: perlguts,) creates the
+transformed version of a string the first time it's needed in a
+comparison, then keeps it around in case it's needed again.  An example
+rewritten the easy way with `cmp' runs just about as fast.  It also
+copes with null characters embedded in strings; if you call strxfrm()
+directly, it treats the first null it finds as a terminator.  And don't
+expect the transformed strings it produces to be portable across
+systems - or even from one revision of your operating system to the
+next.  In short, don't call strxfrm() directly: let Perl do it for you.
+
+Note: `use locale' isn't shown in some of these examples, as it isn't
+needed: strcoll() and strxfrm() exist only to generate locale-dependent
+results, and so always obey the current LC_COLLATE locale.
+
+Category LC_CTYPE: Character Types
+----------------------------------
+
+When in the scope of S<`use locale'>, Perl obeys the LC_CTYPE locale
+setting.  This controls the application's notion of which characters are
+alphabetic.  This affects Perl's `\w' regular expression metanotation,
+which stands for alphanumeric characters - that is, alphabetic and
+numeric characters.  (Consult *Note Perlre: perlre, for more
+information about regular expressions.)  Thanks to LC_CTYPE, depending
+on your locale setting, characters like 'E<aelig>', 'E<eth>',
+'E<szlig>', and 'E<oslash>' may be understood as `\w' characters.
+
+The LC_CTYPE locale also provides the map used in translating
+characters between lower and uppercase.  This affects the case-mapping
+functions - lc(), lcfirst, uc() and ucfirst(); case-mapping
+interpolation with `\l', `\L', `\u' or <\U> in double-quoted strings
+and in s/// substitutions; and case-independent regular expression
+pattern matching using the i modifier.
+
+Finally, LC_CTYPE affects the POSIX character-class test functions -
+isalpha(), islower() and so on.  For example, if you move from the "C"
+locale to a 7-bit Scandinavian one, you may find - possibly to your
+surprise - that "|" moves from the ispunct() class to isalpha().
+
+*Note:* A broken or malicious LC_CTYPE locale definition may result in
+clearly ineligible characters being considered to be alphanumeric by
+your application.  For strict matching of (unaccented) letters and
+digits - for example, in command strings - locale-aware applications
+should use `\w' inside a `no locale' block.  See `"SECURITY"' in this
+node.
+
+Category LC_NUMERIC: Numeric Formatting
+---------------------------------------
+
+When in the scope of S<`use locale'>, Perl obeys the LC_NUMERIC locale
+information, which controls application's idea of how numbers should be
+formatted for human readability by the printf(), sprintf(), and write()
+functions.  String to numeric conversion by the POSIX::strtod()
+function is also affected.  In most implementations the only effect is
+to change the character used for the decimal point - perhaps from '.'
+to ',': these functions aren't aware of such niceties as thousands
+separation and so on.  (See `The localeconv function' in this node if
+you care about these things.)
+
+Note that output produced by print() is *never* affected by the current
+locale: it is independent of whether `use locale' or `no locale' is in
+effect, and corresponds to what you'd get from printf() in the "C"
+locale.  The same is true for Perl's internal conversions between
+numeric and string formats:
+
+     use POSIX qw(strtod);
+     use locale;
+     
+     $n = 5/2;   # Assign numeric 2.5 to $n
+     
+     $a = " $n"; # Locale-independent conversion to string
+     
+     print "half five is $n\n";       # Locale-independent output
+     
+     printf "half five is %g\n", $n;  # Locale-dependent output
+     
+     print "DECIMAL POINT IS COMMA\n"
+         if $n == (strtod("2,5"))[0]; # Locale-dependent conversion
+
+Category LC_MONETARY: Formatting of monetary amounts
+----------------------------------------------------
+
+The C standard defines the LC_MONETARY category, but no function that
+is affected by its contents.  (Those with experience of standards
+committees will recognize that the working group decided to punt on the
+issue.)  Consequently, Perl takes no notice of it.  If you really want
+to use LC_MONETARY, you can query its contents - see `The localeconv
+function' in this node - and use the information that it returns in your
+application's own formatting of currency amounts.  However, you may well
+find that the information, though voluminous and complex, does not quite
+meet your requirements: currency formatting is a hard nut to crack.
+
+LC_TIME
+-------
+
+The output produced by POSIX::strftime(), which builds a formatted
+human-readable date/time string, is affected by the current LC_TIME
+locale.  Thus, in a French locale, the output produced by the `%B'
+format element (full month name) for the first month of the year would
+be "janvier".  Here's how to get a list of the long month names in the
+current locale:
+
+     use POSIX qw(strftime);
+     for (0..11) {
+         $long_month_name[$_] =
+             strftime("%B", 0, 0, 0, 1, $_, 96);
+     }
+
+Note: `use locale' isn't needed in this example: as a function which
+exists only to generate locale-dependent results, strftime() always
+obeys the current LC_TIME locale.
+
+Other categories
+----------------
+
+The remaining locale category, `LC_MESSAGES' (possibly supplemented by
+others in particular implementations) is not currently used by Perl -
+except possibly to affect the behavior of library functions called by
+extensions which are not part of the standard Perl distribution.
+
+SECURITY
+========
+
+While the main discussion of Perl security issues can be found in *Note
+Perlsec: perlsec, a discussion of Perl's locale handling would be
+incomplete if it did not draw your attention to locale-dependent
+security issues.  Locales - particularly on systems which allow
+unprivileged users to build their own locales - are untrustworthy.  A
+malicious (or just plain broken) locale can make a locale-aware
+application give unexpected results.  Here are a few possibilities:
+
+   * Regular expression checks for safe file names or mail addresses
+     using `\w' may be spoofed by an LC_CTYPE locale which claims that
+     characters such as ">" and "|" are alphanumeric.
+
+   * String interpolation with case-mapping, as in, say, `$dest =
+     "C:\U$name.$ext"', may produce dangerous results if a bogus
+     LC_CTYPE case-mapping table is in effect.
+
+   * If the decimal point character in the LC_NUMERIC locale is
+     surreptitiously changed from a dot to a comma, `sprintf("%g",
+     0.123456e3)' produces a string result of "123,456". Many people
+     would interpret this as one hundred and twenty-three thousand,
+     four hundred and fifty-six.
+
+   * A sneaky LC_COLLATE locale could result in the names of students
+     with "D" grades appearing ahead of those with "A"s.
+
+   * An application which takes the trouble to use the information in
+     LC_MONETARY may format debits as if they were credits and vice
+     versa if that locale has been subverted.  Or it make may make
+     payments in US dollars instead of Hong Kong dollars.
+
+   * The date and day names in dates formatted by strftime() could be
+     manipulated to advantage by a malicious user able to subvert the
+     `LC_DATE' locale.  ("Look - it says I wasn't in the building on
+     Sunday.")
+
+Such dangers are not peculiar to the locale system: any aspect of an
+application's environment which may maliciously be modified presents
+similar challenges.  Similarly, they are not specific to Perl: any
+programming language which allows you to write programs which take
+account of their environment exposes you to these issues.
+
+Perl cannot protect you from all of the possibilities shown in the
+examples - there is no substitute for your own vigilance - but, when
+`use locale' is in effect, Perl uses the tainting mechanism (see *Note
+Perlsec: perlsec,) to mark string results which become
+locale-dependent, and which may be untrustworthy in consequence.  Here
+is a summary of the tainting behavior of operators and functions which
+may be affected by the locale:
+
+*Comparison operators* (`lt', `le', `ge', `gt' and `cmp'):
+     Scalar true/false (or less/equal/greater) result is never tainted.
+
+*Case-mapping interpolation* (with `\l', `\L', `\u' or <\U>)
+     Result string containing interpolated material is tainted if `use
+     locale' is in effect.
+
+*Matching operator* (m//):
+     Scalar true/false result never tainted.
+
+     Subpatterns, either delivered as an array-context result, or as $1
+     etc.  are tainted if `use locale' is in effect, and the subpattern
+     regular expression contains `\w' (to match an alphanumeric
+     character), `\W' (non-alphanumeric character), `\s' (white-space
+     character), or `\S' (non white-space character).  The matched
+     pattern variable, $&, $` (pre-match), $' (post-match), and $+
+     (last match) are also tainted if `use locale' is in effect and the
+     regular expression contains `\w', `\W', `\s', or `\S'.
+
+*Substitution operator* (s///):
+     Has the same behavior as the match operator.  Also, the left
+     operand of `=~' becomes tainted when `use locale' in effect, if it
+     is modified as a result of a substitution based on a regular
+     expression match involving `\w', `\W', `\s', or `\S'; or of
+     case-mapping with `\l', `\L',`\u' or <\U>.
+
+*In-memory formatting function* (sprintf()):
+     Result is tainted if "use locale" is in effect.
+
+*Output formatting functions* (printf() and write()):
+     Success/failure result is never tainted.
+
+*Case-mapping functions* (lc(), lcfirst(), uc(), ucfirst()):
+     Results are tainted if `use locale' is in effect.
+
+*POSIX locale-dependent functions* (localeconv(), strcoll(), strftime(), strxfrm()):
+     Results are never tainted.
+
+*POSIX character class tests* (isalnum(), isalpha(), isdigit(), isgraph(), islower(), isprint(), ispunct(), isspace(), isupper(), isxdigit()):
+     True/false results are never tainted.
+
+Three examples illustrate locale-dependent tainting.  The first
+program, which ignores its locale, won't run: a value taken directly
+from the command line may not be used to name an output file when taint
+checks are enabled.
+
+     #/usr/local/bin/perl -T
+     # Run with taint checking
+     
+     # Command line sanity check omitted...
+     $tainted_output_file = shift;
+     
+     open(F, ">$tainted_output_file")
+         or warn "Open of $untainted_output_file failed: $!\n";
+
+The program can be made to run by "laundering" the tainted value through
+a regular expression: the second example - which still ignores locale
+information - runs, creating the file named on its command line if it
+can.
+
+     #/usr/local/bin/perl -T
+     
+     $tainted_output_file = shift;
+     $tainted_output_file =~ m%[\w/]+%;
+     $untainted_output_file = $&;
+     
+     open(F, ">$untainted_output_file")
+         or warn "Open of $untainted_output_file failed: $!\n";
+
+Compare this with a very similar program which is locale-aware:
+
+     #/usr/local/bin/perl -T
+     
+     $tainted_output_file = shift;
+     use locale;
+     $tainted_output_file =~ m%[\w/]+%;
+     $localized_output_file = $&;
+     
+     open(F, ">$localized_output_file")
+         or warn "Open of $localized_output_file failed: $!\n";
+
+This third program fails to run because $& is tainted: it is the result
+of a match involving `\w' when `use locale' is in effect.
+
+ENVIRONMENT
+===========
+
+PERL_BADLANG
+     A string that can suppress Perl's warning about failed locale
+     settings at startup.  Failure can occur if the locale support in
+     the operating system is lacking (broken) is some way - or if you
+     mistyped the name of a locale when you set up your environment.
+     If this environment variable is absent, or has a value which does
+     not evaluate to integer zero - that is "0" or "" - Perl will
+     complain about locale setting failures.
+
+     NOTE: PERL_BADLANG only gives you a way to hide the warning
+     message.  The message tells about some problem in your system's
+     locale support, and you should investigate what the problem is.
+
+The following environment variables are not specific to Perl: They are
+part of the standardized (ISO C, XPG4, POSIX 1.c) setlocale() method
+for controlling an application's opinion on data.
+
+LC_ALL
+     LC_ALL is the "override-all" locale environment variable. If it is
+     set, it overrides all the rest of the locale environment variables.
+
+LC_CTYPE
+     In the absence of LC_ALL, LC_CTYPE chooses the character type
+     locale.  In the absence of both LC_ALL and LC_CTYPE, LANG chooses
+     the character type locale.
+
+LC_COLLATE
+     In the absence of LC_ALL, LC_COLLATE chooses the collation
+     (sorting) locale.  In the absence of both LC_ALL and LC_COLLATE,
+     LANG chooses the collation locale.
+
+LC_MONETARY
+     In the absence of LC_ALL, LC_MONETARY chooses the monetary
+     formatting locale.  In the absence of both LC_ALL and LC_MONETARY,
+     LANG chooses the monetary formatting locale.
+
+LC_NUMERIC
+     In the absence of LC_ALL, LC_NUMERIC chooses the numeric format
+     locale.  In the absence of both LC_ALL and LC_NUMERIC, LANG
+     chooses the numeric format.
+
+LC_TIME
+     In the absence of LC_ALL, LC_TIME chooses the date and time
+     formatting locale.  In the absence of both LC_ALL and LC_TIME,
+     LANG chooses the date and time formatting locale.
+
+LANG
+     LANG is the "catch-all" locale environment variable. If it is set,
+     it is used as the last resort after the overall LC_ALL and the
+     category-specific `LC_...'.
+
+NOTES
+=====
+
+Backward compatibility
+----------------------
+
+Versions of Perl prior to 5.004 *mostly* ignored locale information,
+generally behaving as if something similar to the `"C"' locale (see
+`The setlocale function' in this node) was always in force, even if the
+program environment suggested otherwise.  By default, Perl still
+behaves this way so as to maintain backward compatibility.  If you want
+a Perl application to pay attention to locale information, you *must*
+use the S<`use locale'> pragma (see `The use locale Pragma' in this
+node) to instruct it to do so.
+
+Versions of Perl from 5.002 to 5.003 did use the LC_CTYPE information
+if that was available, that is, `\w' did understand what are the
+letters according to the locale environment variables.  The problem was
+that the user had no control over the feature: if the C library
+supported locales, Perl used them.
+
+I18N:Collate obsolete
+---------------------
+
+In versions of Perl prior to 5.004 per-locale collation was possible
+using the I18N::Collate library module.  This module is now mildly
+obsolete and should be avoided in new applications.  The LC_COLLATE
+functionality is now integrated into the Perl core language: One can
+use locale-specific scalar data completely normally with `use locale',
+so there is no longer any need to juggle with the scalar references of
+I18N::Collate.
+
+Sort speed and memory use impacts
+---------------------------------
+
+Comparing and sorting by locale is usually slower than the default
+sorting; slow-downs of two to four times have been observed.  It will
+also consume more memory: once a Perl scalar variable has participated
+in any string comparison or sorting operation obeying the locale
+collation rules, it will take 3-15 times more memory than before.  (The
+exact multiplier depends on the string's contents, the operating system
+and the locale.) These downsides are dictated more by the operating
+system's implementation of the locale system than by Perl.
+
+write() and LC_NUMERIC
+----------------------
+
+Formats are the only part of Perl which unconditionally use information
+from a program's locale; if a program's environment specifies an
+LC_NUMERIC locale, it is always used to specify the decimal point
+character in formatted output.  Formatted output cannot be controlled by
+`use locale' because the pragma is tied to the block structure of the
+program, and, for historical reasons, formats exist outside that block
+structure.
+
+Freely available locale definitions
+-----------------------------------
+
+There is a large collection of locale definitions at
+`ftp://dkuug.dk/i18n/WG15-collection'.  You should be aware that it is
+unsupported, and is not claimed to be fit for any purpose.  If your
+system allows the installation of arbitrary locales, you may find the
+definitions useful as they are, or as a basis for the development of
+your own locales.
+
+I18n and l10n
+-------------
+
+"Internationalization" is often abbreviated as *i18n* because its first
+and last letters are separated by eighteen others.  (You may guess why
+the internalin ... internaliti ... i18n tends to get abbreviated.)  In
+the same way, "localization" is often abbreviated to *l10n*.
+
+An imperfect standard
+---------------------
+
+Internationalization, as defined in the C and POSIX standards, can be
+criticized as incomplete, ungainly, and having too large a granularity.
+(Locales apply to a whole process, when it would arguably be more useful
+to have them apply to a single thread, window group, or whatever.)  They
+also have a tendency, like standards groups, to divide the world into
+nations, when we all know that the world can equally well be divided
+into bankers, bikers, gamers, and so on.  But, for now, it's the only
+standard we've got.  This may be construed as a bug.
+
+BUGS
+====
+
+Broken systems
+--------------
+
+In certain system environments the operating system's locale support is
+broken and cannot be fixed or used by Perl.  Such deficiencies can and
+will result in mysterious hangs and/or Perl core dumps when the `use
+locale' is in effect.  When confronted with such a system, please
+report in excruciating detail to <`perlbug@perl.com'>, and complain to
+your vendor: maybe some bug fixes exist for these problems in your
+operating system.  Sometimes such bug fixes are called an operating
+system upgrade.
+
+SEE ALSO
+========
+
+`POSIX (3)' in this node, `POSIX (3)' in this node, `POSIX (3)' in this
+node, `POSIX (3)' in this node, `POSIX (3)' in this node, `POSIX (3)'
+in this node, `POSIX (3)' in this node, `POSIX (3)' in this node,
+`POSIX (3)' in this node, `POSIX (3)' in this node, `POSIX (3)' in this
+node, `POSIX (3)' in this node, `POSIX (3)' in this node, `POSIX (3)'
+in this node, `POSIX (3)' in this node, `POSIX (3)' in this node
+
+HISTORY
+=======
+
+Jarkko Hietaniemi's original `perli18n.pod' heavily hacked by Dominic
+Dunlop, assisted by the perl5-porters.
+
+Last update: Wed Jan 22 11:04:58 EST 1997
+

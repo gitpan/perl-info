@@ -1,0 +1,933 @@
+This is Info file perl.info, produced by Makeinfo-1.64 from the input
+file Pmaster.texi.
+
+
+File: perl.info,  Node: perlfaq9,  Next: perldata,  Prev: perlfaq8,  Up: perlfaq
+
+NAME
+====
+
+perlfaq9 - Networking ($Revision: 1.16 $, $Date: 1997/04/23 18:12:06 $)
+
+DESCRIPTION
+===========
+
+This section deals with questions related to networking, the internet,
+and a few on the web.
+
+My CGI script runs from the command line but not the browser.  Can you help me fix it?
+--------------------------------------------------------------------------------------
+
+Sure, but you probably can't afford our contracting rates :-)
+
+Seriously, if you can demonstrate that you've read the following FAQs
+and that your problem isn't something simple that can be easily
+answered, you'll probably receive a courteous and useful reply to your
+question if you post it on comp.infosystems.www.authoring.cgi (if it's
+something to do with HTTP, HTML, or the CGI protocols).  Questions that
+appear to be Perl questions but are really CGI ones that are posted to
+comp.lang.perl.misc may not be so well received.
+
+The useful FAQs are:
+
+     http://www.perl.com/perl/faq/idiots-guide.html
+     http://www3.pair.com/webthing/docs/cgi/faqs/cgifaq.shtml
+     http://www.perl.com/perl/faq/perl-cgi-faq.html
+     http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html
+     http://www.boutell.com/faq/
+
+How do I remove HTML from a string?
+-----------------------------------
+
+The most correct way (albeit not the fastest) is to use HTML::Parse
+from CPAN (part of the libwww-perl distribution, which is a must-have
+module for all web hackers).
+
+Many folks attempt a simple-minded regular expression approach, like
+C<s/<.*?>//g>, but that fails in many cases because the tags may
+continue over line breaks, they may contain quoted angle-brackets, or
+HTML comment may be present.  Plus folks forget to convert entities,
+like `&lt;' for example.
+
+Here's one "simple-minded" approach, that works for most files:
+
+     #!/usr/bin/perl -p0777
+     s/<(?:[^>'"]*|(['"]).*?\1)*>//gs
+
+If you want a more complete solution, see the 3-stage striphtml program
+in
+http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/striphtml.gz .
+
+How do I extract URLs?
+----------------------
+
+A quick but imperfect approach is
+
+     #!/usr/bin/perl -n00
+     # qxurl - tchrist@perl.com
+     print "$2\n" while m{
+             < \s*
+               A \s+ HREF \s* = \s* (["']) (.*?) \1
+             \s* >
+     }gsix;
+
+This version does not adjust relative URLs, understand alternate bases,
+deal with HTML comments, deal with HREF and NAME attributes in the same
+tag, or accept URLs themselves as arguments.  It also runs about 100x
+faster than a more "complete" solution using the LWP suite of modules,
+such as the
+http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/xurl.gz
+program.
+
+How do I download a file from the user's machine?  How do I open a file on another machine?
+-------------------------------------------------------------------------------------------
+
+In the context of an HTML form, you can use what's known as
+*multipart/form-data* encoding.  The CGI.pm module (available from
+CPAN) supports this in the start_multipart_form() method, which isn't
+the same as the startform() method.
+
+How do I make a pop-up menu in HTML?
+------------------------------------
+
+Use the B<<SELECT>> and B<<OPTION>> tags.  The CGI.pm module (available
+from CPAN) supports this widget, as well as many others, including some
+that it cleverly synthesizes on its own.
+
+How do I fetch an HTML file?
+----------------------------
+
+One approach, if you have the lynx text-based HTML browser installed on
+your system, is this:
+
+     $html_code = `lynx -source $url`;
+     $text_data = `lynx -dump $url`;
+
+The libwww-perl (LWP) modules from CPAN provide a more powerful way to
+do this.  They work through proxies, and don't require lynx:
+
+     # print HTML from a URL
+     use LWP::Simple;
+     getprint "http://www.sn.no/libwww-perl/";
+     
+     # print ASCII from HTML from a URL
+     use LWP::Simple;
+     use HTML::Parse;
+     use HTML::FormatText;
+     my ($html, $ascii);
+     $html = get("http://www.perl.com/");
+     defined $html
+         or die "Can't fetch HTML from http://www.perl.com/";
+     $ascii = HTML::FormatText->new->format(parse_html($html));
+     print $ascii;
+
+how do I decode or create those %-encodings on the web?
+-------------------------------------------------------
+
+Here's an example of decoding:
+
+     $string = "http://altavista.digital.com/cgi-bin/query?pg=q&what=news&fmt=.&q=%2Bcgi-bin+%2Bperl.exe";
+     $string =~ s/%([a-fA-F0-9]{2})/chr(hex($1))/ge;
+
+Encoding is a bit harder, because you can't just blindly change all the
+non-alphanumunder character (`\W') into their hex escapes.  It's
+important that characters with special meaning like `/' and `?' *not*
+be translated.  Probably the easiest way to get this right is to avoid
+reinventing the wheel and just use the URI::Escape module, which is
+part of the libwww-perl package (LWP) available from CPAN.
+
+How do I redirect to another page?
+----------------------------------
+
+Instead of sending back a `Content-Type' as the headers of your reply,
+send back a `Location:' header.  Officially this should be a `URI:'
+header, so the CGI.pm module (available from CPAN) sends back both:
+
+     Location: http://www.domain.com/newpage
+     URI: http://www.domain.com/newpage
+
+Note that relative URLs in these headers can cause strange effects
+because of "optimizations" that servers do.
+
+How do I put a password on my web pages?
+----------------------------------------
+
+That depends.  You'll need to read the documentation for your web
+server, or perhaps check some of the other FAQs referenced above.
+
+How do I edit my .htpasswd and .htgroup files with Perl?
+--------------------------------------------------------
+
+The HTTPD::UserAdmin and HTTPD::GroupAdmin modules provide a consistent
+OO interface to these files, regardless of how they're stored.
+Databases may be text, dbm, Berkley DB or any database with a DBI
+compatible driver.  HTTPD::UserAdmin supports files used by the `Basic'
+and `Digest' authentication schemes.  Here's an example:
+
+     use HTTPD::UserAdmin ();
+     HTTPD::UserAdmin
+               ->new(DB => "/foo/.htpasswd")
+               ->add($username => $password);
+
+How do I make sure users can't enter values into a form that cause my CGI script to do bad things?
+--------------------------------------------------------------------------------------------------
+
+Read the CGI security FAQ, at
+http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html, and the
+Perl/CGI FAQ at http://www.perl.com/CPAN/doc/FAQs/cgi/perl-cgi-faq.html.
+
+In brief: use tainting (see *Note Perlsec: perlsec,), which makes sure
+that data from outside your script (eg, CGI parameters) are never used
+in eval or system calls.  In addition to tainting, never use the
+single-argument form of system() or exec().  Instead, supply the
+command and arguments as a list, which prevents shell globbing.
+
+How do I parse an email header?
+-------------------------------
+
+For a quick-and-dirty solution, try this solution derived from page 222
+of the 2nd edition of "Programming Perl":
+
+     $/ = '';
+     $header = <MSG>;
+     $header =~ s/\n\s+/ /g;  # merge continuation lines
+     %head = ( UNIX_FROM_LINE, split /^([-\w]+):\s*/m, $header );
+
+That solution doesn't do well if, for example, you're trying to
+maintain all the Received lines.  A more complete approach is to use
+the Mail::Header module from CPAN (part of the MailTools package).
+
+How do I decode a CGI form?
+---------------------------
+
+A lot of people are tempted to code this up themselves, so you've
+probably all seen a lot of code involving `$ENV{CONTENT_LENGTH}' and
+`$ENV{QUERY_STRING}'.  It's true that this can work, but there are also
+a lot of versions of this floating around that are quite simply broken!
+
+Please do not be tempted to reinvent the wheel.  Instead, use the
+CGI.pm or CGI_Lite.pm (available from CPAN), or if you're trapped in
+the module-free land of perl1 .. perl4, you might look into cgi-lib.pl
+(available from http://www.bio.cam.ac.uk/web/form.html).
+
+How do I check a valid email address?
+-------------------------------------
+
+You can't.
+
+Without sending mail to the address and seeing whether it bounces (and
+even then you face the halting problem), you cannot determine whether
+an email address is valid.  Even if you apply the email header
+standard, you can have problems, because there are deliverable
+addresses that aren't RFC-822 (the mail header standard) compliant, and
+addresses that aren't deliverable which are compliant.
+
+Many are tempted to try to eliminate many frequently-invalid email
+addresses with a simple regexp, such as `/^[\w.-]+\@([\w.-]\.)+\w+$/'.
+However, this also throws out many valid ones, and says nothing about
+potential deliverability, so is not suggested.  Instead, see
+http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/ckaddr.gz ,
+which actually checks against the full RFC spec (except for nested
+comments), looks for addresses you may not wish to accept email to
+(say, Bill Clinton or your postmaster), and then makes sure that the
+hostname given can be looked up in DNS.  It's not fast, but it works.
+
+Here's an alternative strategy used by many CGI script authors: Check
+the email address with a simple regexp (such as the one above).  If the
+regexp matched the address, accept the address.  If the regexp didn't
+match the address, request confirmation from the user that the email
+address they entered was correct.
+
+How do I decode a MIME/BASE64 string?
+-------------------------------------
+
+The MIME-tools package (available from CPAN) handles this and a lot
+more.  Decoding BASE64 becomes as simple as:
+
+     use MIME::base64;
+     $decoded = decode_base64($encoded);
+
+A more direct approach is to use the unpack() function's "u" format
+after minor transliterations:
+
+     tr#A-Za-z0-9+/##cd;                   # remove non-base64 chars
+     tr#A-Za-z0-9+/# -_#;                  # convert to uuencoded format
+     $len = pack("c", 32 + 0.75*length);   # compute length byte
+     print unpack("u", $len . $_);         # uudecode and print
+
+How do I return the user's email address?
+-----------------------------------------
+
+On systems that support getpwuid, the $< variable and the Sys::Hostname
+module (which is part of the standard perl distribution), you can
+probably try using something like this:
+
+     use Sys::Hostname;
+     $address = sprintf('%s@%s', getpwuid($<), hostname);
+
+Company policies on email address can mean that this generates addresses
+that the company's email system will not accept, so you should ask for
+users' email addresses when this matters.  Furthermore, not all systems
+on which Perl runs are so forthcoming with this information as is Unix.
+
+The Mail::Util module from CPAN (part of the MailTools package)
+provides a mailaddress() function that tries to guess the mail address
+of the user.  It makes a more intelligent guess than the code above,
+using information given when the module was installed, but it could
+still be incorrect.  Again, the best way is often just to ask the user.
+
+How do I send/read mail?
+------------------------
+
+Sending mail: the Mail::Mailer module from CPAN (part of the MailTools
+package) is UNIX-centric, while Mail::Internet uses Net::SMTP which is
+not UNIX-centric.  Reading mail: use the Mail::Folder module from CPAN
+(part of the MailFolder package) or the Mail::Internet module from CPAN
+(also part of the MailTools package).
+
+     # sending mail
+      use Mail::Internet;
+      use Mail::Header;
+      # say which mail host to use
+      $ENV{SMTPHOSTS} = 'mail.frii.com';
+      # create headers
+      $header = new Mail::Header;
+      $header->add('From', 'gnat@frii.com');
+      $header->add('Subject', 'Testing');
+      $header->add('To', 'gnat@frii.com');
+      # create body
+      $body = 'This is a test, ignore';
+      # create mail object
+      $mail = new Mail::Internet(undef, Header => $header, Body => \[$body]);
+      # send it
+      $mail->smtpsend or die;
+
+How do I find out my hostname/domainname/IP address?
+----------------------------------------------------
+
+A lot of code has historically cavalierly called the ``hostname`'
+program.  While sometimes expedient, this isn't very portable.  It's
+one of those tradeoffs of convenience versus portability.
+
+The Sys::Hostname module (part of the standard perl distribution) will
+give you the hostname after which you can find out the IP address
+(assuming you have working DNS) with a gethostbyname() call.
+
+     use Socket;
+     use Sys::Hostname;
+     my $host = hostname();
+     my $addr = inet_ntoa(scalar(gethostbyname($host || 'localhost')));
+
+Probably the simplest way to learn your DNS domain name is to grok it
+out of /etc/resolv.conf, at least under Unix.  Of course, this assumes
+several things about your resolv.conf configuration, including that it
+exists.
+
+(We still need a good DNS domain name-learning method for non-Unix
+systems.)
+
+How do I fetch a news article or the active newsgroups?
+-------------------------------------------------------
+
+Use the Net::NNTP or News::NNTPClient modules, both available from CPAN.
+This can make tasks like fetching the newsgroup list as simple as:
+
+     perl -MNews::NNTPClient
+       -e 'print News::NNTPClient->new->list("newsgroups")'
+
+How do I fetch/put an FTP file?
+-------------------------------
+
+LWP::Simple (available from CPAN) can fetch but not put.  Net::FTP (also
+available from CPAN) is more complex but can put as well as fetch.
+
+How can I do RPC in Perl?
+-------------------------
+
+A DCE::RPC module is being developed (but is not yet available), and
+will be released as part of the DCE-Perl package (available from CPAN).
+No ONC::RPC module is known.
+
+AUTHOR AND COPYRIGHT
+====================
+
+Copyright (c) 1997 Tom Christiansen and Nathan Torkington.  All rights
+reserved.  See *Note Perlfaq: perlfaq, for distribution information.
+
+
+File: perl.info,  Node: perldata,  Next: perlsyn,  Prev: perlfaq9,  Up: Top
+
+NAME
+====
+
+perldata - Perl data types
+
+DESCRIPTION
+===========
+
+Variable names
+--------------
+
+Perl has three data structures: scalars, arrays of scalars, and
+associative arrays of scalars, known as "hashes".  Normal arrays are
+indexed by number, starting with 0.  (Negative subscripts count from
+the end.)  Hash arrays are indexed by string.
+
+Values are usually referred to by name (or through a named reference).
+The first character of the name tells you to what sort of data
+structure it refers.  The rest of the name tells you the particular
+value to which it refers.  Most often, it consists of a single
+*identifier*, that is, a string beginning with a letter or underscore,
+and containing letters, underscores, and digits.  In some cases, it may
+be a chain of identifiers, separated by `::' (or by `'', but that's
+deprecated); all but the last are interpreted as names of packages, to
+locate the namespace in which to look up the final identifier (see
+`Packages', *Note Perlmod: perlmod, for details).  It's possible to
+substitute for a simple identifier an expression which produces a
+reference to the value at runtime; this is described in more detail
+below, and in `Packages', *Note Perlref: perlref.
+
+There are also special variables whose names don't follow these rules,
+so that they don't accidentally collide with one of your normal
+variables.  Strings which match parenthesized parts of a regular
+expression are saved under names containing only digits after the `$'
+(see *Note Perlop: perlop, and *Note Perlre: perlre,).  In addition,
+several special variables which provide windows into the inner working
+of Perl have names containing punctuation characters (see *Note
+Perlvar: perlvar,).
+
+Scalar values are always named with '$', even when referring to a scalar
+that is part of an array.  It works like the English word "the".  Thus
+we have:
+
+     $days                   # the simple scalar value "days"
+     $days[28]               # the 29th element of array @days
+     $days{'Feb'}           # the 'Feb' value from hash %days
+     $#days                  # the last index of array @days
+
+but entire arrays or array slices are denoted by '@', which works much
+like the word "these" or "those":
+
+     @days            # ($days[0], $days[1],... $days[n])
+     @days[3,4,5]     # same as @days[3..5]
+     @days{'a','c'}   # same as ($days{'a'},$days{'c'})
+
+and entire hashes are denoted by '%':
+
+     %days           # (key1, val1, key2, val2 ...)
+
+In addition, subroutines are named with an initial '&', though this is
+optional when it's otherwise unambiguous (just as "do" is often
+redundant in English).  Symbol table entries can be named with an
+initial '*', but you don't really care about that yet.
+
+Every variable type has its own namespace.  You can, without fear of
+conflict, use the same name for a scalar variable, an array, or a hash
+(or, for that matter, a filehandle, a subroutine name, or a label).
+This means that $foo and @foo are two different variables.  It also
+means that `$foo[1]' is a part of @foo, not a part of $foo.  This may
+seem a bit weird, but that's okay, because it is weird.
+
+Because variable and array references always start with '$', '@', or
+'%', the "reserved" words aren't in fact reserved with respect to
+variable names.  (They ARE reserved with respect to labels and
+filehandles, however, which don't have an initial special character.
+You can't have a filehandle named "log", for instance.  Hint: you could
+say `open(LOG,'logfile')' rather than `open(log,'logfile')'.  Using
+uppercase filehandles also improves readability and protects you from
+conflict with future reserved words.)  Case *IS* significant-"FOO",
+"Foo", and "foo" are all different names.  Names that start with a
+letter or underscore may also contain digits and underscores.
+
+It is possible to replace such an alphanumeric name with an expression
+that returns a reference to an object of that type.  For a description
+of this, see *Note Perlref: perlref.
+
+Names that start with a digit may contain only more digits.  Names
+which do not start with a letter, underscore,  or digit are limited to
+one character, e.g.,  $% or $$.  (Most of these one character names
+have a predefined significance to Perl.  For instance, $$ is the
+current process id.)
+
+Context
+-------
+
+The interpretation of operations and values in Perl sometimes depends
+on the requirements of the context around the operation or value.
+There are two major contexts: scalar and list.  Certain operations
+return list values in contexts wanting a list, and scalar values
+otherwise.  (If this is true of an operation it will be mentioned in
+the documentation for that operation.)  In other words, Perl overloads
+certain operations based on whether the expected return value is
+singular or plural.  (Some words in English work this way, like "fish"
+and "sheep".)
+
+In a reciprocal fashion, an operation provides either a scalar or a
+list context to each of its arguments.  For example, if you say
+
+     int( <STDIN> )
+
+the integer operation provides a scalar context for the <STDIN>
+operator, which responds by reading one line from STDIN and passing it
+back to the integer operation, which will then find the integer value
+of that line and return that.  If, on the other hand, you say
+
+     sort( <STDIN> )
+
+then the sort operation provides a list context for <STDIN>, which will
+proceed to read every line available up to the end of file, and pass
+that list of lines back to the sort routine, which will then sort those
+lines and return them as a list to whatever the context of the sort was.
+
+Assignment is a little bit special in that it uses its left argument to
+determine the context for the right argument.  Assignment to a scalar
+evaluates the righthand side in a scalar context, while assignment to
+an array or array slice evaluates the righthand side in a list context.
+Assignment to a list also evaluates the righthand side in a list
+context.
+
+User defined subroutines may choose to care whether they are being
+called in a scalar or list context, but most subroutines do not need to
+care, because scalars are automatically interpolated into lists.  See
+`wantarray', *Note Perlfunc: perlfunc.
+
+Scalar values
+-------------
+
+All data in Perl is a scalar or an array of scalars or a hash of
+scalars.  Scalar variables may contain various kinds of singular data,
+such as numbers, strings, and references.  In general, conversion from
+one form to another is transparent.  (A scalar may not contain multiple
+values, but may contain a reference to an array or hash containing
+multiple values.) Because of the automatic conversion of scalars,
+operations, and functions that return scalars don't need to care (and,
+in fact, can't care) whether the context is looking for a string or a
+number.
+
+Scalars aren't necessarily one thing or another.  There's no place to
+declare a scalar variable to be of type "string", or of type "number",
+or type "filehandle", or anything else.  Perl is a contextually
+polymorphic language whose scalars can be strings, numbers, or
+references (which includes objects).  While strings and numbers are
+considered pretty much the same thing for nearly all purposes,
+references are strongly-typed uncastable pointers with builtin
+reference-counting and destructor invocation.
+
+A scalar value is interpreted as TRUE in the Boolean sense if it is not
+the null string or the number 0 (or its string equivalent, "0").  The
+Boolean context is just a special kind of scalar context.
+
+There are actually two varieties of null scalars: defined and
+undefined.  Undefined null scalars are returned when there is no real
+value for something, such as when there was an error, or at end of
+file, or when you refer to an uninitialized variable or element of an
+array.  An undefined null scalar may become defined the first time you
+use it as if it were defined, but prior to that you can use the
+defined() operator to determine whether the value is defined or not.
+
+To find out whether a given string is a valid nonzero number, it's
+usually enough to test it against both numeric 0 and also lexical "0"
+(although this will cause -w noises).  That's because strings that
+aren't numbers count as 0, just as they do in *awk*:
+
+     if ($str == 0 && $str ne "0")  {
+             warn "That doesn't look like a number";
+     }
+
+That's usually preferable because otherwise you won't treat IEEE
+notations like `NaN' or `Infinity' properly.  At other times you might
+prefer to use a regular expression to check whether data is numeric.
+See *Note Perlre: perlre, for details on regular expressions.
+
+     warn "has nondigits"    if     /\D/;
+     warn "not a whole number"   unless /^\d+$/;
+     warn "not an integer"       unless /^[+-]?\d+$/
+     warn "not a decimal number" unless /^[+-]?\d+\.?\d*$/
+     warn "not a C float"
+             unless /^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/;
+
+The length of an array is a scalar value.  You may find the length of
+array @days by evaluating `$#days', as in *csh*.  (Actually, it's not
+the length of the array, it's the subscript of the last element, because
+there is (ordinarily) a 0th element.)  Assigning to `$#days' changes the
+length of the array.  Shortening an array by this method destroys
+intervening values.  Lengthening an array that was previously shortened
+*NO LONGER* recovers the values that were in those elements.  (It used
+to in Perl 4, but we had to break this to make sure destructors were
+called when expected.)  You can also gain some measure of efficiency by
+pre-extending an array that is going to get big.  (You can also extend
+an array by assigning to an element that is off the end of the array.)
+You can truncate an array down to nothing by assigning the null list ()
+to it.  The following are equivalent:
+
+     @whatever = ();
+     $#whatever = $[ - 1;
+
+If you evaluate a named array in a scalar context, it returns the
+length of the array.  (Note that this is not true of lists, which
+return the last value, like the C comma operator.)  The following is
+always true:
+
+     scalar(@whatever) == $#whatever - $[ + 1;
+
+Version 5 of Perl changed the semantics of $[: files that don't set the
+value of $[ no longer need to worry about whether another file changed
+its value.  (In other words, use of $[ is deprecated.) So in general
+you can assume that
+
+     scalar(@whatever) == $#whatever + 1;
+
+Some programmers choose to use an explicit conversion so nothing's left
+to doubt:
+
+     $element_count = scalar(@whatever);
+
+If you evaluate a hash in a scalar context, it returns a value which is
+true if and only if the hash contains any key/value pairs.  (If there
+are any key/value pairs, the value returned is a string consisting of
+the number of used buckets and the number of allocated buckets,
+separated by a slash.  This is pretty much useful only to find out
+whether Perl's (compiled in) hashing algorithm is performing poorly on
+your data set.  For example, you stick 10,000 things in a hash, but
+evaluating %HASH in scalar context reveals "1/16", which means only one
+out of sixteen buckets has been touched, and presumably contains all
+10,000 of your items.  This isn't supposed to happen.)
+
+Scalar value constructors
+-------------------------
+
+Numeric literals are specified in any of the customary floating point or
+integer formats:
+
+     12345
+     12345.67
+     .23E-10
+     0xffff          # hex
+     0377            # octal
+     4_294_967_296   # underline for legibility
+
+String literals are usually delimited by either single or double
+quotes.  They work much like shell quotes: double-quoted string
+literals are subject to backslash and variable substitution;
+single-quoted strings are not (except for "`\''" and "`\\'").  The
+usual Unix backslash rules apply for making characters such as newline,
+tab, etc., as well as some more exotic forms.  See `Quote and Quotelike
+Operators', *Note Perlop: perlop, for a list.
+
+Octal or hex representations in string literals (e.g. '0xffff') are not
+automatically converted to their integer representation.  The hex() and
+oct() functions make these conversions for you.  See `hex', *Note
+Perlfunc: perlfunc, and `oct', *Note Perlfunc: perlfunc, for more
+details.
+
+You can also embed newlines directly in your strings, i.e., they can end
+on a different line than they begin.  This is nice, but if you forget
+your trailing quote, the error will not be reported until Perl finds
+another line containing the quote character, which may be much further
+on in the script.  Variable substitution inside strings is limited to
+scalar variables, arrays, and array slices.  (In other words, names
+beginning with $ or @, followed by an optional bracketed expression as
+a subscript.)  The following code segment prints out "The price is
+$100."
+
+     $Price = '$100';      # not interpreted
+     print "The price is $Price.\n"; # interpreted
+
+As in some shells, you can put curly brackets around the name to
+delimit it from following alphanumerics.  In fact, an identifier within
+such curlies is forced to be a string, as is any single identifier
+within a hash subscript.  Our earlier example,
+
+     $days{'Feb'}
+
+can be written as
+
+     $days{Feb}
+
+and the quotes will be assumed automatically.  But anything more
+complicated in the subscript will be interpreted as an expression.
+
+Note that a single-quoted string must be separated from a preceding
+word by a space, because single quote is a valid (though deprecated)
+character in a variable name (see `Packages', *Note Perlmod: perlmod,).
+
+Three special literals are __FILE__, __LINE__, and __PACKAGE__, which
+represent the current filename, line number, and package name at that
+point in your program.  They may be used only as separate tokens; they
+will not be interpolated into strings.  If there is no current package
+(due to a `package;' directive), __PACKAGE__ is the undefined value.
+
+The tokens __END__ and __DATA__ may be used to indicate the logical end
+of the script before the actual end of file.  Any following text is
+ignored, but may be read via a DATA filehandle: main::DATA for __END__,
+or PACKNAME::DATA (where PACKNAME is the current package) for __DATA__.
+The two control characters ^D and ^Z are synonyms for __END__ (or
+__DATA__ in a module).  See `SelfLoader' in this node for more
+description of __DATA__, and an example of its use.  Note that you
+cannot read from the DATA filehandle in a BEGIN block: the BEGIN block
+is executed as soon as it is seen (during compilation), at which point
+the corresponding __DATA__ (or __END__) token has not yet been seen.
+
+A word that has no other interpretation in the grammar will be treated
+as if it were a quoted string.  These are known as "barewords".  As
+with filehandles and labels, a bareword that consists entirely of
+lowercase letters risks conflict with future reserved words, and if you
+use the -w switch, Perl will warn you about any such words.  Some
+people may wish to outlaw barewords entirely.  If you say
+
+     use strict 'subs';
+
+then any bareword that would NOT be interpreted as a subroutine call
+produces a compile-time error instead.  The restriction lasts to the
+end of the enclosing block.  An inner block may countermand this by
+saying `no strict 'subs''.
+
+Array variables are interpolated into double-quoted strings by joining
+all the elements of the array with the delimiter specified in the $"
+variable ($LIST_SEPARATOR in English), space by default.  The following
+are equivalent:
+
+     $temp = join($",@ARGV);
+     system "echo $temp";
+     
+     system "echo @ARGV";
+
+Within search patterns (which also undergo double-quotish substitution)
+there is a bad ambiguity:  Is `/$foo[bar]/' to be interpreted as
+`/${foo}[bar]/' (where `[bar]' is a character class for the regular
+expression) or as `/${foo[bar]}/' (where `[bar]' is the subscript to
+array @foo)?  If @foo doesn't otherwise exist, then it's obviously a
+character class.  If @foo exists, Perl takes a good guess about `[bar]',
+and is almost always right.  If it does guess wrong, or if you're just
+plain paranoid, you can force the correct interpretation with curly
+brackets as above.
+
+A line-oriented form of quoting is based on the shell "here-doc"
+syntax.  Following a `<<' you specify a string to terminate the quoted
+material, and all lines following the current line down to the
+terminating string are the value of the item.  The terminating string
+may be either an identifier (a word), or some quoted text.  If quoted,
+the type of quotes you use determines the treatment of the text, just
+as in regular quoting.  An unquoted identifier works like double
+quotes.  There must be no space between the `<<' and the identifier.
+(If you put a space it will be treated as a null identifier, which is
+valid, and matches the first empty line.)  The terminating string must
+appear by itself (unquoted and with no surrounding whitespace) on the
+terminating line.
+
+     print <<EOF;
+         The price is $Price.
+         EOF
+     
+     print <<"EOF";  # same as above
+         The price is $Price.
+         EOF
+     
+     print <<`EOC`;        # execute commands
+         echo hi there
+         echo lo there
+         EOC
+     
+     print <<"foo", <<"bar"; # you can stack them
+         I said foo.
+         foo
+         I said bar.
+         bar
+     
+     myfunc(<<"THIS", 23, <<'THAT');
+         Here's a line
+         or two.
+         THIS
+         and here's another.
+         THAT
+
+Just don't forget that you have to put a semicolon on the end to finish
+the statement, as Perl doesn't know you're not going to try to do this:
+
+     print <<ABC
+         179231
+         ABC
+     + 20;
+
+List value constructors
+-----------------------
+
+List values are denoted by separating individual values by commas (and
+enclosing the list in parentheses where precedence requires it):
+
+     (LIST)
+
+In a context not requiring a list value, the value of the list literal
+is the value of the final element, as with the C comma operator.  For
+example,
+
+     @foo = ('cc', '-E', $bar);
+
+assigns the entire list value to array foo, but
+
+     $foo = ('cc', '-E', $bar);
+
+assigns the value of variable bar to variable foo.  Note that the value
+of an actual array in a scalar context is the length of the array; the
+following assigns the value 3 to $foo:
+
+     @foo = ('cc', '-E', $bar);
+     $foo = @foo;           # $foo gets 3
+
+You may have an optional comma before the closing parenthesis of a list
+literal, so that you can say:
+
+     @foo = (
+             1,
+             2,
+             3,
+     );
+
+LISTs do automatic interpolation of sublists.  That is, when a LIST is
+evaluated, each element of the list is evaluated in a list context, and
+the resulting list value is interpolated into LIST just as if each
+individual element were a member of LIST.  Thus arrays lose their
+identity in a LIST-the list
+
+     (@foo,@bar,&SomeSub)
+
+contains all the elements of @foo followed by all the elements of @bar,
+followed by all the elements returned by the subroutine named SomeSub
+when it's called in a list context.  To make a list reference that does
+*NOT* interpolate, see *Note Perlref: perlref.
+
+The null list is represented by ().  Interpolating it in a list has no
+effect.  Thus ((),(),()) is equivalent to ().  Similarly, interpolating
+an array with no elements is the same as if no array had been
+interpolated at that point.
+
+A list value may also be subscripted like a normal array.  You must put
+the list in parentheses to avoid ambiguity.  For example:
+
+     # Stat returns list value.
+     $time = (stat($file))[8];
+     
+     # SYNTAX ERROR HERE.
+     $time = stat($file)[8];  # OOPS, FORGOT PARENTHESES
+     
+     # Find a hex digit.
+     $hexdigit = ('a','b','c','d','e','f')[$digit-10];
+     
+     # A "reverse comma operator".
+     return (pop(@foo),pop(@foo))[0];
+
+You may assign to undef in a list.  This is useful for throwing away
+some of the return values of a function:
+
+     ($dev, $ino, undef, undef, $uid, $gid) = stat($file);
+
+Lists may be assigned to if and only if each element of the list is
+legal to assign to:
+
+     ($a, $b, $c) = (1, 2, 3);
+     
+     ($map{'red'}, $map{'blue'}, $map{'green'}) = (0x00f, 0x0f0, 0xf00);
+
+Array assignment in a scalar context returns the number of elements
+produced by the expression on the right side of the assignment:
+
+     $x = (($foo,$bar) = (3,2,1));   # set $x to 3, not 2
+     $x = (($foo,$bar) = f());               # set $x to f()'s return count
+
+This is very handy when you want to do a list assignment in a Boolean
+context, because most list functions return a null list when finished,
+which when assigned produces a 0, which is interpreted as FALSE.
+
+The final element may be an array or a hash:
+
+     ($a, $b, @rest) = split;
+     local($a, $b, %rest) = @_;
+
+You can actually put an array or hash anywhere in the list, but the
+first one in the list will soak up all the values, and anything after
+it will get a null value.  This may be useful in a local() or my().
+
+A hash literal contains pairs of values to be interpreted as a key and
+a value:
+
+     # same as map assignment above
+     %map = ('red',0x00f,'blue',0x0f0,'green',0xf00);
+
+While literal lists and named arrays are usually interchangeable, that's
+not the case for hashes.  Just because you can subscript a list value
+like a normal array does not mean that you can subscript a list value
+as a hash.  Likewise, hashes included as parts of other lists (including
+parameters lists and return lists from functions) always flatten out
+into key/value pairs.  That's why it's good to use references sometimes.
+
+It is often more readable to use the C<=>> operator between key/value
+pairs.  The C<=>> operator is mostly just a more visually distinctive
+synonym for a comma, but it also arranges for its left-hand operand to
+be interpreted as a string, if it's a bareword which would be a legal
+identifier.  This makes it nice for initializing hashes:
+
+     %map = (
+                      red   => 0x00f,
+                      blue  => 0x0f0,
+                      green => 0xf00,
+        );
+
+or for initializing hash references to be used as records:
+
+     $rec = {
+                     witch => 'Mable the Merciless',
+                     cat   => 'Fluffy the Ferocious',
+                     date  => '10/31/1776',
+     };
+
+or for using call-by-named-parameter to complicated functions:
+
+     $field = $query->radio_group(
+                    name      => 'group_name',
+                 values    => ['eenie','meenie','minie'],
+                 default   => 'meenie',
+                 linebreak => 'true',
+                 labels    => \%labels
+     );
+
+Note that just because a hash is initialized in that order doesn't mean
+that it comes out in that order.  See `sort', *Note Perlfunc: perlfunc,
+for examples of how to arrange for an output ordering.
+
+Typeglobs and Filehandles
+-------------------------
+
+Perl uses an internal type called a *typeglob* to hold an entire symbol
+table entry.  The type prefix of a typeglob is a *, because it
+represents all types.  This used to be the preferred way to pass arrays
+and hashes by reference into a function, but now that we have real
+references, this is seldom needed.  It also used to be the preferred
+way to pass filehandles into a function, but now that we have the
+*foo{THING} notation it isn't often needed for that, either.  It is
+still needed to pass new filehandles into functions (*HANDLE{IO} only
+works if HANDLE has already been used).
+
+If you need to use a typeglob to save away a filehandle, do it this way:
+
+     $fh = *STDOUT;
+
+or perhaps as a real reference, like this:
+
+     $fh = \*STDOUT;
+
+This is also a way to create a local filehandle.  For example:
+
+     sub newopen {
+             my $path = shift;
+             local *FH;  # not my!
+             open (FH, $path) || return undef;
+             return *FH;
+     }
+     $fh = newopen('/etc/passwd');
+
+Another way to create local filehandles is with IO::Handle and its ilk,
+see the bottom of `open()', *Note Perlfunc: perlfunc.
+
+See *Note Perlref: perlref, *Note Perlsub: perlsub,, and `"Symbol
+Tables"', *Note Perlmod: perlmod, for more discussion on typeglobs.
+

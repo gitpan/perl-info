@@ -1,0 +1,95 @@
+This is Info file perl.info, produced by Makeinfo-1.64 from the input
+file Pmaster.texi.
+
+
+Indirect:
+perl.info-1: 90
+perl.info-2: 12263
+perl.info-3: 72876
+perl.info-4: 130502
+perl.info-5: 169478
+perl.info-6: 191857
+perl.info-7: 230838
+perl.info-8: 261842
+perl.info-9: 285011
+perl.info-10: 312266
+perl.info-11: 357970
+perl.info-12: 396082
+perl.info-13: 416928
+perl.info-14: 466225
+perl.info-15: 512416
+perl.info-16: 668316
+perl.info-17: 693258
+perl.info-18: 728962
+perl.info-19: 776074
+perl.info-20: 822581
+perl.info-21: 871157
+perl.info-22: 880547
+perl.info-23: 951070
+perl.info-24: 997605
+perl.info-25: 1011441
+perl.info-26: 1061500
+perl.info-27: 1098448
+perl.info-28: 1203606
+perl.info-29: 1219949
+perl.info-30: 1267347
+perl.info-31: 1311880
+perl.info-32: 1361039
+perl.info-33: 1388616
+perl.info-34: 1478512
+perl.info-35: 1535786
+
+Tag Table:
+(Indirect)
+Node: Top90
+Node: perl3883
+Node: perltoc12263
+Node: perldelta72876
+Node: perlfaq130502
+Node: perlfaq1136149
+Node: perlfaq2149178
+Node: perlfaq3169478
+Node: perlfaq4191857
+Node: perlfaq5230838
+Node: perlfaq6261842
+Node: perlfaq7285011
+Node: perlfaq8312266
+Node: perlfaq9357970
+Node: perldata371892
+Node: perlsyn396082
+Node: perlop416928
+Node: perlre466225
+Node: perlrun490939
+Node: perlfunc512416
+Node: perlvar668316
+Node: perlsub693258
+Node: perlmod728962
+Node: perlmodlib744533
+Node: perlform776074
+Node: perllocale789845
+Node: perlref822581
+Node: perldsc843603
+Node: perllol871157
+Node: perltoot880547
+Node: perlobj951070
+Node: perltie968392
+Node: perlbot997605
+Node: perlipc1011441
+Node: perldebug1061500
+Node: perldiag1098448
+Node: perlsec1203606
+Node: perltrap1219949
+Node: perlstyle1259156
+Node: perlpod1267347
+Node: perlbook1276329
+Node: perlembed1277861
+Node: perlapio1311880
+Node: perlxs1319762
+Node: perlxstut1361039
+Node: perlguts1388616
+Node: perlcall1478512
+Node: Function Index1535786
+Node: Variable Index1551798
+Node: Diagnostic Message Index1557586
+
+End Tag Table

@@ -1,0 +1,56 @@
+\input texinfo.tex
+@comment %**start of header
+@setfilename perl.info
+@settitle perl
+@c footnotestyle separate
+@paragraphindent 0
+@smallbook
+@comment %**end of header
+
+@include perl.texi
+@include perltoc.texi
+@include perldelta.texi
+@include perlfaq.texi
+@include perlfaq1.texi
+@include perlfaq2.texi
+@include perlfaq3.texi
+@include perlfaq4.texi
+@include perlfaq5.texi
+@include perlfaq6.texi
+@include perlfaq7.texi
+@include perlfaq8.texi
+@include perlfaq9.texi
+@include perldata.texi
+@include perlsyn.texi
+@include perlop.texi
+@include perlre.texi
+@include perlrun.texi
+@include perlfunc.texi
+@include perlvar.texi
+@include perlsub.texi
+@include perlmod.texi
+@include perlmodlib.texi
+@include perlform.texi
+@include perllocale.texi
+@include perlref.texi
+@include perldsc.texi
+@include perllol.texi
+@include perltoot.texi
+@include perlobj.texi
+@include perltie.texi
+@include perlbot.texi
+@include perlipc.texi
+@include perldebug.texi
+@include perldiag.texi
+@include perlsec.texi
+@include perltrap.texi
+@include perlstyle.texi
+@include perlpod.texi
+@include perlbook.texi
+@include perlembed.texi
+@include perlapio.texi
+@include perlxs.texi
+@include perlxstut.texi
+@include perlguts.texi
+@include perlcall.texi
+@include indices.texi

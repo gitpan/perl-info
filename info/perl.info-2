@@ -1,0 +1,1649 @@
+This is Info file perl.info, produced by Makeinfo-1.64 from the input
+file Pmaster.texi.
+
+
+File: perl.info,  Node: perltoc,  Next: perldelta,  Prev: perl,  Up: Top
+
+NAME
+====
+
+perltoc - perl documentation table of contents
+
+DESCRIPTION
+===========
+
+This page provides a brief table of contents for the rest of the Perl
+documentation set.  It is meant to be scanned quickly or grepped
+through to locate the proper section you're looking for.
+
+BASIC DOCUMENTATION
+===================
+
+perl - Practical Extraction and Report Language
+-----------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+     Many usability enhancements, Simplified grammar, Lexical scoping,
+     Arbitrarily nested data structures, Modularity and reusability,
+     Object-oriented programming, Embeddable and Extensible, POSIX
+     compliant, Package constructors and destructors, Multiple
+     simultaneous DBM implementations, Subroutine definitions may now
+     be autoloaded, Regular expression enhancements, Innumerable
+     Unbundled Modules, Compilability
+
+ENVIRONMENT
+AUTHOR
+FILES
+SEE ALSO
+DIAGNOSTICS
+BUGS
+NOTES
+perlfaq - frequently asked questions about Perl ($Date: 1997/04/24 22:46:06 $)
+------------------------------------------------------------------------------
+
+DESCRIPTION
+     perlfaq: Structural overview of the FAQ, *Note Perlfaq1:
+     perlfaq1,: General Questions About Perl, *Note Perlfaq2:
+     perlfaq2,: Obtaining and Learning about Perl, *Note Perlfaq3:
+     perlfaq3,: Programming Tools, *Note Perlfaq4: perlfaq4,: Data
+     Manipulation, *Note Perlfaq5: perlfaq5,: Files and Formats, *Note
+     Perlfaq6: perlfaq6,: Regexps, *Note Perlfaq7: perlfaq7,: General
+     Perl Language Issues, *Note Perlfaq8: perlfaq8,: System
+     Interaction, *Note Perlfaq9: perlfaq9,: Networking
+
+Where to get this document
+How to contribute to this document
+What will happen if you mail your Perl programming problems to the authors
+Credits
+Author and Copyright Information
+Noncommercial Reproduction
+Commercial Reproduction
+Disclaimer
+Changes
+     24/April/97, 23/April/97, 25/March/97, 18/March/97, 17/March/97
+     Version, Initial Release: 11/March/97
+
+perlfaq1 - General Questions About Perl ($Revision: 1.12 $, $Date: 1997/04/24 22:43:34 $)
+-----------------------------------------------------------------------------------------
+
+DESCRIPTION
+What is Perl?
+Who supports Perl?  Who develops it?  Why is it free?
+Which version of Perl should I use?
+What are perl4 and perl5?
+How stable is Perl?
+Is Perl difficult to learn?
+How does Perl compare with other languages like Java, Python, REXX, Scheme, or Tcl?
+Can I do [task] in Perl?
+When shouldn't I program in Perl?
+What's the difference between "perl" and "Perl"?
+Is it a Perl program or a Perl script?
+What is a JAPH?
+Where can I get a list of Larry Wall witticisms?
+How can I convince my sysadmin/supervisor/employees to use version (5/5.004/Perl instead of some other language)?
+AUTHOR AND COPYRIGHT
+perlfaq2 - Obtaining and Learning about Perl ($Revision: 1.16 $, $Date: 1997/04/23 18:04:09 $)
+----------------------------------------------------------------------------------------------
+
+DESCRIPTION
+What machines support Perl?  Where do I get it?
+How can I get a binary version of Perl?
+I don't have a C compiler on my system.  How can I compile perl?
+I copied the Perl binary from one machine to another, but scripts don't work.
+I grabbed the sources and tried to compile but gdbm/dynamic loading/malloc/linking/... failed.  How do I make it work?
+What modules and extensions are available for Perl?  What is CPAN?  What does CPAN/src/... mean?
+Is there an ISO or ANSI certified version of Perl?
+Where can I get information on Perl?
+What are the Perl newsgroups on USENET?  Where do I post questions?
+Where should I post source code?
+Perl Books
+Perl in Magazines
+Perl on the Net: FTP and WWW Access
+What mailing lists are there for perl?
+     MacPerl, Perl5-Porters, NTPerl, Perl-Packrats
+
+Archives of comp.lang.perl.misc
+Perl Training
+Where can I buy a commercial version of Perl?
+Where do I send bug reports?
+What is perl.com?  perl.org?  The Perl Institute?
+How do I learn about object-oriented Perl programming?
+AUTHOR AND COPYRIGHT
+perlfaq3 - Programming Tools ($Revision: 1.22 $, $Date: 1997/04/24 22:43:42 $)
+------------------------------------------------------------------------------
+
+DESCRIPTION
+How do I do (anything)?
+How can I use Perl interactively?
+Is there a Perl shell?
+How do I debug my Perl programs?
+How do I profile my Perl programs?
+How do I cross-reference my Perl programs?
+Is there a pretty-printer (formatter) for Perl?
+Is there a ctags for Perl?
+Where can I get Perl macros for vi?
+Where can I get perl-mode for emacs?
+How can I use curses with Perl?
+How can I use X or Tk with Perl?
+How can I generate simple menus without using CGI or Tk?
+Can I dynamically load C routines into Perl?
+What is undump?
+How can I make my Perl program run faster?
+How can I make my Perl program take less memory?
+Is it unsafe to return a pointer to local data?
+How can I free an array or hash so my program shrinks?
+How can I make my CGI script more efficient?
+How can I hide the source for my Perl program?
+How can I compile my Perl program into byte code or C?
+How can I get '#!perl' to work on [MS-DOS,NT,...]?
+Can I write useful perl programs on the command line?
+Why don't perl one-liners work on my DOS/Mac/VMS system?
+Where can I learn about CGI or Web programming in Perl?
+Where can I learn about object-oriented Perl programming?
+Where can I learn about linking C with Perl? [h2xs, xsubpp]
+I've read perlembed, perlguts, etc., but I can't embed perl in my C program, what am I doing wrong?
+When I tried to run my script, I got this message. What does it mean?
+What's MakeMaker?
+AUTHOR AND COPYRIGHT
+perlfaq4 - Data Manipulation ($Revision: 1.19 $, $Date: 1997/04/24 22:43:57 $)
+------------------------------------------------------------------------------
+
+DESCRIPTION
+Data: Numbers
+Why am I getting long decimals (eg, 19.9499999999999) instead of the numbers I should be getting (eg, 19.95)?
+Why isn't my octal data interpreted correctly?
+Does perl have a round function? What about ceil() and floor()? Trig functions?
+How do I convert bits into ints?
+How do I multiply matrices?
+How do I perform an operation on a series of integers?
+How can I output Roman numerals?
+Why aren't my random numbers random?
+Data: Dates
+How do I find the week-of-the-year/day-of-the-year?
+How can I compare two date strings?
+How can I take a string and turn it into epoch seconds?
+How can I find the Julian Day?
+Does Perl have a year 2000 problem?
+Data: Strings
+How do I validate input?
+How do I unescape a string?
+How do I remove consecutive pairs of characters?
+How do I expand function calls in a string?
+How do I find matching/nesting anything?
+How do I reverse a string?
+How do I expand tabs in a string?
+How do I reformat a paragraph?
+How can I access/change the first N letters of a string?
+How do I change the Nth occurrence of something?
+How can I count the number of occurrences of a substring within a string?
+How do I capitalize all the words on one line?
+How can I split a [character] delimited string except when inside [character]? (Comma-separated files)
+How do I strip blank space from the beginning/end of a string?
+How do I extract selected columns from a string?
+How do I find the soundex value of a string?
+How can I expand variables in text strings?
+What's wrong with always quoting "$vars"?
+Why don't my <<HERE documents work?
+     1. There must be no space after the << part, 2. There (probably)
+     should be a semicolon at the end, 3. You can't (easily) have any
+     space in front of the tag
+
+Data: Arrays
+What is the difference between $array[1] and @array[1]?
+How can I extract just the unique elements of an array?
+     a) If @in is sorted, and you want @out to be sorted:, b) If you
+     don't know whether @in is sorted:, c) Like (b), but @in contains
+     only small integers:, d) A way to do (b) without any loops or
+     greps:, e) Like (d), but @in contains only small positive integers:
+
+How can I tell whether an array contains a certain element?
+How do I compute the difference of two arrays?  How do I compute the intersection of two arrays?
+How do I find the first array element for which a condition is true?
+How do I handle linked lists?
+How do I handle circular lists?
+How do I shuffle an array randomly?
+How do I process/modify each element of an array?
+How do I select a random element from an array?
+How do I permute N elements of a list?
+How do I sort an array by (anything)?
+How do I manipulate arrays of bits?
+Why does defined() return true on empty arrays and hashes?
+Data: Hashes (Associative Arrays)
+How do I process an entire hash?
+What happens if I add or remove keys from a hash while iterating over it?
+How do I look up a hash element by value?
+How can I know how many entries are in a hash?
+How do I sort a hash (optionally by value instead of key)?
+How can I always keep my hash sorted?
+What's the difference between "delete" and "undef" with hashes?
+Why don't my tied hashes make the defined/exists distinction?
+How do I reset an each() operation part-way through?
+How can I get the unique keys from two hashes?
+How can I store a multidimensional array in a DBM file?
+How can I make my hash remember the order I put elements into it?
+Why does passing a subroutine an undefined element in a hash create it?
+How can I make the Perl equivalent of a C structure/C++ class/hash or array of hashes or arrays?
+How can I use a reference as a hash key?
+Data: Misc
+How do I handle binary data correctly?
+How do I determine whether a scalar is a number/whole/integer/float?
+How do I keep persistent data across program calls?
+How do I print out or copy a recursive data structure?
+How do I define methods for every class/object?
+How do I verify a credit card checksum?
+AUTHOR AND COPYRIGHT
+perlfaq5 - Files and Formats ($Revision: 1.22 $, $Date: 1997/04/24 22:44:02 $)
+------------------------------------------------------------------------------
+
+DESCRIPTION
+How do I flush/unbuffer a filehandle?  Why must I do this?
+How do I change one line in a file/delete a line in a file/insert a line in the middle of a file/append to the beginning of a file?
+How do I count the number of lines in a file?
+How do I make a temporary file name?
+How can I manipulate fixed-record-length files?
+How can I make a filehandle local to a subroutine?  How do I pass filehandles between subroutines?  How do I make an array of filehandles?
+How can I set up a footer format to be used with write()?
+How can I write() into a string?
+How can I output my numbers with commas added?
+How can I translate tildes (~) in a filename?
+How come when I open the file read-write it wipes it out?
+Why do I sometimes get an "Argument list too long" when I use <*>?
+Is there a leak/bug in glob()?
+How can I open a file with a leading ">" or trailing blanks?
+How can I reliably rename a file?
+How can I lock a file?
+What can't I just open(FH, ">file.lock")?
+I still don't get locking.  I just want to increment the number in the file.  How can I do this?
+How do I randomly update a binary file?
+How do I get a file's timestamp in perl?
+How do I set a file's timestamp in perl?
+How do I print to more than one file at once?
+How can I read in a file by paragraphs?
+How can I read a single character from a file?  From the keyboard?
+How can I tell if there's a character waiting on a filehandle?
+How do I open a file without blocking?
+How do I create a file only if it doesn't exist?
+How do I do a `tail -f' in perl?
+How do I dup() a filehandle in Perl?
+How do I close a file descriptor by number?
+Why can't I use "C:\temp\foo" in DOS paths?  What doesn't `C:\temp\foo.exe` work?
+Why doesn't glob("*.*") get all the files?
+Why does Perl let me delete read-only files?  Why does -i clobber protected files?  Isn't this a bug in Perl?
+How do I select a random line from a file?
+AUTHOR AND COPYRIGHT
+perlfaq6 - Regexps ($Revision: 1.17 $, $Date: 1997/04/24 22:44:10 $)
+--------------------------------------------------------------------
+
+DESCRIPTION
+How can I hope to use regular expressions without creating illegible and unmaintainable code?
+     Comments Outside the Regexp, Comments Inside the Regexp, Different
+     Delimiters
+
+I'm having trouble matching over more than one line.  What's wrong?
+How can I pull out lines between two patterns that are themselves on different lines?
+I put a regular expression into $/ but it didn't work. What's wrong?
+How do I substitute case insensitively on the LHS, but preserving case on the RHS?
+How can I make `\w' match accented characters?
+How can I match a locale-smart version of `/[a-zA-Z]/'?
+How can I quote a variable to use in a regexp?
+What is `/o' really for?
+How do I use a regular expression to strip C style comments from a file?
+Can I use Perl regular expressions to match balanced text?
+What does it mean that regexps are greedy?  How can I get around it?
+How do I process each word on each line?
+How can I print out a word-frequency or line-frequency summary?
+How can I do approximate matching?
+How do I efficiently match many regular expressions at once?
+Why don't word-boundary searches with `\b' work for me?
+Why does using $&, $`, or $' slow my program down?
+What good is `\G' in a regular expression?
+Are Perl regexps DFAs or NFAs?  Are they POSIX compliant?
+What's wrong with using grep or map in a void context?
+How can I match strings with multibyte characters?
+AUTHOR AND COPYRIGHT
+perlfaq7 - Perl Language Issues ($Revision: 1.18 $, $Date: 1997/04/24 22:44:14 $)
+---------------------------------------------------------------------------------
+
+DESCRIPTION
+Can I get a BNF/yacc/RE for the Perl language?
+What are all these $@%* punctuation signs, and how do I know when to use them?
+Do I always/never have to quote my strings or use semicolons and commas?
+How do I skip some return values?
+How do I temporarily block warnings?
+What's an extension?
+Why do Perl operators have different precedence than C operators?
+How do I declare/create a structure?
+How do I create a module?
+How do I create a class?
+How can I tell if a variable is tainted?
+What's a closure?
+What is variable suicide and how can I prevent it?
+How can I pass/return a {Function, FileHandle, Array, Hash, Method, Regexp}?
+     Passing Variables and Functions, Passing Filehandles, Passing
+     Regexps, Passing Methods
+
+How do I create a static variable?
+What's the difference between dynamic and lexical (static) scoping?  Between local() and my()?
+How can I access a dynamic variable while a similarly named lexical is in scope?
+What's the difference between deep and shallow binding?
+Why doesn't "local($foo) = <FILE>;" work right?
+How do I redefine a builtin function, operator, or method?
+What's the difference between calling a function as &foo and foo()?
+How do I create a switch or case statement?
+How can I catch accesses to undefined variables/functions/methods?
+Why can't a method included in this same file be found?
+How can I find out my current package?
+How can I comment out a large block of perl code?
+AUTHOR AND COPYRIGHT
+perlfaq8 - System Interaction ($Revision: 1.21 $, $Date: 1997/04/24 22:44:19 $)
+-------------------------------------------------------------------------------
+
+DESCRIPTION
+How do I find out which operating system I'm running under?
+How come exec() doesn't return?
+How do I do fancy stuff with the keyboard/screen/mouse?
+     Keyboard, Screen, Mouse
+
+How do I ask the user for a password?
+How do I read and write the serial port?
+     lockfiles, open mode, end of line, flushing output, non-blocking
+     input
+
+How do I decode encrypted password files?
+How do I start a process in the background?
+     STDIN, STDOUT and STDERR are shared, Signals, Zombies
+
+How do I trap control characters/signals?
+How do I modify the shadow password file on a Unix system?
+How do I set the time and date?
+How can I sleep() or alarm() for under a second?
+How can I measure time under a second?
+How can I do an atexit() or setjmp()/longjmp()? (Exception handling)
+Why doesn't my sockets program work under System V (Solaris)? What does the error message "Protocol not supported" mean?
+How can I call my system's unique C functions from Perl?
+Where do I get the include files to do ioctl() or syscall()?
+Why do setuid perl scripts complain about kernel problems?
+How can I open a pipe both to and from a command?
+Why can't I get the output of a command with system()?
+How can I capture STDERR from an external command?
+Why doesn't open() return an error when a pipe open fails?
+What's wrong with using backticks in a void context?
+How can I call backticks without shell processing?
+Why can't my script read from STDIN after I gave it EOF (^D on Unix, ^Z on MS-DOS)?
+How can I convert my shell script to perl?
+Can I use perl to run a telnet or ftp session?
+How can I write expect in Perl?
+Is there a way to hide perl's command line from programs such as "ps"?
+I {changed directory, modified my environment} in a perl script.       How come the change disappeared when I exited the script?  How do I get my changes to be visible?
+     Unix, VMS
+
+How do I close a process's filehandle without waiting for it to complete?
+How do I fork a daemon process?
+How do I make my program run with sh and csh?
+How do I find out if I'm running interactively or not?
+How do I timeout a slow event?
+How do I set CPU limits?
+How do I avoid zombies on a Unix system?
+How do I use an SQL database?
+How do I make a system() exit on control-C?
+How do I open a file without blocking?
+How do I install a CPAN module?
+How do I keep my own module/library directory?
+How do I add the directory my program lives in to the module/library search path?
+How do I add a directory to my include path at runtime?
+How do I get one key from the terminal at a time, under POSIX?
+AUTHOR AND COPYRIGHT
+DESCRIPTION
+My CGI script runs from the command line but not the browser.  Can you help me fix it?
+How do I remove HTML from a string?
+How do I extract URLs?
+How do I download a file from the user's machine?  How do I open a file on another machine?
+How do I make a pop-up menu in HTML?
+How do I fetch an HTML file?
+how do I decode or create those %-encodings on the web?
+How do I redirect to another page?
+How do I put a password on my web pages?
+How do I edit my .htpasswd and .htgroup files with Perl?
+How do I make sure users can't enter values into a form that cause my CGI script to do bad things?
+How do I parse an email header?
+How do I decode a CGI form?
+How do I check a valid email address?
+How do I decode a MIME/BASE64 string?
+How do I return the user's email address?
+How do I send/read mail?
+How do I find out my hostname/domainname/IP address?
+How do I fetch a news article or the active newsgroups?
+How do I fetch/put an FTP file?
+How can I do RPC in Perl?
+AUTHOR AND COPYRIGHT
+perlfaq9 - Networking ($Revision: 1.16 $, $Date: 1997/04/23 18:12:06 $)
+-----------------------------------------------------------------------
+
+DESCRIPTION
+My CGI script runs from the command line but not the browser.  Can you help me fix it?
+How do I remove HTML from a string?
+How do I extract URLs?
+How do I download a file from the user's machine?  How do I open a file on another machine?
+How do I make a pop-up menu in HTML?
+How do I fetch an HTML file?
+how do I decode or create those %-encodings on the web?
+How do I redirect to another page?
+How do I put a password on my web pages?
+How do I edit my .htpasswd and .htgroup files with Perl?
+How do I make sure users can't enter values into a form that cause my CGI script to do bad things?
+How do I parse an email header?
+How do I decode a CGI form?
+How do I check a valid email address?
+How do I decode a MIME/BASE64 string?
+How do I return the user's email address?
+How do I send/read mail?
+How do I find out my hostname/domainname/IP address?
+How do I fetch a news article or the active newsgroups?
+How do I fetch/put an FTP file?
+How can I do RPC in Perl?
+AUTHOR AND COPYRIGHT
+perldelta - what's new for perl5.004
+------------------------------------
+
+DESCRIPTION
+Supported Environments
+Core Changes
+Compilation option: Binary compatibility with 5.003
+$PERL5OPT environment variable
+Limitations on -M, -m, and -T options
+More precise warnings
+Deprecated: Inherited `AUTOLOAD' for non-methods
+Subroutine arguments created only when they're modified
+Group vector changeable with $)
+Fixed parsing of $$<digit>, &$<digit>, etc.
+No resetting of $. on implicit close
+wantarray may return undef
+Changes to tainting checks
+     No glob() or <*>, No spawning if tainted $CDPATH, $ENV, $BASH_ENV,
+     No spawning if tainted $TERM doesn't look like a terminal name
+
+New Opcode module and revised Safe module
+Embedding improvements
+Internal change: FileHandle class based on IO::* classes
+Internal change: PerlIO abstraction interface
+New and changed syntax
+     $coderef->(PARAMS)
+
+New and changed builtin constants
+     __PACKAGE__
+
+New and changed builtin variables
+     $^E, $^H, $^M
+
+New and changed builtin functions
+     delete on slices, flock, printf and sprintf, keys as an lvalue,
+     my() in Control Structures, pack() and unpack(), sysseek(), use
+     VERSION, use Module VERSION LIST, prototype(FUNCTION), srand, $_
+     as Default, `m//gc' does not reset search position on failure,
+     `m//x' ignores whitespace before ?*+{}, nested `sub{}' closures
+     work now, formats work right on changing lexicals
+
+New builtin methods
+     isa(CLASS), can(METHOD), VERSION( [NEED] )
+
+TIEHANDLE now supported
+     TIEHANDLE classname, LIST, PRINT this, LIST, PRINTF this, LIST,
+     READ this LIST, READLINE this, GETC this, DESTROY this
+
+Malloc enhancements
+     -DDEBUGGING_MSTATS, -DEMERGENCY_SBRK, -DPACK_MALLOC,
+     -DTWO_POT_OPTIMIZE
+
+Miscellaneous efficiency enhancements
+Support for More Operating Systems
+Win32
+Plan 9
+QNX
+AmigaOS
+Pragmata
+     use autouse MODULE => qw(sub1 sub2 sub3), use blib, use blib
+     'dir', use constant NAME => VALUE, use locale, use ops, use vmsish
+
+Modules
+Required Updates
+Installation directories
+Module information summary
+Fcntl
+IO
+Math::Complex
+Math::Trig
+DB_File
+Net::Ping
+Object-oriented overrides for builtin operators
+Utility Changes
+pod2html
+     Sends converted HTML to standard output
+
+xsubpp
+     `void' XSUBs now default to returning nothing
+
+C Language API Changes
+     gv_fetchmethod and perl_call_sv, perl_eval_pv, Extended API for
+     manipulating hashes
+
+Documentation Changes
+     *Note Perldelta: perldelta, *Note Perlfaq: perlfaq,, *Note
+     Perllocale: perllocale,, *Note Perltoot: perltoot,, *Note
+     Perlapio: perlapio,, *Note Perlmodlib: perlmodlib, *Note
+     Perldebug: perldebug,, *Note Perlsec: perlsec,
+
+New Diagnostics
+     "my" variable %s masks earlier declaration in same scope, %s
+     argument is not a HASH element or slice, Allocation too large:
+     %lx, Allocation too large, Applying %s to %s will act on
+     scalar(%s), Attempt to free nonexistent shared string, Attempt to
+     use reference as lvalue in substr, Can't redefine active sort
+     subroutine %s, Can't use bareword ("%s") as %s ref while "strict
+     refs" in use, Cannot resolve method `%s' overloading `%s' in
+     package `%s', Constant subroutine %s redefined, Constant
+     subroutine %s undefined, Copy method did not return a reference,
+     Died, Exiting pseudo-block via %s, Identifier too long, Illegal
+     character %s (carriage return), Illegal switch in PERL5OPT: %s,
+     Integer overflow in hex number, Integer overflow in octal number,
+     internal error: glob failed, Invalid conversion in %s: "%s",
+     Invalid type in pack: '%s', Invalid type in unpack: '%s', Name
+     "%s::%s" used only once: possible typo, Null picture in formline,
+     Offset outside string, Out of memory!, Out of memory during
+     request for %s, panic: frexp, Possible attempt to put comments in
+     qw() list, Possible attempt to separate words with commas, Scalar
+     value @%s{%s} better written as $%s{%s}, Stub found while
+     resolving method `%s' overloading `%s' in package `%s', Too late
+     for "-T" option, untie attempted while %d inner references still
+     exist, Unrecognized character %s, Unsupported function fork, Use
+     of "$$<digit>" to mean "${$}<digit>" is deprecated, Value of %s
+     can be "0"; test with defined(), Variable "%s" may be unavailable,
+     Variable "%s" will not stay shared, Warning: something's wrong,
+     Ill-formed logical name |%s| in prime_env_iter, Got an error from
+     DosAllocMem, Malformed PERLLIB_PREFIX, PERL_SH_DIR too long,
+     Process terminated by SIG%s
+
+BUGS
+SEE ALSO
+HISTORY
+perldata - Perl data types
+--------------------------
+
+DESCRIPTION
+Variable names
+Context
+Scalar values
+Scalar value constructors
+List value constructors
+Typeglobs and Filehandles
+perlsyn - Perl syntax
+---------------------
+
+DESCRIPTION
+Declarations
+Simple statements
+Compound statements
+Loop Control
+For Loops
+Foreach Loops
+Basic BLOCKs and Switch Statements
+Goto
+PODs: Embedded Documentation
+Plain Old Comments (Not!)
+perlop - Perl operators and precedence
+--------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+Terms and List Operators (Leftward)
+The Arrow Operator
+Auto-increment and Auto-decrement
+Exponentiation
+Symbolic Unary Operators
+Binding Operators
+Multiplicative Operators
+Additive Operators
+Shift Operators
+Named Unary Operators
+Relational Operators
+Equality Operators
+Bitwise And
+Bitwise Or and Exclusive Or
+C-style Logical And
+C-style Logical Or
+Range Operator
+Conditional Operator
+Assignment Operators
+Comma Operator
+List Operators (Rightward)
+Logical Not
+Logical And
+Logical or and Exclusive Or
+C Operators Missing From Perl
+     unary &, unary *, (TYPE)
+
+Quote and Quote-like Operators
+Regexp Quote-Like Operators
+     ?PATTERN?, m/PATTERN/gimosx, /PATTERN/gimosx, q/STRING/,
+     `'STRING'', qq/STRING/, "STRING", qx/STRING/, `STRING`, qw/STRING/,
+     s/PATTERN/REPLACEMENT/egimosx, tr/SEARCHLIST/REPLACEMENTLIST/cds,
+     y/SEARCHLIST/REPLACEMENTLIST/cds
+
+I/O Operators
+Constant Folding
+Integer Arithmetic
+Floating-point Arithmetic
+perlre - Perl regular expressions
+---------------------------------
+
+DESCRIPTION
+     i, m, s, x
+
+Regular Expressions
+     (?#text), (?:regexp), (?=regexp), (?!regexp), (?imsx)
+
+Backtracking
+Version 8 Regular Expressions
+WARNING on \1 vs $1
+SEE ALSO
+perlrun - how to execute the Perl interpreter
+---------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+#! and quoting on non-Unix systems
+     OS/2, MS-DOS, Win95/NT, Macintosh
+
+Switches
+     -0[digits], -a, -c, -d, -d:foo, -Dnumber, -Dlist, -e commandline,
+     -Fpattern, -h, -i[extension], -Idirectory, -l[octnum],
+     -m[-]module, -M[-]module, -M[-]'module ...',
+     -[mM][-]module=arg[,arg]..., -n, -p, -P, -s, -S, -T, -u, -U, -v,
+     -V, -V:name, -w, -x directory
+
+ENVIRONMENT
+     HOME, LOGDIR, PATH, PERL5LIB, PERL5OPT, PERLLIB, PERL5DB,
+     PERL_DEBUG_MSTATS, PERL_DESTRUCT_LEVEL
+
+perlfunc - Perl builtin functions
+---------------------------------
+
+DESCRIPTION
+          I<THERE IS NO GENERAL RULE FOR CONVERTING A LIST INTO A SCALAR!>
+
+Perl Functions by Category
+     Functions for SCALARs or strings, Regular expressions and pattern
+     matching, Numeric functions, Functions for real @ARRAYs, Functions
+     for list data, Functions for real %HASHes, Input and output
+     functions, Functions for fixed length data or records, Functions
+     for filehandles, files, or directories, Keywords related to the
+     control flow of your perl program, Keywords related to scoping,
+     Miscellaneous functions, Functions for processes and process
+     groups, Keywords related to perl modules, Keywords related to
+     classes and object-orientedness, Low-level socket functions,
+     System V interprocess communication functions, Fetching user and
+     group info, Fetching network info, Time-related functions,
+     Functions new in perl5, Functions obsoleted in perl5
+
+Alphabetical Listing of Perl Functions
+     -X FILEHANDLE, -X EXPR, -X, abs VALUE, abs, accept
+     NEWSOCKET,GENERICSOCKET, alarm SECONDS, alarm, atan2 Y,X, bind
+     SOCKET,NAME, binmode FILEHANDLE, bless REF,CLASSNAME, bless REF,
+     caller EXPR, caller, chdir EXPR, chmod LIST, chomp VARIABLE, chomp
+     LIST, chomp, chop VARIABLE, chop LIST, chop, chown LIST, chr
+     NUMBER, chr, chroot FILENAME, chroot, close FILEHANDLE, closedir
+     DIRHANDLE, connect SOCKET,NAME, continue BLOCK, cos EXPR, crypt
+     PLAINTEXT,SALT, dbmclose HASH, dbmopen HASH,DBNAME,MODE, defined
+     EXPR, defined, delete EXPR, die LIST, do BLOCK, do
+     SUBROUTINE(LIST), do EXPR, dump LABEL, each HASH, eof FILEHANDLE,
+     eof (), eof, eval EXPR, eval BLOCK, exec LIST, exists EXPR, exit
+     EXPR, exp EXPR, exp, fcntl FILEHANDLE,FUNCTION,SCALAR, fileno
+     FILEHANDLE, flock FILEHANDLE,OPERATION, fork, format, formline
+     PICTURE,LIST, getc FILEHANDLE, getc, getlogin, getpeername SOCKET,
+     getpgrp PID, getppid, getpriority WHICH,WHO, getpwnam NAME,
+     getgrnam NAME, gethostbyname NAME, getnetbyname NAME,
+     getprotobyname NAME, getpwuid UID, getgrgid GID, getservbyname
+     NAME,PROTO, gethostbyaddr ADDR,ADDRTYPE, getnetbyaddr
+     ADDR,ADDRTYPE, getprotobynumber NUMBER, getservbyport PORT,PROTO,
+     getpwent, getgrent, gethostent, getnetent, getprotoent,
+     getservent, setpwent, setgrent, sethostent STAYOPEN, setnetent
+     STAYOPEN, setprotoent STAYOPEN, setservent STAYOPEN, endpwent,
+     endgrent, endhostent, endnetent, endprotoent, endservent,
+     getsockname SOCKET, getsockopt SOCKET,LEVEL,OPTNAME, glob EXPR,
+     glob, gmtime EXPR, goto LABEL, goto EXPR, goto &NAME, grep BLOCK
+     LIST, grep EXPR,LIST, hex EXPR, hex, import, index
+     STR,SUBSTR,POSITION, index STR,SUBSTR, int EXPR, int, ioctl
+     FILEHANDLE,FUNCTION,SCALAR, join EXPR,LIST, keys HASH, kill LIST,
+     last LABEL, last, lc EXPR, lc, lcfirst EXPR, lcfirst, length EXPR,
+     length, link OLDFILE,NEWFILE, listen SOCKET,QUEUESIZE, local EXPR,
+     localtime EXPR, log EXPR, log, lstat FILEHANDLE, lstat EXPR,
+     lstat, m//, map BLOCK LIST, map EXPR,LIST, mkdir FILENAME,MODE,
+     msgctl ID,CMD,ARG, msgget KEY,FLAGS, msgsnd ID,MSG,FLAGS, msgrcv
+     ID,VAR,SIZE,TYPE,FLAGS, my EXPR, next LABEL, next, no Module LIST,
+     oct EXPR, oct, open FILEHANDLE,EXPR, open FILEHANDLE, opendir
+     DIRHANDLE,EXPR, ord EXPR, ord, pack TEMPLATE,LIST, package
+     NAMESPACE, pipe READHANDLE,WRITEHANDLE, pop ARRAY, pop, pos
+     SCALAR, pos, print FILEHANDLE LIST, print LIST, print, printf
+     FILEHANDLE FORMAT, LIST, printf FORMAT, LIST, prototype FUNCTION,
+     push ARRAY,LIST, q/STRING/, qq/STRING/, qx/STRING/, qw/STRING/,
+     quotemeta EXPR, quotemeta, rand EXPR, rand, read
+     FILEHANDLE,SCALAR,LENGTH,OFFSET, read FILEHANDLE,SCALAR,LENGTH,
+     readdir DIRHANDLE, readlink EXPR, readlink, recv
+     SOCKET,SCALAR,LEN,FLAGS, redo LABEL, redo, ref EXPR, ref, rename
+     OLDNAME,NEWNAME, require EXPR, require, reset EXPR, reset, return
+     EXPR, return, reverse LIST, rewinddir DIRHANDLE, rindex
+     STR,SUBSTR,POSITION, rindex STR,SUBSTR, rmdir FILENAME, rmdir,
+     s///, scalar EXPR, seek FILEHANDLE,POSITION,WHENCE, seekdir
+     DIRHANDLE,POS, select FILEHANDLE, select, select
+     RBITS,WBITS,EBITS,TIMEOUT, semctl ID,SEMNUM,CMD,ARG, semget
+     KEY,NSEMS,FLAGS, semop KEY,OPSTRING, send SOCKET,MSG,FLAGS,TO,
+     send SOCKET,MSG,FLAGS, setpgrp PID,PGRP, setpriority
+     WHICH,WHO,PRIORITY, setsockopt SOCKET,LEVEL,OPTNAME,OPTVAL, shift
+     ARRAY, shift, shmctl ID,CMD,ARG, shmget KEY,SIZE,FLAGS, shmread
+     ID,VAR,POS,SIZE, shmwrite ID,STRING,POS,SIZE, shutdown SOCKET,HOW,
+     sin EXPR, sin, sleep EXPR, sleep, socket
+     SOCKET,DOMAIN,TYPE,PROTOCOL, socketpair
+     SOCKET1,SOCKET2,DOMAIN,TYPE,PROTOCOL, sort SUBNAME LIST, sort
+     BLOCK LIST, sort LIST, splice ARRAY,OFFSET,LENGTH,LIST, splice
+     ARRAY,OFFSET,LENGTH, splice ARRAY,OFFSET, split
+     /PATTERN/,EXPR,LIMIT, split /PATTERN/,EXPR, split /PATTERN/,
+     split, sprintf FORMAT, LIST, sqrt EXPR, sqrt, srand EXPR, srand,
+     stat FILEHANDLE, stat EXPR, stat, study SCALAR, study, sub BLOCK,
+     sub NAME, sub NAME BLOCK, substr EXPR,OFFSET,LEN, substr
+     EXPR,OFFSET, symlink OLDFILE,NEWFILE, syscall LIST, sysopen
+     FILEHANDLE,FILENAME,MODE, sysopen FILEHANDLE,FILENAME,MODE,PERMS,
+     sysread FILEHANDLE,SCALAR,LENGTH,OFFSET, sysread
+     FILEHANDLE,SCALAR,LENGTH, sysseek FILEHANDLE,POSITION,WHENCE,
+     system LIST, syswrite FILEHANDLE,SCALAR,LENGTH,OFFSET, syswrite
+     FILEHANDLE,SCALAR,LENGTH, tell FILEHANDLE, tell, telldir
+     DIRHANDLE, tie VARIABLE,CLASSNAME,LIST, tied VARIABLE, time,
+     times, tr///, truncate FILEHANDLE,LENGTH, truncate EXPR,LENGTH, uc
+     EXPR, uc, ucfirst EXPR, ucfirst, umask EXPR, umask, undef EXPR,
+     undef, unlink LIST, unlink, unpack TEMPLATE,EXPR, untie VARIABLE,
+     unshift ARRAY,LIST, use Module LIST, use Module, use Module
+     VERSION LIST, use VERSION, utime LIST, values HASH, vec
+     EXPR,OFFSET,BITS, wait, waitpid PID,FLAGS, wantarray, warn LIST,
+     write FILEHANDLE, write EXPR, write, y///
+
+perlvar - Perl predefined variables
+-----------------------------------
+
+DESCRIPTION
+Predefined Names
+     $ARG, $_, $<*digit*>, $MATCH, $&, $PREMATCH, $`, $POSTMATCH, $',
+     $LAST_PAREN_MATCH, $+, $MULTILINE_MATCHING, $*, input_line_number
+     HANDLE EXPR, $INPUT_LINE_NUMBER, $NR, $, input_record_separator
+     HANDLE EXPR, $INPUT_RECORD_SEPARATOR, $RS, $/, autoflush HANDLE
+     EXPR, $OUTPUT_AUTOFLUSH, $|, output_field_separator HANDLE EXPR,
+     $OUTPUT_FIELD_SEPARATOR, $OFS, $,, output_record_separator HANDLE
+     EXPR, $OUTPUT_RECORD_SEPARATOR, $ORS, $\, $LIST_SEPARATOR, $",
+     $SUBSCRIPT_SEPARATOR, $SUBSEP, $;, $OFMT, $#, format_page_number
+     HANDLE EXPR, $FORMAT_PAGE_NUMBER, $%, format_lines_per_page HANDLE
+     EXPR, $FORMAT_LINES_PER_PAGE, $=, format_lines_left HANDLE EXPR,
+     $FORMAT_LINES_LEFT, $-, format_name HANDLE EXPR, $FORMAT_NAME, $~,
+     format_top_name HANDLE EXPR, $FORMAT_TOP_NAME, $^,
+     format_line_break_characters HANDLE EXPR,
+     $FORMAT_LINE_BREAK_CHARACTERS, $:, format_formfeed HANDLE EXPR,
+     $FORMAT_FORMFEED, $^L, $ACCUMULATOR, $^A, $CHILD_ERROR, $?,
+     $OS_ERROR, $ERRNO, $!, $EXTENDED_OS_ERROR, $^E, $EVAL_ERROR, $@,
+     $PROCESS_ID, $PID, $$, $REAL_USER_ID, $UID, $<,
+     $EFFECTIVE_USER_ID, $EUID, $>, $REAL_GROUP_ID, $GID, $(,
+     $EFFECTIVE_GROUP_ID, $EGID, $), $PROGRAM_NAME, $0, $[,
+     $PERL_VERSION, $], $DEBUGGING, $^D, $SYSTEM_FD_MAX, $^F, $^H,
+     $INPLACE_EDIT, $^I, $OSNAME, $^O, $PERLDB, $^P, $BASETIME, $^T,
+     $WARNING, $^W, $EXECUTABLE_NAME, $^X, $ARGV, @ARGV, @INC, %INC,
+     $ENV{expr}, $SIG{expr}, $^M
+
+perlsub - Perl subroutines
+--------------------------
+
+SYNOPSIS
+DESCRIPTION
+Private Variables via my()
+Temporary Values via local()
+Passing Symbol Table Entries (typeglobs)
+Pass by Reference
+Prototypes
+Constant Functions
+Overriding Builtin Functions
+Autoloading
+SEE ALSO
+perlmod - Perl modules (packages and symbol tables)
+---------------------------------------------------
+
+DESCRIPTION
+Packages
+Symbol Tables
+Package Constructors and Destructors
+Perl Classes
+Perl Modules
+SEE ALSO
+perlmodlib - constructing new Perl modules and finding
+------------------------------------------------------
+
+existing ones
+DESCRIPTION
+THE PERL MODULE LIBRARY
+Pragmatic Modules
+     use autouse MODULE => qw(sub1 sub2 sub3), blib, diagnostics,
+     integer, less, lib, locale, ops, overload, sigtrap, strict, subs,
+     vmsish, vars
+
+Standard Modules
+     AnyDBM_File, AutoLoader, AutoSplit, Benchmark, CPAN,
+     CPAN::FirstTime, CPAN::Nox, Carp, Class::Struct, Config, Cwd,
+     DB_File, Devel::SelfStubber, DirHandle, DynaLoader, English, Env,
+     Exporter, ExtUtils::Embed, ExtUtils::Install, ExtUtils::Liblist,
+     ExtUtils::MM_OS2, ExtUtils::MM_Unix, ExtUtils::MM_VMS,
+     ExtUtils::MakeMaker, ExtUtils::Manifest, ExtUtils::Mkbootstrap,
+     ExtUtils::Mksymlists, ExtUtils::testlib, Fcntl, File::Basename,
+     File::CheckTree, File::Compare, File::Copy, File::Find,
+     File::Path, File::stat, FileCache, FileHandle, FindBin, GDBM_File,
+     Getopt::Long, Getopt::Std, I18N::Collate, IO, IO::File, IO::Handle,
+     IO::Pipe, IO::Seekable, IO::Select, IO::Socket, IPC::Open2,
+     IPC::Open3, Math::BigFloat, Math::BigInt, Math::Complex,
+     Math::Trig, NDBM_File, Net::Ping, Net::hostent, Net::netent,
+     Net::protoent, Net::servent, Opcode, Pod::Text, POSIX, SDBM_File,
+     Safe, Search::Dict, SelectSaver, SelfLoader, Shell, Socket,
+     Symbol, Sys::Hostname, Sys::Syslog, Term::Cap, Term::Complete,
+     Term::ReadLine, Test::Harness, Text::Abbrev, Text::ParseWords,
+     Text::Soundex, Text::Tabs, Text::Wrap, Tie::Hash, Tie::RefHash,
+     Tie::Scalar, Tie::SubstrHash, Time::Local, Time::gmtime,
+     Time::localtime, Time::tm, UNIVERSAL, User::grent, User::pwent
+
+Extension Modules
+CPAN
+     Language Extensions and Documentation Tools, Development Support,
+     Operating System Interfaces, Networking, Device Control (modems)
+     and InterProcess Communication, Data Types and Data Type
+     Utilities, Database Interfaces, User Interfaces, Interfaces to /
+     Emulations of Other Programming Languages, File Names, File
+     Systems and File Locking (see also File Handles), String
+     Processing, Language Text Processing, Parsing, and Searching,
+     Option, Argument, Parameter, and Configuration File Processing,
+     Internationalization and Locale, Authentication, Security, and
+     Encryption, World Wide Web, HTML, HTTP, CGI, MIME, Server and
+     Daemon Utilities, Archiving and Compression, Images, Pixmap and
+     Bitmap Manipulation, Drawing, and Graphing, Mail and Usenet News,
+     Control Flow Utilities (callbacks and exceptions etc), File Handle
+     and Input/Output Stream Utilities, Miscellaneous Modules, Africa,
+     Asia, Australasia, Europe, North America, South America
+
+Modules: Creation, Use, and Abuse
+Guidelines for Module Creation
+     Do similar modules already exist in some form?, Try to design the
+     new module to be easy to extend and reuse, Some simple style
+     guidelines, Select what to export, Select a name for the module,
+     Have you got it right?, README and other Additional Files, A
+     description of the module/package/extension etc, A copyright
+     notice - see below, Prerequisites - what else you may need to
+     have, How to build it - possible changes to Makefile.PL etc, How
+     to install it, Recent changes in this release, especially
+     incompatibilities, Changes / enhancements you plan to make in the
+     future, Adding a Copyright Notice, Give the module a
+     version/issue/release number, How to release and distribute a
+     module, Take care when changing a released module
+
+Guidelines for Converting Perl 4 Library Scripts into Modules
+     There is no requirement to convert anything, Consider the
+     implications, Make the most of the opportunity, The pl2pm utility
+     will get you started, Adds the standard Module prologue lines,
+     Converts package specifiers from ' to ::, Converts die(...) to
+     croak(...), Several other minor changes
+
+Guidelines for Reusing Application Code
+     Complete applications rarely belong in the Perl Module Library,
+     Many applications contain some perl code which could be reused,
+     Break-out the reusable code into one or more separate module
+     files, Take the opportunity to reconsider and redesign the
+     interfaces, In some cases the 'application' can then be reduced to
+     a small
+
+NOTE
+perlform - Perl formats
+-----------------------
+
+DESCRIPTION
+Format Variables
+NOTES
+Footers
+Accessing Formatting Internals
+WARNINGS
+perllocale - Perl locale handling (internationalization and localization)
+-------------------------------------------------------------------------
+
+DESCRIPTION
+PREPARING TO USE LOCALES
+USING LOCALES
+The use locale pragma
+The setlocale function
+The localeconv function
+LOCALE CATEGORIES
+Category LC_COLLATE: Collation
+Category LC_CTYPE: Character Types
+Category LC_NUMERIC: Numeric Formatting
+Category LC_MONETARY: Formatting of monetary amounts
+LC_TIME
+Other categories
+SECURITY
+     *Comparison operators* (`lt', `le', `ge', `gt' and `cmp'):,
+     *Case-mapping interpolation* (with `\l', `\L', `\u' or <\U>),
+     *Matching operator* (m//):, *Substitution operator* (s///):,
+     *In-memory formatting function* (sprintf()):, *Output formatting
+     functions* (printf() and write()):, *Case-mapping functions* (lc(),
+     lcfirst(), uc(), ucfirst()):, *POSIX locale-dependent functions*
+     (localeconv(), strcoll(),strftime(), strxfrm()):, *POSIX character
+     class tests* (isalnum(), isalpha(), isdigit(),isgraph(),
+     islower(), isprint(), ispunct(), isspace(), isupper(), isxdigit()):
+
+ENVIRONMENT
+     PERL_BADLANG, LC_ALL, LC_CTYPE, LC_COLLATE, LC_MONETARY,
+     LC_NUMERIC, LC_TIME, LANG
+
+NOTES
+Backward compatibility
+I18N:Collate obsolete
+Sort speed and memory use impacts
+write() and LC_NUMERIC
+Freely available locale definitions
+I18n and l10n
+An imperfect standard
+BUGS
+Broken systems
+SEE ALSO
+HISTORY
+perlref - Perl references and nested data structures
+----------------------------------------------------
+
+DESCRIPTION
+Symbolic references
+Not-so-symbolic references
+WARNING
+SEE ALSO
+perldsc - Perl Data Structures Cookbook
+---------------------------------------
+
+DESCRIPTION
+     arrays of arrays, hashes of arrays, arrays of hashes, hashes of
+     hashes, more elaborate constructs
+
+REFERENCES
+COMMON MISTAKES
+CAVEAT ON PRECEDENCE
+WHY YOU SHOULD ALWAYS `use strict'
+DEBUGGING
+CODE EXAMPLES
+LISTS OF LISTS
+Declaration of a LIST OF LISTS
+Generation of a LIST OF LISTS
+Access and Printing of a LIST OF LISTS
+HASHES OF LISTS
+Declaration of a HASH OF LISTS
+Generation of a HASH OF LISTS
+Access and Printing of a HASH OF LISTS
+LISTS OF HASHES
+Declaration of a LIST OF HASHES
+Generation of a LIST OF HASHES
+Access and Printing of a LIST OF HASHES
+HASHES OF HASHES
+Declaration of a HASH OF HASHES
+Generation of a HASH OF HASHES
+Access and Printing of a HASH OF HASHES
+MORE ELABORATE RECORDS
+Declaration of MORE ELABORATE RECORDS
+Declaration of a HASH OF COMPLEX RECORDS
+Generation of a HASH OF COMPLEX RECORDS
+Database Ties
+SEE ALSO
+AUTHOR
+perllol, perlLoL - Manipulating Lists of Lists in Perl
+------------------------------------------------------
+
+DESCRIPTION
+Declaration and Access of Lists of Lists
+Growing Your Own
+Access and Printing
+Slices
+SEE ALSO
+AUTHOR
+perltoot - Tom's object-oriented tutorial for perl
+--------------------------------------------------
+
+DESCRIPTION
+Creating a Class
+Object Representation
+Class Interface
+Constructors and Instance Methods
+Planning for the Future: Better Constructors
+Destructors
+Other Object Methods
+Class Data
+Accessing Class Data
+Debugging Methods
+Class Destructors
+Documenting the Interface
+Aggregation
+Inheritance
+Overridden Methods
+Multiple Inheritance
+UNIVERSAL: The Root of All Objects
+Alternate Object Representations
+Arrays as Objects
+Closures as Objects
+AUTOLOAD: Proxy Methods
+Autoloaded Data Methods
+Inherited Autoloaded Data Methods
+Metaclassical Tools
+Class::Struct
+Data Members as Variables
+NOTES
+Object Terminology
+SEE ALSO
+COPYRIGHT
+Acknowledgments
+perlobj - Perl objects
+----------------------
+
+DESCRIPTION
+An Object is Simply a Reference
+A Class is Simply a Package
+A Method is Simply a Subroutine
+Method Invocation
+Default UNIVERSAL methods
+     isa(CLASS), can(METHOD), VERSION( [NEED] )
+
+Destructors
+WARNING
+Summary
+Two-Phased Garbage Collection
+SEE ALSO
+perltie - how to hide an object class in a simple variable
+----------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+Tying Scalars
+     TIESCALAR classname, LIST, FETCH this, STORE this, value, DESTROY
+     this
+
+Tying Arrays
+     TIEARRAY classname, LIST, FETCH this, index, STORE this, index,
+     value, DESTROY this
+
+Tying Hashes
+     USER, HOME, CLOBBER, LIST, TIEHASH classname, LIST, FETCH this,
+     key, STORE this, key, value, DELETE this, key, CLEAR this, EXISTS
+     this, key, FIRSTKEY this, NEXTKEY this, lastkey, DESTROY this
+
+Tying FileHandles
+     TIEHANDLE classname, LIST, PRINT this, LIST, PRINTF this, LIST,
+     READ this LIST, READLINE this, GETC this, DESTROY this
+
+The untie Gotcha
+SEE ALSO
+BUGS
+AUTHOR
+perlbot - Bag'o Object Tricks (the BOT)
+---------------------------------------
+
+DESCRIPTION
+OO SCALING TIPS
+INSTANCE VARIABLES
+SCALAR INSTANCE VARIABLES
+INSTANCE VARIABLE INHERITANCE
+OBJECT RELATIONSHIPS
+OVERRIDING SUPERCLASS METHODS
+USING RELATIONSHIP WITH SDBM
+THINKING OF CODE REUSE
+CLASS CONTEXT AND THE OBJECT
+INHERITING A CONSTRUCTOR
+DELEGATION
+perlipc - Perl interprocess communication (signals, fifos, pipes, safe subprocesses, sockets, and semaphores)
+-------------------------------------------------------------------------------------------------------------
+
+DESCRIPTION
+Signals
+Named Pipes
+Using open() for IPC
+Filehandles
+Background Processes
+Complete Dissociation of Child from Parent
+Safe Pipe Opens
+Bidirectional Communication with Another Process
+Sockets: Client/Server Communication
+Internet TCP Clients and Servers
+Unix-Domain TCP Clients and Servers
+TCP Clients with IO::Socket
+A Simple Client
+     Proto, `PeerAddr', `PeerPort'
+
+A Webget Client
+Interactive Client with IO::Socket
+TCP Servers with IO::Socket
+     Proto, LocalPort, Listen, Reuse
+
+UDP: Message Passing
+SysV IPC
+NOTES
+BUGS
+AUTHOR
+SEE ALSO
+perldebug - Perl debugging
+--------------------------
+
+DESCRIPTION
+The Perl Debugger
+Debugger Commands
+     h [command], p expr, x expr, V [pkg [vars]], X [vars], T, s
+     [expr], n [expr], <CR>, c [line|sub], l, l min+incr, l min-max, l
+     line, l subname, -, w [line], f filename, /pattern/, ?pattern?, L,
+     S [[!]pattern], t, t expr, b [line] [condition], b subname
+     [condition], b postpone subname [condition], b load filename, b
+     compile subname, d [line], D, a [line] command, A, O [opt[=val]]
+     [opt"val"] [opt?].., `recallCommand', `ShellBang', `pager',
+     `tkRunning', `signalLevel', `warnLevel', `dieLevel', `AutoTrace',
+     `LineInfo', `inhibit_exit', `PrintRet', `ornaments', `frame',
+     `maxTraceLen', `arrayDepth', `hashDepth', `compactDump',
+     `veryCompact', `globPrint', `DumpDBFiles', `DumpPackages',
+     `quote', `HighBit', `undefPrint', `UsageOnly', `TTY', `noTTY',
+     `ReadLine', `NonStop', < [ command ], << command, > command, >>
+     command, { [ command ], {{ command, ! number, !  -number, !
+     pattern, !! cmd, H -number, q or ^D, R, |dbcmd, ||dbcmd, = [alias
+     value], command, m expr, m package
+
+Debugger input/output
+     Prompt, Multiline commands, Stack backtrace, Listing, Frame listing
+
+Debugging compile-time statements
+Debugger Customization
+Readline Support
+Editor Support for Debugging
+The Perl Profiler
+Debugger support in perl
+Debugger Internals
+Other resources
+BUGS
+perldiag - various Perl diagnostics
+-----------------------------------
+
+DESCRIPTION
+perlsec - Perl security
+-----------------------
+
+DESCRIPTION
+Laundering and Detecting Tainted Data
+Switches On the "#!" Line
+Cleaning Up Your Path
+Security Bugs
+Protecting Your Programs
+perltrap - Perl traps for the unwary
+------------------------------------
+
+DESCRIPTION
+Awk Traps
+C Traps
+Sed Traps
+Shell Traps
+Perl Traps
+Perl4 to Perl5 Traps
+     Discontinuance, Deprecation, and BugFix traps, Parsing Traps,
+     Numerical Traps, General data type traps, Context Traps - scalar,
+     list contexts, Precedence Traps, General Regular Expression Traps
+     using s///, etc, Subroutine, Signal, Sorting Traps, OS Traps, DBM
+     Traps, Unclassified Traps
+
+Discontinuance, Deprecation, and BugFix traps
+     Discontinuance, Deprecation, BugFix, Discontinuance,
+     Discontinuance, Discontinuance, BugFix, Discontinuance,
+     Discontinuance, BugFix, Discontinuance, Discontinuance,
+     Deprecation, Discontinuance
+
+Parsing Traps
+     Parsing, Parsing, Parsing
+
+Numerical Traps
+     Numerical, Numerical, Numerical
+
+General data type traps
+     (Arrays), (Arrays), (Hashes), (Globs), (Scalar String),
+     (Constants), (Scalars), (Variable Suicide)
+
+Context Traps - scalar, list contexts
+     (list context), (scalar context), (scalar context), (list, builtin)
+
+Precedence Traps
+     Precedence, Precedence, Precedence, Precedence, Precedence,
+     Precedence, Precedence
+
+General Regular Expression Traps using s///, etc.
+     Regular Expression, Regular Expression, Regular Expression, Regular
+     Expression, Regular Expression, Regular Expression, Regular
+     Expression, Regular Expression, Regular Expression
+
+Subroutine, Signal, Sorting Traps
+     (Signals), (Sort Subroutine), warn() won't let you specify a
+     filehandle
+
+OS Traps
+     (SysV), (SysV)
+
+Interpolation Traps
+     Interpolation, Interpolation, Interpolation, Interpolation,
+     Interpolation, Interpolation, Interpolation, Interpolation,
+     Interpolation
+
+DBM Traps
+     DBM, DBM
+
+Unclassified Traps
+     Unclassified
+
+perlstyle - Perl style guide
+----------------------------
+
+DESCRIPTION
+perlpod - plain old documentation
+---------------------------------
+
+DESCRIPTION
+Embedding Pods in Perl Modules
+Common Pod Pitfalls
+SEE ALSO
+AUTHOR
+perlbook - Perl book information
+--------------------------------
+
+DESCRIPTION
+perlembed - how to embed perl in your C program
+-----------------------------------------------
+
+DESCRIPTION
+PREAMBLE
+     *Use C from Perl?*, *Use a Unix program from Perl?*, *Use Perl from
+     Perl?*, *Use C from C?*, *Use Perl from C?*
+
+ROADMAP
+Compiling your C program
+Adding a Perl interpreter to your C program
+Calling a Perl subroutine from your C program
+Evaluating a Perl statement from your C program
+Performing Perl pattern matches and substitutions from your C program
+Fiddling with the Perl stack from your C program
+Maintaining a persistent interpreter
+Maintaining multiple interpreter instances
+Using Perl modules, which themselves use C libraries, from your C program
+MORAL
+AUTHOR
+COPYRIGHT
+perlapio - perl's IO abstraction interface.
+-------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+     *PerlIO **, *PerlIO_stdin()*, *PerlIO_stdout()*, *PerlIO_stderr()*,
+     *PerlIO_open(path, mode)*, *PerlIO_fdopen(fd,mode)*,
+     *PerlIO_printf(f,fmt,...)*, *PerlIO_vprintf(f,fmt,a)*,
+     PerlIO_stdoutf(fmt,...), *PerlIO_read(f,buf,count)*,
+     *PerlIO_write(f,buf,count)*, PerlIO_close(f), *PerlIO_puts(s,f)*,
+     *PerlIO_putc(c,f)*, PerlIO_ungetc(c,f), PerlIO_getc(f),
+     PerlIO_eof(f), PerlIO_error(f), PerlIO_fileno(f),
+     PerlIO_clearerr(f), PerlIO_flush(f), PerlIO_tell(f),
+     PerlIO_seek(f,o,w), *PerlIO_getpos(f,p)*, *PerlIO_setpos(f,p)*,
+     PerlIO_rewind(f), PerlIO_tmpfile()
+
+Co-existence with stdio
+     PerlIO_importFILE(f,flags), PerlIO_exportFILE(f,flags),
+     PerlIO_findFILE(f), PerlIO_releaseFILE(p,f), PerlIO_setlinebuf(f),
+     PerlIO_has_cntptr(f), PerlIO_get_ptr(f), PerlIO_get_cnt(f),
+     PerlIO_canset_cnt(f), PerlIO_fast_gets(f),
+     PerlIO_set_ptrcnt(f,p,c), PerlIO_set_cnt(f,c), PerlIO_has_base(f),
+     PerlIO_get_base(f), PerlIO_get_bufsiz(f)
+
+perlxs - XS language reference manual
+-------------------------------------
+
+DESCRIPTION
+Introduction
+On The Road
+The Anatomy of an XSUB
+The Argument Stack
+The RETVAL Variable
+The MODULE Keyword
+The PACKAGE Keyword
+The PREFIX Keyword
+The OUTPUT: Keyword
+The CODE: Keyword
+The INIT: Keyword
+The NO_INIT Keyword
+Initializing Function Parameters
+Default Parameter Values
+The PREINIT: Keyword
+The SCOPE: Keyword
+The INPUT: Keyword
+Variable-length Parameter Lists
+The PPCODE: Keyword
+Returning Undef And Empty Lists
+The REQUIRE: Keyword
+The CLEANUP: Keyword
+The BOOT: Keyword
+The VERSIONCHECK: Keyword
+The PROTOTYPES: Keyword
+The PROTOTYPE: Keyword
+The ALIAS: Keyword
+The INCLUDE: Keyword
+The CASE: Keyword
+The & Unary Operator
+Inserting Comments and C Preprocessor Directives
+Using XS With C++
+Interface Strategy
+Perl Objects And C Structures
+The Typemap
+EXAMPLES
+XS VERSION
+AUTHOR
+perlxstut, perlXStut - Tutorial for XSUBs
+-----------------------------------------
+
+DESCRIPTION
+VERSION CAVEAT
+DYNAMIC VERSUS STATIC
+EXAMPLE 1
+EXAMPLE 2
+WHAT HAS GONE ON?
+WRITING GOOD TEST SCRIPTS
+EXAMPLE 3
+WHAT'S NEW HERE?
+INPUT AND OUTPUT PARAMETERS
+THE XSUBPP COMPILER
+THE TYPEMAP FILE
+WARNING
+EXAMPLE 4
+WHAT HAS HAPPENED HERE?
+SPECIFYING ARGUMENTS TO XSUBPP
+THE ARGUMENT STACK
+EXTENDING YOUR EXTENSION
+DOCUMENTING YOUR EXTENSION
+INSTALLING YOUR EXTENSION
+SEE ALSO
+Author
+Last Changed
+perlguts - Perl's Internal Functions
+------------------------------------
+
+DESCRIPTION
+Variables
+Datatypes
+What is an "IV"?
+Working with SVs
+What's Really Stored in an SV?
+Working with AVs
+Working with HVs
+Hash API Extensions
+References
+Blessed References and Class Objects
+Creating New Variables
+Reference Counts and Mortality
+Stashes and Globs
+Double-Typed SVs
+Magic Variables
+Assigning Magic
+Magic Virtual Tables
+Finding Magic
+Subroutines
+XSUBs and the Argument Stack
+Calling Perl Routines from within C Programs
+Memory Allocation
+PerlIO
+Putting a C value on Perl stack
+Scratchpads
+Scratchpads and recursion
+Compiled code
+Code tree
+Examining the tree
+Compile pass 1: check routines
+Compile pass 1a: constant folding
+Compile pass 2: context propagation
+Compile pass 3: peephole optimization
+API LISTING
+     AvFILL, av_clear, av_extend, av_fetch, av_len, av_make, av_pop,
+     av_push, av_shift, av_store, av_undef, av_unshift, CLASS, Copy,
+     croak, CvSTASH, DBsingle, DBsub, DBtrace, dMARK, dORIGMARK,
+     dowarn, dSP, dXSARGS, dXSI32, dXSI32, ENTER, EXTEND, FREETMPS,
+     G_ARRAY, G_DISCARD, G_EVAL, GIMME, GIMME_V, G_NOARGS, G_SCALAR,
+     G_VOID, gv_fetchmeth, gv_fetchmethod, gv_fetchmethod_autoload,
+     gv_stashpv, gv_stashsv, GvSV, HEf_SVKEY, HeHASH, HeKEY, HeKLEN,
+     HePV, HeSVKEY, HeSVKEY_force, HeSVKEY_set, HeVAL, hv_clear,
+     hv_delayfree_ent, hv_delete, hv_delete_ent, hv_exists,
+     hv_exists_ent, hv_fetch, hv_fetch_ent, hv_free_ent, hv_iterinit,
+     hv_iterkey, hv_iterkeysv, hv_iternext, hv_iternextsv, hv_iterval,
+     hv_magic, HvNAME, hv_store, hv_store_ent, hv_undef, isALNUM,
+     isALPHA, isDIGIT, isLOWER, isSPACE, isUPPER, items, ix, LEAVE,
+     MARK, mg_clear, mg_copy, mg_find, mg_free, mg_get, mg_len,
+     mg_magical, mg_set, Move, na, New, Newc, Newz, newAV, newHV,
+     newRV_inc, newRV_noinc, newSV, newSViv, newSVnv, newSVpv, newSVrv,
+     newSVsv, newXS, newXSproto, Nullav, Nullch, Nullcv, Nullhv, Nullsv,
+     ORIGMARK, perl_alloc, perl_call_argv, perl_call_method,
+     perl_call_pv, perl_call_sv, perl_construct, perl_destruct,
+     perl_eval_sv, perl_eval_pv, perl_free, perl_get_av, perl_get_cv,
+     perl_get_hv, perl_get_sv, perl_parse, perl_require_pv, perl_run,
+     POPi, POPl, POPp, POPn, POPs, PUSHMARK, PUSHi, PUSHn, PUSHp,
+     PUSHs, PUTBACK, Renew, Renewc, RETVAL, safefree, safemalloc,
+     saferealloc, savepv, savepvn, SAVETMPS, SP, SPAGAIN, ST, strEQ,
+     strGE, strGT, strLE, strLT, strNE, strnEQ, strnNE, sv_2mortal,
+     sv_bless, sv_catpv, sv_catpvn, sv_catpvf, sv_catsv, sv_cmp,
+     sv_cmp, SvCUR, SvCUR_set, sv_dec, sv_dec, SvEND, sv_eq, SvGROW,
+     sv_grow, sv_inc, SvIOK, SvIOK_off, SvIOK_on, SvIOK_only,
+     SvIOK_only, SvIOKp, sv_isa, SvIV, sv_isobject, SvIVX, SvLEN,
+     sv_len, sv_len, sv_magic, sv_mortalcopy, SvOK, sv_newmortal,
+     sv_no, SvNIOK, SvNIOK_off, SvNIOKp, SvNOK, SvNOK_off, SvNOK_on,
+     SvNOK_only, SvNOK_only, SvNOKp, SvNV, SvNVX, SvPOK, SvPOK_off,
+     SvPOK_on, SvPOK_only, SvPOK_only, SvPOKp, SvPV, SvPVX, SvREFCNT,
+     SvREFCNT_dec, SvREFCNT_inc, SvROK, SvROK_off, SvROK_on, SvRV,
+     sv_setiv, sv_setnv, sv_setpv, sv_setpvn, sv_setpvf, sv_setref_iv,
+     sv_setref_nv, sv_setref_pv, sv_setref_pvn, sv_setsv, SvSTASH,
+     SVt_IV, SVt_PV, SVt_PVAV, SVt_PVCV, SVt_PVHV, SVt_PVMG, SVt_NV,
+     SvTRUE, SvTYPE, svtype, SvUPGRADE, sv_upgrade, sv_undef, sv_unref,
+     sv_usepvn, sv_yes, THIS, toLOWER, toUPPER, warn, XPUSHi, XPUSHn,
+     XPUSHp, XPUSHs, XS, XSRETURN, XSRETURN_EMPTY, XSRETURN_IV,
+     XSRETURN_NO, XSRETURN_NV, XSRETURN_PV, XSRETURN_UNDEF,
+     XSRETURN_YES, XST_mIV, XST_mNV, XST_mNO, XST_mPV, XST_mUNDEF,
+     XST_mYES, XS_VERSION, XS_VERSION_BOOTCHECK, Zero
+
+EDITOR
+DATE
+perlcall - Perl calling conventions from C
+------------------------------------------
+
+DESCRIPTION
+     An Error Handler, An Event Driven Program
+
+THE PERL_CALL FUNCTIONS
+     perl_call_sv, perl_call_pv, perl_call_method, perl_call_argv
+
+FLAG VALUES
+G_VOID
+G_SCALAR
+G_ARRAY
+G_DISCARD
+G_NOARGS
+G_EVAL
+G_KEEPERR
+Determining the Context
+KNOWN PROBLEMS
+EXAMPLES
+No Parameters, Nothing returned
+Passing Parameters
+Returning a Scalar
+Returning a list of values
+Returning a list in a scalar context
+Returning Data from Perl via the parameter list
+Using G_EVAL
+Using G_KEEPERR
+Using perl_call_sv
+Using perl_call_argv
+Using perl_call_method
+Using GIMME_V
+Using Perl to dispose of temporaries
+Strategies for storing Callback Context Information
+     1. Ignore the problem - Allow only 1 callback, 2. Create a
+     sequence of callbacks - hard wired limit, 3. Use a parameter to
+     map to the Perl callback
+
+Alternate Stack Manipulation
+Creating and calling an anonymous subroutine in C
+SEE ALSO
+AUTHOR
+DATE
+PRAGMA DOCUMENTATION
+====================
+
+autouse - postpone load of modules until a function is used
+-----------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+WARNING
+BUGS
+AUTHOR
+SEE ALSO
+blib - Use MakeMaker's uninstalled version of a package
+-------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+BUGS
+AUTHOR
+constant - Perl pragma to declare constants
+-------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+NOTES
+TECHNICAL NOTE
+BUGS
+AUTHOR
+COPYRIGHT
+diagnostics - Perl compiler pragma to force verbose warning diagnostics
+-----------------------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+The diagnostics Pragma
+The *splain* Program
+EXAMPLES
+INTERNALS
+BUGS
+AUTHOR
+integer - Perl pragma to compute arithmetic in integer instead of double
+------------------------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+less - perl pragma to request less of something from the compiler
+-----------------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+lib - manipulate @INC at compile time
+-------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+ADDING DIRECTORIES TO @INC
+DELETING DIRECTORIES FROM @INC
+RESTORING ORIGINAL @INC
+SEE ALSO
+AUTHOR
+locale - Perl pragma to use and avoid POSIX locales for built-in operations
+---------------------------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+ops - Perl pragma to restrict unsafe operations when compiling
+--------------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+SEE ALSO
+overload - Package for overloading perl operations
+--------------------------------------------------
+
+SYNOPSIS
+CAVEAT SCRIPTOR
+DESCRIPTION
+Declaration of overloaded functions
+Calling Conventions for Binary Operations
+     FALSE, TRUE, undef
+
+Calling Conventions for Unary Operations
+Overloadable Operations
+     *Arithmetic operations*, *Comparison operations*, *Bit operations*,
+     *Increment and decrement*, *Transcendental functions*, *Boolean,
+     string and numeric conversion*, Special
+
+Inheritance and overloading
+     Strings as values of `use overload' directive, Overloading of an
+     operation is inherited by derived classes
+
+SPECIAL SYMBOLS FOR `use overload'
+Last Resort
+Fallback
+     undef, TRUE, defined, but FALSE
+
+Copy Constructor
+     *Example*
+
+MAGIC AUTOGENERATION
+     *Assignment forms of arithmetic operations*, *Conversion
+     operations*, *Increment and decrement*, `abs($a)', *Unary minus*,
+     *Negation*, *Concatenation*, *Comparison operations*, *Copy
+     operator*
+
+WARNING
+Run-time Overloading
+Public functions
+     overload::StrVal(arg), overload::Overloaded(arg),
+     overload::Method(obj,op)
+
+IMPLEMENTATION
+AUTHOR
+DIAGNOSTICS
+BUGS
+sigtrap - Perl pragma to enable simple signal handling
+------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+OPTIONS
+SIGNAL HANDLERS
+     *stack-trace*, die, *handler* *your-handler*
+
+SIGNAL LISTS
+     *normal-signals*, *error-signals*, *old-interface-signals*
+
+OTHER
+     *untrapped*, *any*, *signal*, *number*
+
+EXAMPLES
+strict - Perl pragma to restrict unsafe constructs
+--------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+     `strict refs', `strict vars', `strict subs'
+
+subs - Perl pragma to predeclare sub names
+------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+vars - Perl pragma to predeclare global variable names
+------------------------------------------------------
+
+SYNOPSIS
+DESCRIPTION
+AUTHOR
+======
+
+Larry Wall <`larry@wall.org'>, with the help of oodles of other folks.
+

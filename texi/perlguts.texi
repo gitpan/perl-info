@@ -1,0 +1,3503 @@
+@node perlguts, perlcall, perlxstut, Top
+@unnumberedsec NAME
+perlguts - Perl@'s Internal Functions
+
+@unnumberedsec DESCRIPTION
+This document attempts to describe some of the internal functions of the
+Perl executable.  It is far from complete and probably contains many errors.
+Please refer any questions or comments to the author below.
+
+@unnumberedsec Variables
+@unnumberedsubsec Datatypes
+Perl has three typedefs that handle Perl@'s three main data types:
+
+
+@example
+SV  Scalar Value
+AV  Array Value
+HV  Hash Value
+@end example
+
+Each typedef has specific routines that manipulate the various data types.
+
+@unnumberedsubsec What is an "IV"?
+Perl uses a special typedef IV which is a simple integer type that is
+guaranteed to be large enough to hold a pointer (as well as an integer).
+
+Perl also uses two special typedefs, I32 and I16, which will always be at
+least 32-bits and 16-bits long, respectively.
+
+@unnumberedsubsec Working with SVs
+An SV can be created and loaded with one command.  There are four types of
+values that can be loaded: an integer value (IV), a double (NV), a string,
+(PV), and another scalar (SV).
+
+The five routines are:
+
+
+@example
+SV*  newSViv(IV);
+SV*  newSVnv(double);
+SV*  newSVpv(char*, int);
+SV*  newSVpvf(const char*, ...);
+SV*  newSVsv(SV*);
+@end example
+
+To change the value of an *already-existing* SV, there are six routines:
+
+
+@example
+void  sv_setiv(SV*, IV);
+void  sv_setnv(SV*, double);
+void  sv_setpv(SV*, char*);
+void  sv_setpvn(SV*, char*, int)
+void  sv_setpvf(SV*, const char*, ...);
+void  sv_setsv(SV*, SV*);
+@end example
+
+Notice that you can choose to specify the length of the string to be
+assigned by using sv_setpvn or newSVpv, or you may allow Perl to
+calculate the length by using sv_setpv or by specifying 0 as the second
+argument to newSVpv.  Be warned, though, that Perl will determine the
+string@'s length by using @code{strlen}, which depends on the string terminating
+with a NUL character.  The arguments of sv_setpvf are processed like
+sprintf, and the formatted output becomes the value.
+
+All SVs that will contain strings should, but need not, be terminated
+with a NUL character.  If it is not NUL-terminated there is a risk of
+core dumps and corruptions from code which passes the string to C
+functions or system calls which expect a NUL-terminated string.
+Perl@'s own functions typically add a trailing NUL for this reason.
+Nevertheless, you should be very careful when you pass a string stored
+in an SV to a C function or system call.
+
+To access the actual value that an SV points to, you can use the macros:
+
+
+@example
+SvIV(SV*)
+SvNV(SV*)
+SvPV(SV*, STRLEN len)
+@end example
+
+which will automatically coerce the actual scalar type into an IV, double,
+or string.
+
+In the SvPV macro, the length of the string returned is placed into the
+variable @code{len} (this is a macro, so you do @emph{not} use @code{&len}).  If you do not
+care what the length of the data is, use the global variable na.  Remember,
+however, that Perl allows arbitrary strings of data that may both contain
+NULs and might not be terminated by a NUL.
+
+If you want to know if the scalar value is TRUE, you can use:
+
+
+@example
+SvTRUE(SV*)
+@end example
+
+Although Perl will automatically grow strings for you, if you need to force
+Perl to allocate more memory for your SV, you can use the macro
+
+
+@example
+SvGROW(SV*, STRLEN newlen)
+@end example
+
+which will determine if more memory needs to be allocated.  If so, it will
+call the function sv_grow.  Note that SvGROW can only increase, not
+decrease, the allocated memory of an SV and that it does not automatically
+add a byte for the a trailing NUL (perl@'s own string functions typically do
+@code{SvGROW(sv, len + 1)}).
+
+If you have an SV and want to know what kind of data Perl thinks is stored
+in it, you can use the following macros to check the type of SV you have.
+
+
+@example
+SvIOK(SV*)
+SvNOK(SV*)
+SvPOK(SV*)
+@end example
+
+You can get and set the current length of the string stored in an SV with
+the following macros:
+
+
+@example
+SvCUR(SV*)
+SvCUR_set(SV*, I32 val)
+@end example
+
+You can also get a pointer to the end of the string stored in the SV
+with the macro:
+
+
+@example
+SvEND(SV*)
+@end example
+
+But note that these last three macros are valid only if @code{SvPOK()} is true.
+
+If you want to append something to the end of string stored in an @code{SV*},
+you can use the following functions:
+
+
+@example
+void  sv_catpv(SV*, char*);
+void  sv_catpvn(SV*, char*, int);
+void  sv_catpvf(SV*, const char*, ...);
+void  sv_catsv(SV*, SV*);
+@end example
+
+The first function calculates the length of the string to be appended by
+using @code{strlen}.  In the second, you specify the length of the string
+yourself.  The third function processes its arguments like sprintf and
+appends the formatted output.  The fourth function extends the string
+stored in the first SV with the string stored in the second SV.  It also
+forces the second SV to be interpreted as a string.
+
+If you know the name of a scalar variable, you can get a pointer to its SV
+by using the following:
+
+
+@example
+SV*  perl_get_sv("package::varname", FALSE);
+@end example
+
+This returns NULL if the variable does not exist.
+
+If you want to know if this variable (or any other SV) is actually defined,
+you can call:
+
+
+@example
+SvOK(SV*)
+@end example
+
+The scalar undef value is stored in an SV instance called sv_undef.  Its
+address can be used whenever an @code{SV*} is needed.
+
+There are also the two values sv_yes and sv_no, which contain Boolean
+TRUE and FALSE values, respectively.  Like sv_undef, their addresses can
+be used whenever an @code{SV*} is needed.
+
+Do not be fooled into thinking that @code{(SV *) 0} is the same as @code{&sv_undef}.
+Take this code:
+
+
+@example
+SV* sv = (SV*) 0;
+if (I-am-to-return-a-real-value) @{
+        sv = sv_2mortal(newSViv(42));
+@}
+sv_setsv(ST(0), sv);
+@end example
+
+This code tries to return a new SV (which contains the value 42) if it should
+return a real value, or undef otherwise.  Instead it has returned a null
+pointer which, somewhere down the line, will cause a segmentation violation,
+bus error, or just weird results.  Change the zero to @code{&sv_undef} in the first
+line and all will be well.
+
+To free an SV that you@'ve created, call @code{SvREFCNT_dec(SV*)}.  Normally this
+call is not necessary (see @samp{Reference Counts and Mortality} in this node).
+
+@unnumberedsubsec What@'s Really Stored in an SV?
+Recall that the usual method of determining the type of scalar you have is
+to use @code{Sv*OK} macros.  Because a scalar can be both a number and a string,
+usually these macros will always return TRUE and calling the @code{Sv*V}
+macros will do the appropriate conversion of string to integer/double or
+integer/double to string.
+
+If you @emph{really} need to know if you have an integer, double, or string
+pointer in an SV, you can use the following three macros instead:
+
+
+@example
+SvIOKp(SV*)
+SvNOKp(SV*)
+SvPOKp(SV*)
+@end example
+
+These will tell you if you truly have an integer, double, or string pointer
+stored in your SV.  The "p" stands for private.
+
+In general, though, it@'s best to use the @code{Sv*V} macros.
+
+@unnumberedsubsec Working with AVs
+There are two ways to create and load an AV.  The first method creates an
+empty AV:
+
+
+@example
+AV*  newAV();
+@end example
+
+The second method both creates the AV and initially populates it with SVs:
+
+
+@example
+AV*  av_make(I32 num, SV **ptr);
+@end example
+
+The second argument points to an array containing @code{num} @code{SV*}@'s.  Once the
+AV has been created, the SVs can be destroyed, if so desired.
+
+Once the AV has been created, the following operations are possible on AVs:
+
+
+@example
+void  av_push(AV*, SV*);
+SV*   av_pop(AV*);
+SV*   av_shift(AV*);
+void  av_unshift(AV*, I32 num);
+@end example
+
+These should be familiar operations, with the exception of av_unshift.
+This routine adds @code{num} elements at the front of the array with the undef
+value.  You must then use av_store (described below) to assign values
+to these new elements.
+
+Here are some other functions:
+
+
+@example
+I32   av_len(AV*);
+SV**  av_fetch(AV*, I32 key, I32 lval);
+SV**  av_store(AV*, I32 key, SV* val);
+@end example
+
+The av_len function returns the highest index value in array (just
+like $#array in Perl).  If the array is empty, -1 is returned.  The
+av_fetch function returns the value at index @code{key}, but if @code{lval}
+is non-zero, then av_fetch will store an undef value at that index.
+The av_store function stores the value @code{val} at index @code{key}.
+note that av_fetch and av_store both return @code{SV**}@'s, not @code{SV*}@'s
+as their return value.
+
+
+@example
+void  av_clear(AV*);
+void  av_undef(AV*);
+void  av_extend(AV*, I32 key);
+@end example
+
+The av_clear function deletes all the elements in the AV* array, but
+does not actually delete the array itself.  The av_undef function will
+delete all the elements in the array plus the array itself.  The
+av_extend function extends the array so that it contains @code{key}
+elements.  If @code{key} is less than the current length of the array, then
+nothing is done.
+
+If you know the name of an array variable, you can get a pointer to its AV
+by using the following:
+
+
+@example
+AV*  perl_get_av("package::varname", FALSE);
+@end example
+
+This returns NULL if the variable does not exist.
+
+@unnumberedsubsec Working with HVs
+To create an HV, you use the following routine:
+
+
+@example
+HV*  newHV();
+@end example
+
+Once the HV has been created, the following operations are possible on HVs:
+
+
+@example
+SV**  hv_store(HV*, char* key, U32 klen, SV* val, U32 hash);
+SV**  hv_fetch(HV*, char* key, U32 klen, I32 lval);
+@end example
+
+The @code{klen} parameter is the length of the key being passed in (Note that
+you cannot pass 0 in as a value of @code{klen} to tell Perl to measure the
+length of the key).  The @code{val} argument contains the SV pointer to the
+scalar being stored, and @code{hash} is the precomputed hash value (zero if
+you want hv_store to calculate it for you).  The @code{lval} parameter
+indicates whether this fetch is actually a part of a store operation, in
+which case a new undefined value will be added to the HV with the supplied
+key and hv_fetch will return as if the value had already existed.
+
+Remember that hv_store and hv_fetch return @code{SV**}@'s and not just
+@code{SV*}.  To access the scalar value, you must first dereference the return
+value.  However, you should check to make sure that the return value is
+not NULL before dereferencing it.
+
+These two functions check if a hash table entry exists, and deletes it.
+
+
+@example
+bool  hv_exists(HV*, char* key, U32 klen);
+SV*   hv_delete(HV*, char* key, U32 klen, I32 flags);
+@end example
+
+If @code{flags} does not include the G_DISCARD flag then hv_delete will
+create and return a mortal copy of the deleted value.
+
+And more miscellaneous functions:
+
+
+@example
+void   hv_clear(HV*);
+void   hv_undef(HV*);
+@end example
+
+Like their AV counterparts, hv_clear deletes all the entries in the hash
+table but does not actually delete the hash table.  The hv_undef deletes
+both the entries and the hash table itself.
+
+Perl keeps the actual data in linked list of structures with a typedef of HE.
+These contain the actual key and value pointers (plus extra administrative
+overhead).  The key is a string pointer; the value is an @code{SV*}.  However,
+once you have an @code{HE*}, to get the actual key and value, use the routines
+specified below.
+
+
+@example
+I32    hv_iterinit(HV*);
+        /* Prepares starting point to traverse hash table */
+HE*    hv_iternext(HV*);
+        /* Get the next entry, and return a pointer to a
+           structure that has both the key and value */
+char*  hv_iterkey(HE* entry, I32* retlen);
+        /* Get the key from an HE structure and also return
+           the length of the key string */
+SV*    hv_iterval(HV*, HE* entry);
+        /* Return a SV pointer to the value of the HE
+           structure */
+SV*    hv_iternextsv(HV*, char** key, I32* retlen);
+        /* This convenience routine combines hv_iternext,
+               hv_iterkey, and hv_iterval.  The key and retlen
+               arguments are return values for the key and its
+               length.  The value is returned in the SV* argument */
+@end example
+
+If you know the name of a hash variable, you can get a pointer to its HV
+by using the following:
+
+
+@example
+HV*  perl_get_hv("package::varname", FALSE);
+@end example
+
+This returns NULL if the variable does not exist.
+
+The hash algorithm is defined in the @code{PERL_HASH(hash, key, klen)} macro:
+
+
+@example
+i = klen;
+hash = 0;
+s = key;
+while (i--)
+        hash = hash * 33 + *s++;
+@end example
+
+@unnumberedsubsec Hash API Extensions
+Beginning with version 5.004, the following functions are also supported:
+
+
+@example
+HE*     hv_fetch_ent  (HV* tb, SV* key, I32 lval, U32 hash);
+HE*     hv_store_ent  (HV* tb, SV* key, SV* val, U32 hash);
+
+bool    hv_exists_ent (HV* tb, SV* key, U32 hash);
+SV*     hv_delete_ent (HV* tb, SV* key, I32 flags, U32 hash);
+
+SV*     hv_iterkeysv  (HE* entry);
+@end example
+
+Note that these functions take @code{SV*} keys, which simplifies writing
+of extension code that deals with hash structures.  These functions
+also allow passing of @code{SV*} keys to tie functions without forcing
+you to stringify the keys (unlike the previous set of functions).
+
+They also return and accept whole hash entries (@code{HE*}), making their
+use more efficient (since the hash number for a particular string
+doesn@'t have to be recomputed every time).  See @samp{API LISTING} in this node later in
+this document for detailed descriptions.
+
+The following macros must always be used to access the contents of hash
+entries.  Note that the arguments to these macros must be simple
+variables, since they may get evaluated more than once.  See
+@samp{API LISTING} in this node later in this document for detailed descriptions of these
+macros.
+
+
+@example
+HePV(HE* he, STRLEN len)
+HeVAL(HE* he)
+HeHASH(HE* he)
+HeSVKEY(HE* he)
+HeSVKEY_force(HE* he)
+HeSVKEY_set(HE* he, SV* sv)
+@end example
+
+These two lower level macros are defined, but must only be used when
+dealing with keys that are not @code{SV*}s:
+
+
+@example
+HeKEY(HE* he)
+HeKLEN(HE* he)
+@end example
+
+@unnumberedsubsec References
+References are a special type of scalar that point to other data types
+(including references).
+
+To create a reference, use either of the following functions:
+
+
+@example
+SV* newRV_inc((SV*) thing);
+SV* newRV_noinc((SV*) thing);
+@end example
+
+The @code{thing} argument can be any of an @code{SV*}, @code{AV*}, or @code{HV*}.  The
+functions are identical except that newRV_inc increments the reference
+count of the @code{thing}, while newRV_noinc does not.  For historical
+reasons, @code{newRV} is a synonym for newRV_inc.
+
+Once you have a reference, you can use the following macro to dereference
+the reference:
+
+
+@example
+SvRV(SV*)
+@end example
+
+then call the appropriate routines, casting the returned @code{SV*} to either an
+@code{AV*} or @code{HV*}, if required.
+
+To determine if an SV is a reference, you can use the following macro:
+
+
+@example
+SvROK(SV*)
+@end example
+
+To discover what type of value the reference refers to, use the following
+macro and then check the return value.
+
+
+@example
+SvTYPE(SvRV(SV*))
+@end example
+
+The most useful types that will be returned are:
+
+
+@example
+SVt_IV    Scalar
+SVt_NV    Scalar
+SVt_PV    Scalar
+SVt_RV    Scalar
+SVt_PVAV  Array
+SVt_PVHV  Hash
+SVt_PVCV  Code
+SVt_PVGV  Glob (possible a file handle)
+SVt_PVMG  Blessed or Magical Scalar
+
+See the sv.h header file for more details.
+@end example
+
+@unnumberedsubsec Blessed References and Class Objects
+References are also used to support object-oriented programming.  In the
+OO lexicon, an object is simply a reference that has been blessed into a
+package (or class).  Once blessed, the programmer may now use the reference
+to access the various methods in the class.
+
+A reference can be blessed into a package with the following function:
+
+
+@example
+SV* sv_bless(SV* sv, HV* stash);
+@end example
+
+The @code{sv} argument must be a reference.  The @code{stash} argument specifies
+which class the reference will belong to.  See
+@samp{Stashes and Globs} in this node for information on converting class names into stashes.
+
+/* Still under construction */
+
+Upgrades rv to reference if not already one.  Creates new SV for rv to
+point to.  If @code{classname} is non-null, the SV is blessed into the specified
+class.  SV is returned.
+
+
+@example
+SV* newSVrv(SV* rv, char* classname);
+@end example
+
+Copies integer or double into an SV whose reference is @code{rv}.  SV is blessed
+if @code{classname} is non-null.
+
+
+@example
+SV* sv_setref_iv(SV* rv, char* classname, IV iv);
+SV* sv_setref_nv(SV* rv, char* classname, NV iv);
+@end example
+
+Copies the pointer value (@emph{the address, not the string!}) into an SV whose
+reference is rv.  SV is blessed if @code{classname} is non-null.
+
+
+@example
+SV* sv_setref_pv(SV* rv, char* classname, PV iv);
+@end example
+
+Copies string into an SV whose reference is @code{rv}.  Set length to 0 to let
+Perl calculate the string length.  SV is blessed if @code{classname} is non-null.
+
+
+@example
+SV* sv_setref_pvn(SV* rv, char* classname, PV iv, int length);
+
+int sv_isa(SV* sv, char* name);
+int sv_isobject(SV* sv);
+@end example
+
+@unnumberedsubsec Creating New Variables
+To create a new Perl variable with an undef value which can be accessed from
+your Perl script, use the following routines, depending on the variable type.
+
+
+@example
+SV*  perl_get_sv("package::varname", TRUE);
+AV*  perl_get_av("package::varname", TRUE);
+HV*  perl_get_hv("package::varname", TRUE);
+@end example
+
+Notice the use of TRUE as the second parameter.  The new variable can now
+be set, using the routines appropriate to the data type.
+
+There are additional macros whose values may be bitwise OR@'ed with the
+@code{TRUE} argument to enable certain extra features.  Those bits are:
+
+
+@example
+GV_ADDMULTI     Marks the variable as multiply defined, thus preventing the
+                "Name <varname> used only once: possible typo" warning.
+GV_ADDWARN      Issues the warning "Had to create <varname> unexpectedly" if
+                the variable did not exist before the function was called.
+@end example
+
+If you do not specify a package name, the variable is created in the current
+package.
+
+@unnumberedsubsec Reference Counts and Mortality
+Perl uses an reference count-driven garbage collection mechanism. SVs,
+AVs, or HVs (xV for short in the following) start their life with a
+reference count of 1.  If the reference count of an xV ever drops to 0,
+then it will be destroyed and its memory made available for reuse.
+
+This normally doesn@'t happen at the Perl level unless a variable is
+undef@'ed or the last variable holding a reference to it is changed or
+overwritten.  At the internal level, however, reference counts can be
+manipulated with the following macros:
+
+
+@example
+int SvREFCNT(SV* sv);
+SV* SvREFCNT_inc(SV* sv);
+void SvREFCNT_dec(SV* sv);
+@end example
+
+However, there is one other function which manipulates the reference
+count of its argument.  The newRV_inc function, you will recall,
+creates a reference to the specified argument.  As a side effect,
+it increments the argument@'s reference count.  If this is not what
+you want, use newRV_noinc instead.
+
+For example, imagine you want to return a reference from an XSUB function.
+Inside the XSUB routine, you create an SV which initially has a reference
+count of one.  Then you call newRV_inc, passing it the just-created SV.
+This returns the reference as a new SV, but the reference count of the
+SV you passed to newRV_inc has been incremented to two.  Now you
+return the reference from the XSUB routine and forget about the SV.
+But Perl hasn@'t!  Whenever the returned reference is destroyed, the
+reference count of the original SV is decreased to one and nothing happens.
+The SV will hang around without any way to access it until Perl itself
+terminates.  This is a memory leak.
+
+The correct procedure, then, is to use newRV_noinc instead of
+newRV_inc.  Then, if and when the last reference is destroyed,
+the reference count of the SV will go to zero and it will be destroyed,
+stopping any memory leak.
+
+There are some convenience functions available that can help with the
+destruction of xVs.  These functions introduce the concept of "mortality".
+An xV that is mortal has had its reference count marked to be decremented,
+but not actually decremented, until "a short time later".  Generally the
+term "short time later" means a single Perl statement, such as a call to
+an XSUB function.  The actual determinant for when mortal xVs have their
+reference count decremented depends on two macros, SAVETMPS and FREETMPS.
+See @xref{perlcall,Perlcall}, and @xref{perlxs,Perlxs}, for more details on these macros.
+
+"Mortalization" then is at its simplest a deferred SvREFCNT_dec.
+However, if you mortalize a variable twice, the reference count will
+later be decremented twice.
+
+You should be careful about creating mortal variables.  Strange things
+can happen if you make the same value mortal within multiple contexts,
+or if you make a variable mortal multiple times.
+
+To create a mortal variable, use the functions:
+
+
+@example
+SV*  sv_newmortal()
+SV*  sv_2mortal(SV*)
+SV*  sv_mortalcopy(SV*)
+@end example
+
+The first call creates a mortal SV, the second converts an existing
+SV to a mortal SV (and thus defers a call to SvREFCNT_dec), and the
+third creates a mortal copy of an existing SV.
+
+The mortal routines are not just for SVs -- AVs and HVs can be
+made mortal by passing their address (type-casted to @code{SV*}) to the
+sv_2mortal or sv_mortalcopy routines.
+
+@unnumberedsubsec Stashes and Globs
+A "stash" is a hash that contains all of the different objects that
+are contained within a package.  Each key of the stash is a symbol
+name (shared by all the different types of objects that have the same
+name), and each value in the hash table is a GV (Glob Value).  This GV
+in turn contains references to the various objects of that name,
+including (but not limited to) the following:
+
+
+@example
+Scalar Value
+Array Value
+Hash Value
+File Handle
+Directory Handle
+Format
+Subroutine
+@end example
+
+There is a single stash called "defstash" that holds the items that exist
+in the "main" package.  To get at the items in other packages, append the
+string "::" to the package name.  The items in the "Foo" package are in
+the stash "Foo::" in defstash.  The items in the "Bar::Baz" package are
+in the stash "Baz::" in "Bar::"@'s stash.
+
+To get the stash pointer for a particular package, use the function:
+
+
+@example
+HV*  gv_stashpv(char* name, I32 create)
+HV*  gv_stashsv(SV*, I32 create)
+@end example
+
+The first function takes a literal string, the second uses the string stored
+in the SV.  Remember that a stash is just a hash table, so you get back an
+@code{HV*}.  The @code{create} flag will create a new package if it is set.
+
+The name that @code{gv_stash*v} wants is the name of the package whose symbol table
+you want.  The default package is called @code{main}.  If you have multiply nested
+packages, pass their names to @code{gv_stash*v}, separated by @code{::} as in the Perl
+language itself.
+
+Alternately, if you have an SV that is a blessed reference, you can find
+out the stash pointer by using:
+
+
+@example
+HV*  SvSTASH(SvRV(SV*));
+@end example
+
+then use the following to get the package name itself:
+
+
+@example
+char*  HvNAME(HV* stash);
+@end example
+
+If you need to bless or re-bless an object you can use the following
+function:
+
+
+@example
+SV*  sv_bless(SV*, HV* stash)
+@end example
+
+where the first argument, an @code{SV*}, must be a reference, and the second
+argument is a stash.  The returned @code{SV*} can now be used in the same way
+as any other SV.
+
+For more information on references and blessings, consult @xref{perlref,Perlref}.
+
+@unnumberedsubsec Double-Typed SVs
+Scalar variables normally contain only one type of value, an integer,
+double, pointer, or reference.  Perl will automatically convert the
+actual scalar data from the stored type into the requested type.
+
+Some scalar variables contain more than one type of scalar data.  For
+example, the variable $! contains either the numeric value of @code{errno}
+or its string equivalent from either @code{strerror} or @code{sys_errlist[]}.
+
+To force multiple data values into an SV, you must do two things: use the
+@code{sv_set*v} routines to add the additional scalar type, then set a flag
+so that Perl will believe it contains more than one type of data.  The
+four macros to set the flags are:
+
+
+@example
+SvIOK_on
+SvNOK_on
+SvPOK_on
+SvROK_on
+@end example
+
+The particular macro you must use depends on which @code{sv_set*v} routine
+you called first.  This is because every @code{sv_set*v} routine turns on
+only the bit for the particular type of data being set, and turns off
+all the rest.
+
+For example, to create a new Perl variable called "dberror" that contains
+both the numeric and descriptive string error values, you could use the
+following code:
+
+
+@example
+extern int  dberror;
+extern char *dberror_list;
+
+SV* sv = perl_get_sv("dberror", TRUE);
+sv_setiv(sv, (IV) dberror);
+sv_setpv(sv, dberror_list[dberror]);
+SvIOK_on(sv);
+@end example
+
+If the order of sv_setiv and sv_setpv had been reversed, then the
+macro SvPOK_on would need to be called instead of SvIOK_on.
+
+@unnumberedsubsec Magic Variables
+[This section still under construction.  Ignore everything here.  Post no
+bills.  Everything not permitted is forbidden.]
+
+Any SV may be magical, that is, it has special features that a normal
+SV does not have.  These features are stored in the SV structure in a
+linked list of @code{struct magic}@'s, typedef@'ed to MAGIC.
+
+
+@example
+struct magic @{
+    MAGIC*      mg_moremagic;
+    MGVTBL*     mg_virtual;
+    U16         mg_private;
+    char        mg_type;
+    U8          mg_flags;
+    SV*         mg_obj;
+    char*       mg_ptr;
+    I32         mg_len;
+@};
+@end example
+
+Note this is current as of patchlevel 0, and could change at any time.
+
+@unnumberedsubsec Assigning Magic
+Perl adds magic to an SV using the sv_magic function:
+
+
+@example
+void sv_magic(SV* sv, SV* obj, int how, char* name, I32 namlen);
+@end example
+
+The @code{sv} argument is a pointer to the SV that is to acquire a new magical
+feature.
+
+If @code{sv} is not already magical, Perl uses the SvUPGRADE macro to
+set the SVt_PVMG flag for the @code{sv}.  Perl then continues by adding
+it to the beginning of the linked list of magical features.  Any prior
+entry of the same type of magic is deleted.  Note that this can be
+overridden, and multiple instances of the same type of magic can be
+associated with an SV.
+
+The @code{name} and @code{namlen} arguments are used to associate a string with
+the magic, typically the name of a variable. @code{namlen} is stored in the
+mg_len field and if @code{name} is non-null and @code{namlen} >= 0 a malloc@'d
+copy of the name is stored in @code{mg_ptr} field.
+
+The sv_magic function uses how to determine which, if any, predefined
+"Magic Virtual Table" should be assigned to the @code{mg_virtual} field.
+See the "Magic Virtual Table" section below.  The how argument is also
+stored in the @code{mg_type} field.
+
+The @code{obj} argument is stored in the @code{mg_obj} field of the MAGIC
+structure.  If it is not the same as the @code{sv} argument, the reference
+count of the @code{obj} object is incremented.  If it is the same, or if
+the how argument is "#", or if it is a null pointer, then @code{obj} is
+merely stored, without the reference count being incremented.
+
+There is also a function to add magic to an @code{HV}:
+
+
+@example
+void hv_magic(HV *hv, GV *gv, int how);
+@end example
+
+This simply calls sv_magic and coerces the @code{gv} argument into an @code{SV}.
+
+To remove the magic from an SV, call the function sv_unmagic:
+
+
+@example
+void sv_unmagic(SV *sv, int type);
+@end example
+
+The @code{type} argument should be equal to the how value when the @code{SV}
+was initially made magical.
+
+@unnumberedsubsec Magic Virtual Tables
+The @code{mg_virtual} field in the MAGIC structure is a pointer to a
+@code{MGVTBL}, which is a structure of function pointers and stands for
+"Magic Virtual Table" to handle the various operations that might be
+applied to that variable.
+
+The @code{MGVTBL} has five pointers to the following routine types:
+
+
+@example
+int  (*svt_get)(SV* sv, MAGIC* mg);
+int  (*svt_set)(SV* sv, MAGIC* mg);
+U32  (*svt_len)(SV* sv, MAGIC* mg);
+int  (*svt_clear)(SV* sv, MAGIC* mg);
+int  (*svt_free)(SV* sv, MAGIC* mg);
+@end example
+
+This MGVTBL structure is set at compile-time in @code{perl.h} and there are
+currently 19 types (or 21 with overloading turned on).  These different
+structures contain pointers to various routines that perform additional
+actions depending on which function is being called.
+
+
+@example
+Function pointer    Action taken
+----------------    ------------
+svt_get             Do something after the value of the SV is retrieved.
+svt_set             Do something after the SV is assigned a value.
+svt_len             Report on the SV@'s length.
+svt_clear               Clear something the SV represents.
+svt_free            Free any extra storage associated with the SV.
+@end example
+
+For instance, the MGVTBL structure called @code{vtbl_sv} (which corresponds
+to an @code{mg_type} of @'\0@') contains:
+
+
+@example
+@{ magic_get, magic_set, magic_len, 0, 0 @}
+@end example
+
+Thus, when an SV is determined to be magical and of type @'\0@', if a get
+operation is being performed, the routine @code{magic_get} is called.  All
+the various routines for the various magical types begin with @code{magic_}.
+
+The current kinds of Magic Virtual Tables are:
+
+
+@example
+mg_type  MGVTBL              Type of magical
+-------  ------              ----------------------------
+\0       vtbl_sv             Regexp???
+A        vtbl_amagic         Operator Overloading
+a        vtbl_amagicelem     Operator Overloading
+c        0                   Used in Operator Overloading
+B        vtbl_bm             Boyer-Moore???
+E        vtbl_env            %ENV hash
+e        vtbl_envelem        %ENV hash element
+g        vtbl_mglob          Regexp /g flag???
+I        vtbl_isa            @@ISA array
+i        vtbl_isaelem        @@ISA array element
+L        0 (but sets RMAGICAL)     Perl Module/Debugger???
+l        vtbl_dbline         Debugger?
+o        vtbl_collxfrm       Locale transformation
+P        vtbl_pack           Tied Array or Hash
+p        vtbl_packelem       Tied Array or Hash element
+q        vtbl_packelem       Tied Scalar or Handle
+S        vtbl_sig            Signal Hash
+s        vtbl_sigelem        Signal Hash element
+t        vtbl_taint          Taintedness
+U        vtbl_uvar               ???
+v        vtbl_vec                Vector
+x        vtbl_substr         Substring???
+y        vtbl_itervar        Shadow "foreach" iterator variable
+*        vtbl_glob           GV???
+#        vtbl_arylen         Array Length
+.        vtbl_pos                $. scalar variable
+~        None                Used by certain extensions
+@end example
+
+When an uppercase and lowercase letter both exist in the table, then the
+uppercase letter is used to represent some kind of composite type (a list
+or a hash), and the lowercase letter is used to represent an element of
+that composite type.
+
+The @'~@' magic type is defined specifically for use by extensions and
+will not be used by perl itself. Extensions can use ~ magic to @'attach@'
+private information to variables (typically objects).  This is especially
+useful because there is no way for normal perl code to corrupt this
+private information (unlike using extra elements of a hash object).
+
+Note that because multiple extensions may be using ~ magic it is
+important for extensions to take extra care with it.  Typically only
+using it on objects blessed into the same class as the extension
+is sufficient.  It may also be appropriate to add an I32 @'signature@'
+at the top of the private data area and check that.
+
+@unnumberedsubsec Finding Magic
+
+@example
+MAGIC* mg_find(SV*, int type); /* Finds the magic pointer of that type */
+@end example
+
+This routine returns a pointer to the MAGIC structure stored in the SV.
+If the SV does not have that magical feature, NULL is returned.  Also,
+if the SV is not of type SVt_PVMG, Perl may core dump.
+
+
+@example
+int mg_copy(SV* sv, SV* nsv, char* key, STRLEN klen);
+@end example
+
+This routine checks to see what types of magic @code{sv} has.  If the mg_type
+field is an uppercase letter, then the mg_obj is copied to @code{nsv}, but
+the mg_type field is changed to be the lowercase letter.
+
+@unnumberedsec Subroutines
+@unnumberedsubsec XSUBs and the Argument Stack
+The XSUB mechanism is a simple way for Perl programs to access C subroutines.
+An XSUB routine will have a stack that contains the arguments from the Perl
+program, and a way to map from the Perl data structures to a C equivalent.
+
+The stack arguments are accessible through the @code{ST(n)} macro, which returns
+the n@'th stack argument.  Argument 0 is the first argument passed in the
+Perl subroutine call.  These arguments are @code{SV*}, and can be used anywhere
+an @code{SV*} is used.
+
+Most of the time, output from the C routine can be handled through use of
+the RETVAL and OUTPUT directives.  However, there are some cases where the
+argument stack is not already long enough to handle all the return values.
+An example is the POSIX tzname() call, which takes no arguments, but returns
+two, the local time zone@'s standard and summer time abbreviations.
+
+To handle this situation, the PPCODE directive is used and the stack is
+extended using the macro:
+
+
+@example
+EXTEND(sp, num);
+@end example
+
+where @code{sp} is the stack pointer, and @code{num} is the number of elements the
+stack should be extended by.
+
+Now that there is room on the stack, values can be pushed on it using the
+macros to push IVs, doubles, strings, and SV pointers respectively:
+
+
+@example
+PUSHi(IV)
+PUSHn(double)
+PUSHp(char*, I32)
+PUSHs(SV*)
+@end example
+
+And now the Perl program calling @code{tzname}, the two values will be assigned
+as in:
+
+
+@example
+($standard_abbrev, $summer_abbrev) = POSIX::tzname;
+@end example
+
+An alternate (and possibly simpler) method to pushing values on the stack is
+to use the macros:
+
+
+@example
+XPUSHi(IV)
+XPUSHn(double)
+XPUSHp(char*, I32)
+XPUSHs(SV*)
+@end example
+
+These macros automatically adjust the stack for you, if needed.  Thus, you
+do not need to call EXTEND to extend the stack.
+
+For more information, consult @xref{perlxs,Perlxs}, and @xref{perlxstut,Perlxstut},.
+
+@unnumberedsubsec Calling Perl Routines from within C Programs
+There are four routines that can be used to call a Perl subroutine from
+within a C program.  These four are:
+
+
+@example
+I32  perl_call_sv(SV*, I32);
+I32  perl_call_pv(char*, I32);
+I32  perl_call_method(char*, I32);
+I32  perl_call_argv(char*, I32, register char**);
+@end example
+
+The routine most often used is perl_call_sv.  The @code{SV*} argument
+contains either the name of the Perl subroutine to be called, or a
+reference to the subroutine.  The second argument consists of flags
+that control the context in which the subroutine is called, whether
+or not the subroutine is being passed arguments, how errors should be
+trapped, and how to treat return values.
+
+All four routines return the number of arguments that the subroutine returned
+on the Perl stack.
+
+When using any of these routines (except perl_call_argv), the programmer
+must manipulate the Perl stack.  These include the following macros and
+functions:
+
+
+@example
+dSP
+PUSHMARK()
+PUTBACK
+SPAGAIN
+ENTER
+SAVETMPS
+FREETMPS
+LEAVE
+XPUSH*()
+POP*()
+@end example
+
+For a detailed description of calling conventions from C to Perl,
+consult @xref{perlcall,Perlcall}.
+
+@unnumberedsubsec Memory Allocation
+It is suggested that you use the version of malloc that is distributed
+with Perl.  It keeps pools of various sizes of unallocated memory in
+order to satisfy allocation requests more quickly.  However, on some
+platforms, it may cause spurious malloc or free errors.
+
+
+@example
+New(x, pointer, number, type);
+Newc(x, pointer, number, type, cast);
+Newz(x, pointer, number, type);
+@end example
+
+These three macros are used to initially allocate memory.
+
+The first argument x was a "magic cookie" that was used to keep track
+of who called the macro, to help when debugging memory problems.  However,
+the current code makes no use of this feature (most Perl developers now
+use run-time memory checkers), so this argument can be any number.
+
+The second argument @code{pointer} should be the name of a variable that will
+point to the newly allocated memory.
+
+The third and fourth arguments @code{number} and @code{type} specify how many of
+the specified type of data structure should be allocated.  The argument
+@code{type} is passed to @code{sizeof}.  The final argument to Newc, @code{cast},
+should be used if the @code{pointer} argument is different from the @code{type}
+argument.
+
+Unlike the New and Newc macros, the Newz macro calls @code{memzero}
+to zero out all the newly allocated memory.
+
+
+@example
+Renew(pointer, number, type);
+Renewc(pointer, number, type, cast);
+Safefree(pointer)
+@end example
+
+These three macros are used to change a memory buffer size or to free a
+piece of memory no longer needed.  The arguments to Renew and Renewc
+match those of New and Newc with the exception of not needing the
+"magic cookie" argument.
+
+
+@example
+Move(source, dest, number, type);
+Copy(source, dest, number, type);
+Zero(dest, number, type);
+@end example
+
+These three macros are used to move, copy, or zero out previously allocated
+memory.  The @code{source} and @code{dest} arguments point to the source and
+destination starting points.  Perl will move, copy, or zero out @code{number}
+instances of the size of the @code{type} data structure (using the @code{sizeof}
+function).
+
+@unnumberedsubsec PerlIO
+The most recent development releases of Perl has been experimenting with
+removing Perl@'s dependency on the "normal" standard I/O suite and allowing
+other stdio implementations to be used.  This involves creating a new
+abstraction layer that then calls whichever implementation of stdio Perl
+was compiled with.  All XSUBs should now use the functions in the PerlIO
+abstraction layer and not make any assumptions about what kind of stdio
+is being used.
+
+For a complete description of the PerlIO abstraction, consult @xref{perlapio,Perlapio}.
+
+@unnumberedsubsec Putting a C value on Perl stack
+A lot of opcodes (this is an elementary operation in the internal perl
+stack machine) put an SV* on the stack. However, as an optimization
+the corresponding SV is (usually) not recreated each time. The opcodes
+reuse specially assigned SVs (@emph{target}s) which are (as a corollary)
+not constantly freed/created.
+
+Each of the targets is created only once (but see
+@samp{Scratchpads and recursion} in this node below), and when an opcode needs to put
+an integer, a double, or a string on stack, it just sets the
+corresponding parts of its @emph{target} and puts the @emph{target} on stack.
+
+The macro to put this target on stack is @code{PUSHTARG}, and it is
+directly used in some opcodes, as well as indirectly in zillions of
+others, which use it via @code{(X)PUSH[pni]}.
+
+@unnumberedsubsec Scratchpads
+The question remains on when the SVs which are @emph{target}s for opcodes
+are created. The answer is that they are created when the current unit --
+a subroutine or a file (for opcodes for statements outside of
+subroutines) -- is compiled. During this time a special anonymous Perl
+array is created, which is called a scratchpad for the current
+unit.
+
+A scratchpad keeps SVs which are lexicals for the current unit and are
+targets for opcodes. One can deduce that an SV lives on a scratchpad
+by looking on its flags: lexicals have @code{SVs_PADMY} set, and
+@emph{target}s have @code{SVs_PADTMP} set.
+
+The correspondence between OPs and @emph{target}s is not 1-to-1. Different
+OPs in the compile tree of the unit can use the same target, if this
+would not conflict with the expected life of the temporary.
+
+@unnumberedsubsec Scratchpads and recursion
+In fact it is not 100% true that a compiled unit contains a pointer to
+the scratchpad AV. In fact it contains a pointer to an AV of
+(initially) one element, and this element is the scratchpad AV. Why do
+we need an extra level of indirection?
+
+The answer is @strong{recursion}, and maybe (sometime soon) @strong{threads}. Both
+these can create several execution pointers going into the same
+subroutine. For the subroutine-child not write over the temporaries
+for the subroutine-parent (lifespan of which covers the call to the
+child), the parent and the child should have different
+scratchpads. (@emph{And} the lexicals should be separate anyway!)
+
+So each subroutine is born with an array of scratchpads (of length 1).
+On each entry to the subroutine it is checked that the current
+depth of the recursion is not more than the length of this array, and
+if it is, new scratchpad is created and pushed into the array.
+
+The @emph{target}s on this scratchpad are undefs, but they are already
+marked with correct flags.
+
+@unnumberedsec Compiled code
+@unnumberedsubsec Code tree
+Here we describe the internal form your code is converted to by
+Perl. Start with a simple example:
+
+
+@example
+$a = $b + $c;
+@end example
+
+This is converted to a tree similar to this one:
+
+
+@example
+assign-to
+           /           \
+          +             $a
+        /   \
+      $b     $c
+@end example
+
+(but slightly more complicated).  This tree reflect the way Perl
+parsed your code, but has nothing to do with the execution order.
+There is an additional "thread" going through the nodes of the tree
+which shows the order of execution of the nodes.  In our simplified
+example above it looks like:
+
+
+@example
+$b ---> $c ---> + ---> $a ---> assign-to
+@end example
+
+But with the actual compile tree for @code{$a = $b + $c} it is different:
+some nodes @emph{optimized away}.  As a corollary, though the actual tree
+contains more nodes than our simplified example, the execution order
+is the same as in our example.
+
+@unnumberedsubsec Examining the tree
+If you have your perl compiled for debugging (usually done with @code{-D
+optimize=-g} on @code{Configure} command line), you may examine the
+compiled tree by specifying @code{-Dx} on the Perl command line.  The
+output takes several lines per node, and for @code{$b+$c} it looks like
+this:
+
+
+@example
+5           TYPE = add  ===> 6
+            TARG = 1
+            FLAGS = (SCALAR,KIDS)
+            @{
+                TYPE = null  ===> (4)
+                  (was rv2sv)
+                FLAGS = (SCALAR,KIDS)
+                @{
+3                   TYPE = gvsv  ===> 4
+                    FLAGS = (SCALAR)
+                    GV = main::b
+                @}
+            @}
+            @{
+                TYPE = null  ===> (5)
+                  (was rv2sv)
+                FLAGS = (SCALAR,KIDS)
+                @{
+4                   TYPE = gvsv  ===> 5
+                    FLAGS = (SCALAR)
+                    GV = main::c
+                @}
+            @}
+@end example
+
+This tree has 5 nodes (one per @code{TYPE} specifier), only 3 of them are
+not optimized away (one per number in the left column).  The immediate
+children of the given node correspond to @code{@{@}} pairs on the same level
+of indentation, thus this listing corresponds to the tree:
+
+
+@example
+add
+                 /     \
+               null    null
+                |       |
+               gvsv    gvsv
+@end example
+
+The execution order is indicated by C<===>> marks, thus it is @code{3
+4 5 6} (node 6 is not included into above listing), i.e.,
+@code{gvsv gvsv add whatever}.
+
+@unnumberedsubsec Compile pass 1: check routines
+The tree is created by the @emph{pseudo-compiler} while yacc code feeds it
+the constructions it recognizes. Since yacc works bottom-up, so does
+the first pass of perl compilation.
+
+What makes this pass interesting for perl developers is that some
+optimization may be performed on this pass.  This is optimization by
+so-called @emph{check routines}.  The correspondence between node names
+and corresponding check routines is described in @file{opcode.pl} (do not
+forget to run @code{make regen_headers} if you modify this file).
+
+A check routine is called when the node is fully constructed except
+for the execution-order thread.  Since at this time there is no
+back-links to the currently constructed node, one can do most any
+operation to the top-level node, including freeing it and/or creating
+new nodes above/below it.
+
+The check routine returns the node which should be inserted into the
+tree (if the top-level node was not modified, check routine returns
+its argument).
+
+By convention, check routines have names @code{ck_*}. They are usually
+called from @code{new*OP} subroutines (or @code{convert}) (which in turn are
+called from @file{perly.y}).
+
+@unnumberedsubsec Compile pass 1a: constant folding
+Immediately after the check routine is called the returned node is
+checked for being compile-time executable.  If it is (the value is
+judged to be constant) it is immediately executed, and a @emph{constant}
+node with the "return value" of the corresponding subtree is
+substituted instead.  The subtree is deleted.
+
+If constant folding was not performed, the execution-order thread is
+created.
+
+@unnumberedsubsec Compile pass 2: context propagation
+When a context for a part of compile tree is known, it is propagated
+down through the tree.  Aat this time the context can have 5 values
+(instead of 2 for runtime context): void, boolean, scalar, list, and
+lvalue.  In contrast with the pass 1 this pass is processed from top
+to bottom: a node@'s context determines the context for its children.
+
+Additional context-dependent optimizations are performed at this time.
+Since at this moment the compile tree contains back-references (via
+"thread" pointers), nodes cannot be free()d now.  To allow
+optimized-away nodes at this stage, such nodes are null()ified instead
+of free()ing (i.e. their type is changed to OP_NULL).
+
+@unnumberedsubsec Compile pass 3: peephole optimization
+After the compile tree for a subroutine (or for an eval or a file)
+is created, an additional pass over the code is performed. This pass
+is neither top-down or bottom-up, but in the execution order (with
+additional compilications for conditionals).  These optimizations are
+done in the subroutine peep().  Optimizations performed at this stage
+are subject to the same restrictions as in the pass 2.
+
+@unnumberedsec API LISTING
+This is a listing of functions, macros, flags, and variables that may be
+useful to extension writers or that may be found while reading other
+extensions.
+
+@table @asis
+@item AvFILL
+See av_len.
+
+@item av_clear
+Clears an array, making it empty.  Does not free the memory used by the
+array itself.
+
+
+@example
+void    av_clear _((AV* ar));
+@end example
+
+@item av_extend
+Pre-extend an array.  The @code{key} is the index to which the array should be
+extended.
+
+
+@example
+void    av_extend _((AV* ar, I32 key));
+@end example
+
+@item av_fetch
+Returns the SV at the specified index in the array.  The @code{key} is the
+index.  If @code{lval} is set then the fetch will be part of a store.  Check
+that the return value is non-null before dereferencing it to a @code{SV*}.
+
+
+@example
+SV**    av_fetch _((AV* ar, I32 key, I32 lval));
+@end example
+
+@item av_len
+Returns the highest index in the array.  Returns -1 if the array is empty.
+
+
+@example
+I32     av_len _((AV* ar));
+@end example
+
+@item av_make
+Creates a new AV and populates it with a list of SVs.  The SVs are copied
+into the array, so they may be freed after the call to av_make.  The new AV
+will have a reference count of 1.
+
+
+@example
+AV*     av_make _((I32 size, SV** svp));
+@end example
+
+@item av_pop
+Pops an SV off the end of the array.  Returns @code{&sv_undef} if the array is
+empty.
+
+
+@example
+SV*     av_pop _((AV* ar));
+@end example
+
+@item av_push
+Pushes an SV onto the end of the array.  The array will grow automatically
+to accommodate the addition.
+
+
+@example
+void    av_push _((AV* ar, SV* val));
+@end example
+
+@item av_shift
+Shifts an SV off the beginning of the array.
+
+
+@example
+SV*     av_shift _((AV* ar));
+@end example
+
+@item av_store
+Stores an SV in an array.  The array index is specified as @code{key}.  The
+return value will be null if the operation failed, otherwise it can be
+dereferenced to get the original @code{SV*}.
+
+
+@example
+SV**    av_store _((AV* ar, I32 key, SV* val));
+@end example
+
+@item av_undef
+Undefines the array.  Frees the memory used by the array itself.
+
+
+@example
+void    av_undef _((AV* ar));
+@end example
+
+@item av_unshift
+Unshift the given number of undef values onto the beginning of the
+array.  The array will grow automatically to accommodate the addition.
+You must then use av_store to assign values to these new elements.
+
+
+@example
+void    av_unshift _((AV* ar, I32 num));
+@end example
+
+@item CLASS
+Variable which is setup by xsubpp to indicate the class name for a C++ XS
+constructor.  This is always a @code{char*}.  See THIS and
+@samp{"Using XS With C++"}, @xref{perlxs,Perlxs}.
+
+@item Copy
+The XSUB-writer@'s interface to the C @code{memcpy} function.  The s is the
+source, d is the destination, n is the number of items, and t is
+the type.  May fail on overlapping copies.  See also Move.
+
+
+@example
+(void) Copy( s, d, n, t );
+@end example
+
+@item croak
+This is the XSUB-writer@'s interface to Perl@'s die function.  Use this
+function the same way you use the C printf function.  See warn.
+
+@item CvSTASH
+Returns the stash of the CV.
+
+
+@example
+HV * CvSTASH( SV* sv )
+@end example
+
+@item DBsingle
+When Perl is run in debugging mode, with the -d switch, this SV is a
+boolean which indicates whether subs are being single-stepped.
+Single-stepping is automatically turned on after every step.  This is the C
+variable which corresponds to Perl@'s $DB::single variable.  See DBsub.
+
+@item DBsub
+When Perl is run in debugging mode, with the -d switch, this GV contains
+the SV which holds the name of the sub being debugged.  This is the C
+variable which corresponds to Perl@'s $DB::sub variable.  See DBsingle.
+The sub name can be found by
+
+
+@example
+SvPV( GvSV( DBsub ), na )
+@end example
+
+@item DBtrace
+Trace variable used when Perl is run in debugging mode, with the -d
+switch.  This is the C variable which corresponds to Perl@'s $DB::trace
+variable.  See DBsingle.
+
+@item dMARK
+Declare a stack marker variable, @code{mark}, for the XSUB.  See MARK and
+dORIGMARK.
+
+@item dORIGMARK
+Saves the original stack mark for the XSUB.  See ORIGMARK.
+
+@item dowarn
+The C variable which corresponds to Perl@'s $^W warning variable.
+
+@item dSP
+Declares a stack pointer variable, @code{sp}, for the XSUB.  See SP.
+
+@item dXSARGS
+Sets up stack and mark pointers for an XSUB, calling dSP and dMARK.  This is
+usually handled automatically by xsubpp.  Declares the items variable
+to indicate the number of items on the stack.
+
+@item dXSI32
+Sets up the ix variable for an XSUB which has aliases.  This is usually
+handled automatically by xsubpp.
+
+@item dXSI32
+Sets up the ix variable for an XSUB which has aliases.  This is usually
+handled automatically by xsubpp.
+
+@item ENTER
+Opening bracket on a callback.  See LEAVE and @xref{perlcall,Perlcall}.
+
+
+@example
+ENTER;
+@end example
+
+@item EXTEND
+Used to extend the argument stack for an XSUB@'s return values.
+
+
+@example
+EXTEND( sp, int x );
+@end example
+
+@item FREETMPS
+Closing bracket for temporaries on a callback.  See SAVETMPS and
+@xref{perlcall,Perlcall}.
+
+
+@example
+FREETMPS;
+@end example
+
+@item G_ARRAY
+Used to indicate array context.  See GIMME_V, GIMME and @xref{perlcall,Perlcall}.
+
+@item G_DISCARD
+Indicates that arguments returned from a callback should be discarded.  See
+@xref{perlcall,Perlcall}.
+
+@item G_EVAL
+Used to force a Perl eval wrapper around a callback.  See @xref{perlcall,Perlcall}.
+
+@item GIMME
+A backward-compatible version of GIMME_V which can only return
+G_SCALAR or G_ARRAY; in a void context, it returns G_SCALAR.
+
+@item GIMME_V
+The XSUB-writer@'s equivalent to Perl@'s wantarray.  Returns
+G_VOID, G_SCALAR or G_ARRAY for void, scalar or array
+context, respectively.
+
+@item G_NOARGS
+Indicates that no arguments are being sent to a callback.  See @xref{perlcall,Perlcall}.
+
+@item G_SCALAR
+Used to indicate scalar context.  See GIMME_V, GIMME, and @xref{perlcall,Perlcall}.
+
+@item G_VOID
+Used to indicate void context.  See GIMME_V and @xref{perlcall,Perlcall}.
+
+@item gv_fetchmeth
+Returns the glob with the given @code{name} and a defined subroutine or
+NULL.  The glob lives in the given @code{stash}, or in the stashes
+accessable via @@ISA and @@<UNIVERSAL>.
+
+The argument @code{level} should be either 0 or -1.  If @code{level==0}, as a
+side-effect creates a glob with the given @code{name} in the given
+@code{stash} which in the case of success contains an alias for the
+subroutine, and sets up caching info for this glob.  Similarly for all
+the searched stashes.
+
+This function grants @code{"SUPER"} token as a postfix of the stash name.
+
+The GV returned from gv_fetchmeth may be a method cache entry,
+which is not visible to Perl code.  So when calling perl_call_sv,
+you should not use the GV directly; instead, you should use the
+method@'s CV, which can be obtained from the GV with the @code{GvCV} macro.
+
+
+@example
+GV*     gv_fetchmeth _((HV* stash, char* name, STRLEN len, I32 level));
+@end example
+
+@item gv_fetchmethod
+@itemx gv_fetchmethod_autoload
+Returns the glob which contains the subroutine to call to invoke the
+method on the @code{stash}.  In fact in the presense of autoloading this may
+be the glob for "AUTOLOAD".  In this case the corresponding variable
+$AUTOLOAD is already setup.
+
+The third parameter of gv_fetchmethod_autoload determines whether AUTOLOAD
+lookup is performed if the given method is not present: non-zero means
+yes, look for AUTOLOAD; zero means no, don@'t look for AUTOLOAD.  Calling
+gv_fetchmethod is equivalent to calling gv_fetchmethod_autoload with a
+non-zero @code{autoload} parameter.
+
+These functions grant @code{"SUPER"} token as a prefix of the method name.
+
+Note that if you want to keep the returned glob for a long time, you
+need to check for it being "AUTOLOAD", since at the later time the call
+may load a different subroutine due to $AUTOLOAD changing its value.
+Use the glob created via a side effect to do this.
+
+These functions have the same side-effects and as gv_fetchmeth with
+@code{level==0}.  @code{name} should be writable if contains @code{@':@'} or @code{@'\@'@'}.
+The warning against passing the GV returned by gv_fetchmeth to
+perl_call_sv apply equally to these functions.
+
+
+@example
+GV*     gv_fetchmethod _((HV* stash, char* name));
+GV*     gv_fetchmethod_autoload _((HV* stash, char* name,
+                                   I32 autoload));
+@end example
+
+@item gv_stashpv
+Returns a pointer to the stash for a specified package.  If @code{create} is set
+then the package will be created if it does not already exist.  If @code{create}
+is not set and the package does not exist then NULL is returned.
+
+
+@example
+HV*     gv_stashpv _((char* name, I32 create));
+@end example
+
+@item gv_stashsv
+Returns a pointer to the stash for a specified package.  See gv_stashpv.
+
+
+@example
+HV*     gv_stashsv _((SV* sv, I32 create));
+@end example
+
+@item GvSV
+Return the SV from the GV.
+
+@item HEf_SVKEY
+This flag, used in the length slot of hash entries and magic
+structures, specifies the structure contains a @code{SV*} pointer where a
+@code{char*} pointer is to be expected. (For information only--not to be used).
+
+@item HeHASH
+Returns the computed hash (type @code{U32}) stored in the hash entry.
+
+
+@example
+HeHASH(HE* he)
+@end example
+
+@item HeKEY
+Returns the actual pointer stored in the key slot of the hash entry.
+The pointer may be either @code{char*} or @code{SV*}, depending on the value of
+@code{HeKLEN()}.  Can be assigned to.  The @code{HePV()} or @code{HeSVKEY()} macros
+are usually preferable for finding the value of a key.
+
+
+@example
+HeKEY(HE* he)
+@end example
+
+@item HeKLEN
+If this is negative, and amounts to HEf_SVKEY, it indicates the entry
+holds an @code{SV*} key.  Otherwise, holds the actual length of the key.
+Can be assigned to. The @code{HePV()} macro is usually preferable for finding
+key lengths.
+
+
+@example
+HeKLEN(HE* he)
+@end example
+
+@item HePV
+Returns the key slot of the hash entry as a @code{char*} value, doing any
+necessary dereferencing of possibly @code{SV*} keys.  The length of
+the string is placed in @code{len} (this is a macro, so do @emph{not} use
+@code{&len}).  If you do not care about what the length of the key is,
+you may use the global variable na.  Remember though, that hash
+keys in perl are free to contain embedded nulls, so using @code{strlen()}
+or similar is not a good way to find the length of hash keys.
+This is very similar to the @code{SvPV()} macro described elsewhere in
+this document.
+
+
+@example
+HePV(HE* he, STRLEN len)
+@end example
+
+@item HeSVKEY
+Returns the key as an @code{SV*}, or Nullsv if the hash entry
+does not contain an @code{SV*} key.
+
+
+@example
+HeSVKEY(HE* he)
+@end example
+
+@item HeSVKEY_force
+Returns the key as an @code{SV*}.  Will create and return a temporary
+mortal @code{SV*} if the hash entry contains only a @code{char*} key.
+
+
+@example
+HeSVKEY_force(HE* he)
+@end example
+
+@item HeSVKEY_set
+Sets the key to a given @code{SV*}, taking care to set the appropriate flags
+to indicate the presence of an @code{SV*} key, and returns the same @code{SV*}.
+
+
+@example
+HeSVKEY_set(HE* he, SV* sv)
+@end example
+
+@item HeVAL
+Returns the value slot (type @code{SV*}) stored in the hash entry.
+
+
+@example
+HeVAL(HE* he)
+@end example
+
+@item hv_clear
+Clears a hash, making it empty.
+
+
+@example
+void    hv_clear _((HV* tb));
+@end example
+
+@item hv_delayfree_ent
+Releases a hash entry, such as while iterating though the hash, but
+delays actual freeing of key and value until the end of the current
+statement (or thereabouts) with sv_2mortal.  See hv_iternext
+and hv_free_ent.
+
+
+@example
+void    hv_delayfree_ent _((HV* hv, HE* entry));
+@end example
+
+@item hv_delete
+Deletes a key/value pair in the hash.  The value SV is removed from the hash
+and returned to the caller.  The @code{klen} is the length of the key.  The
+@code{flags} value will normally be zero; if set to G_DISCARD then null will be
+returned.
+
+
+@example
+SV*     hv_delete _((HV* tb, char* key, U32 klen, I32 flags));
+@end example
+
+@item hv_delete_ent
+Deletes a key/value pair in the hash.  The value SV is removed from the hash
+and returned to the caller.  The @code{flags} value will normally be zero; if set
+to G_DISCARD then null will be returned.  @code{hash} can be a valid precomputed
+hash value, or 0 to ask for it to be computed.
+
+
+@example
+SV*     hv_delete_ent _((HV* tb, SV* key, I32 flags, U32 hash));
+@end example
+
+@item hv_exists
+Returns a boolean indicating whether the specified hash key exists.  The
+@code{klen} is the length of the key.
+
+
+@example
+bool    hv_exists _((HV* tb, char* key, U32 klen));
+@end example
+
+@item hv_exists_ent
+Returns a boolean indicating whether the specified hash key exists. @code{hash}
+can be a valid precomputed hash value, or 0 to ask for it to be computed.
+
+
+@example
+bool    hv_exists_ent _((HV* tb, SV* key, U32 hash));
+@end example
+
+@item hv_fetch
+Returns the SV which corresponds to the specified key in the hash.  The
+@code{klen} is the length of the key.  If @code{lval} is set then the fetch will be
+part of a store.  Check that the return value is non-null before
+dereferencing it to a @code{SV*}.
+
+
+@example
+SV**    hv_fetch _((HV* tb, char* key, U32 klen, I32 lval));
+@end example
+
+@item hv_fetch_ent
+Returns the hash entry which corresponds to the specified key in the hash.
+@code{hash} must be a valid precomputed hash number for the given @code{key}, or
+0 if you want the function to compute it.  IF @code{lval} is set then the
+fetch will be part of a store.  Make sure the return value is non-null
+before accessing it.  The return value when @code{tb} is a tied hash
+is a pointer to a static location, so be sure to make a copy of the
+structure if you need to store it somewhere.
+
+
+@example
+HE*     hv_fetch_ent  _((HV* tb, SV* key, I32 lval, U32 hash));
+@end example
+
+@item hv_free_ent
+Releases a hash entry, such as while iterating though the hash.  See
+hv_iternext and hv_delayfree_ent.
+
+
+@example
+void    hv_free_ent _((HV* hv, HE* entry));
+@end example
+
+@item hv_iterinit
+Prepares a starting point to traverse a hash table.
+
+
+@example
+I32     hv_iterinit _((HV* tb));
+@end example
+
+@item hv_iterkey
+Returns the key from the current position of the hash iterator.  See
+hv_iterinit.
+
+
+@example
+char*   hv_iterkey _((HE* entry, I32* retlen));
+@end example
+
+@item hv_iterkeysv
+Returns the key as an @code{SV*} from the current position of the hash
+iterator.  The return value will always be a mortal copy of the
+key.  Also see hv_iterinit.
+
+
+@example
+SV*     hv_iterkeysv  _((HE* entry));
+@end example
+
+@item hv_iternext
+Returns entries from a hash iterator.  See hv_iterinit.
+
+
+@example
+HE*     hv_iternext _((HV* tb));
+@end example
+
+@item hv_iternextsv
+Performs an hv_iternext, hv_iterkey, and hv_iterval in one
+operation.
+
+
+@example
+SV *    hv_iternextsv _((HV* hv, char** key, I32* retlen));
+@end example
+
+@item hv_iterval
+Returns the value from the current position of the hash iterator.  See
+hv_iterkey.
+
+
+@example
+SV*     hv_iterval _((HV* tb, HE* entry));
+@end example
+
+@item hv_magic
+Adds magic to a hash.  See sv_magic.
+
+
+@example
+void    hv_magic _((HV* hv, GV* gv, int how));
+@end example
+
+@item HvNAME
+Returns the package name of a stash.  See SvSTASH, CvSTASH.
+
+
+@example
+char *HvNAME (HV* stash)
+@end example
+
+@item hv_store
+Stores an SV in a hash.  The hash key is specified as @code{key} and @code{klen} is
+the length of the key.  The @code{hash} parameter is the precomputed hash
+value; if it is zero then Perl will compute it.  The return value will be
+null if the operation failed, otherwise it can be dereferenced to get the
+original @code{SV*}.
+
+
+@example
+SV**    hv_store _((HV* tb, char* key, U32 klen, SV* val, U32 hash));
+@end example
+
+@item hv_store_ent
+Stores @code{val} in a hash.  The hash key is specified as @code{key}.  The @code{hash}
+parameter is the precomputed hash value; if it is zero then Perl will
+compute it.  The return value is the new hash entry so created.  It will be
+null if the operation failed or if the entry was stored in a tied hash.
+Otherwise the contents of the return value can be accessed using the
+@code{He???} macros described here.
+
+
+@example
+HE*     hv_store_ent  _((HV* tb, SV* key, SV* val, U32 hash));
+@end example
+
+@item hv_undef
+Undefines the hash.
+
+
+@example
+void    hv_undef _((HV* tb));
+@end example
+
+@item isALNUM
+Returns a boolean indicating whether the C @code{char} is an ascii alphanumeric
+character or digit.
+
+
+@example
+int isALNUM (char c)
+@end example
+
+@item isALPHA
+Returns a boolean indicating whether the C @code{char} is an ascii alphabetic
+character.
+
+
+@example
+int isALPHA (char c)
+@end example
+
+@item isDIGIT
+Returns a boolean indicating whether the C @code{char} is an ascii digit.
+
+
+@example
+int isDIGIT (char c)
+@end example
+
+@item isLOWER
+Returns a boolean indicating whether the C @code{char} is a lowercase character.
+
+
+@example
+int isLOWER (char c)
+@end example
+
+@item isSPACE
+Returns a boolean indicating whether the C @code{char} is whitespace.
+
+
+@example
+int isSPACE (char c)
+@end example
+
+@item isUPPER
+Returns a boolean indicating whether the C @code{char} is an uppercase character.
+
+
+@example
+int isUPPER (char c)
+@end example
+
+@item items
+Variable which is setup by xsubpp to indicate the number of items on the
+stack.  See @samp{"Variable-length Parameter Lists"}, @xref{perlxs,Perlxs}.
+
+@item ix
+Variable which is setup by xsubpp to indicate which of an XSUB@'s aliases
+was used to invoke it.  See @samp{"The ALIAS: Keyword"}, @xref{perlxs,Perlxs}.
+
+@item LEAVE
+Closing bracket on a callback.  See ENTER and @xref{perlcall,Perlcall}.
+
+
+@example
+LEAVE;
+@end example
+
+@item MARK
+Stack marker variable for the XSUB.  See dMARK.
+
+@item mg_clear
+Clear something magical that the SV represents.  See sv_magic.
+
+
+@example
+int     mg_clear _((SV* sv));
+@end example
+
+@item mg_copy
+Copies the magic from one SV to another.  See sv_magic.
+
+
+@example
+int     mg_copy _((SV *, SV *, char *, STRLEN));
+@end example
+
+@item mg_find
+Finds the magic pointer for type matching the SV.  See sv_magic.
+
+
+@example
+MAGIC*  mg_find _((SV* sv, int type));
+@end example
+
+@item mg_free
+Free any magic storage used by the SV.  See sv_magic.
+
+
+@example
+int     mg_free _((SV* sv));
+@end example
+
+@item mg_get
+Do magic after a value is retrieved from the SV.  See sv_magic.
+
+
+@example
+int     mg_get _((SV* sv));
+@end example
+
+@item mg_len
+Report on the SV@'s length.  See sv_magic.
+
+
+@example
+U32     mg_len _((SV* sv));
+@end example
+
+@item mg_magical
+Turns on the magical status of an SV.  See sv_magic.
+
+
+@example
+void    mg_magical _((SV* sv));
+@end example
+
+@item mg_set
+Do magic after a value is assigned to the SV.  See sv_magic.
+
+
+@example
+int     mg_set _((SV* sv));
+@end example
+
+@item Move
+The XSUB-writer@'s interface to the C @code{memmove} function.  The s is the
+source, d is the destination, n is the number of items, and t is
+the type.  Can do overlapping moves.  See also Copy.
+
+
+@example
+(void) Move( s, d, n, t );
+@end example
+
+@item na
+A variable which may be used with SvPV to tell Perl to calculate the
+string length.
+
+@item New
+The XSUB-writer@'s interface to the C @code{malloc} function.
+
+
+@example
+void * New( x, void *ptr, int size, type )
+@end example
+
+@item Newc
+The XSUB-writer@'s interface to the C @code{malloc} function, with cast.
+
+
+@example
+void * Newc( x, void *ptr, int size, type, cast )
+@end example
+
+@item Newz
+The XSUB-writer@'s interface to the C @code{malloc} function.  The allocated
+memory is zeroed with @code{memzero}.
+
+
+@example
+void * Newz( x, void *ptr, int size, type )
+@end example
+
+@item newAV
+Creates a new AV.  The reference count is set to 1.
+
+
+@example
+AV*     newAV _((void));
+@end example
+
+@item newHV
+Creates a new HV.  The reference count is set to 1.
+
+
+@example
+HV*     newHV _((void));
+@end example
+
+@item newRV_inc
+Creates an RV wrapper for an SV.  The reference count for the original SV is
+incremented.
+
+
+@example
+SV*     newRV_inc _((SV* ref));
+@end example
+
+For historical reasons, "newRV" is a synonym for "newRV_inc".
+
+@item newRV_noinc
+Creates an RV wrapper for an SV.  The reference count for the original
+SV is @strong{not} incremented.
+
+
+@example
+SV*     newRV_noinc _((SV* ref));
+@end example
+
+@item newSV
+Creates a new SV.  The @code{len} parameter indicates the number of bytes of
+preallocated string space the SV should have.  The reference count for the
+new SV is set to 1.
+
+
+@example
+SV*     newSV _((STRLEN len));
+@end example
+
+@item newSViv
+Creates a new SV and copies an integer into it.  The reference count for the
+SV is set to 1.
+
+
+@example
+SV*     newSViv _((IV i));
+@end example
+
+@item newSVnv
+Creates a new SV and copies a double into it.  The reference count for the
+SV is set to 1.
+
+
+@example
+SV*     newSVnv _((NV i));
+@end example
+
+@item newSVpv
+Creates a new SV and copies a string into it.  The reference count for the
+SV is set to 1.  If @code{len} is zero then Perl will compute the length.
+
+
+@example
+SV*     newSVpv _((char* s, STRLEN len));
+@end example
+
+@item newSVrv
+Creates a new SV for the RV, @code{rv}, to point to.  If @code{rv} is not an RV then
+it will be upgraded to one.  If @code{classname} is non-null then the new SV will
+be blessed in the specified package.  The new SV is returned and its
+reference count is 1.
+
+
+@example
+SV*     newSVrv _((SV* rv, char* classname));
+@end example
+
+@item newSVsv
+Creates a new SV which is an exact duplicate of the original SV.
+
+
+@example
+SV*     newSVsv _((SV* old));
+@end example
+
+@item newXS
+Used by xsubpp to hook up XSUBs as Perl subs.
+
+@item newXSproto
+Used by xsubpp to hook up XSUBs as Perl subs.  Adds Perl prototypes to
+the subs.
+
+@item Nullav
+Null AV pointer.
+
+@item Nullch
+Null character pointer.
+
+@item Nullcv
+Null CV pointer.
+
+@item Nullhv
+Null HV pointer.
+
+@item Nullsv
+Null SV pointer.
+
+@item ORIGMARK
+The original stack mark for the XSUB.  See dORIGMARK.
+
+@item perl_alloc
+Allocates a new Perl interpreter.  See @xref{perlembed,Perlembed}.
+
+@item perl_call_argv
+Performs a callback to the specified Perl sub.  See @xref{perlcall,Perlcall}.
+
+
+@example
+I32     perl_call_argv _((char* subname, I32 flags, char** argv));
+@end example
+
+@item perl_call_method
+Performs a callback to the specified Perl method.  The blessed object must
+be on the stack.  See @xref{perlcall,Perlcall}.
+
+
+@example
+I32     perl_call_method _((char* methname, I32 flags));
+@end example
+
+@item perl_call_pv
+Performs a callback to the specified Perl sub.  See @xref{perlcall,Perlcall}.
+
+
+@example
+I32     perl_call_pv _((char* subname, I32 flags));
+@end example
+
+@item perl_call_sv
+Performs a callback to the Perl sub whose name is in the SV.  See
+@xref{perlcall,Perlcall}.
+
+
+@example
+I32     perl_call_sv _((SV* sv, I32 flags));
+@end example
+
+@item perl_construct
+Initializes a new Perl interpreter.  See @xref{perlembed,Perlembed}.
+
+@item perl_destruct
+Shuts down a Perl interpreter.  See @xref{perlembed,Perlembed}.
+
+@item perl_eval_sv
+Tells Perl to eval the string in the SV.
+
+
+@example
+I32     perl_eval_sv _((SV* sv, I32 flags));
+@end example
+
+@item perl_eval_pv
+Tells Perl to eval the given string and return an SV* result.
+
+
+@example
+SV*     perl_eval_pv _((char* p, I32 croak_on_error));
+@end example
+
+@item perl_free
+Releases a Perl interpreter.  See @xref{perlembed,Perlembed}.
+
+@item perl_get_av
+Returns the AV of the specified Perl array.  If @code{create} is set and the
+Perl variable does not exist then it will be created.  If @code{create} is not
+set and the variable does not exist then null is returned.
+
+
+@example
+AV*     perl_get_av _((char* name, I32 create));
+@end example
+
+@item perl_get_cv
+Returns the CV of the specified Perl sub.  If @code{create} is set and the Perl
+variable does not exist then it will be created.  If @code{create} is not
+set and the variable does not exist then null is returned.
+
+
+@example
+CV*     perl_get_cv _((char* name, I32 create));
+@end example
+
+@item perl_get_hv
+Returns the HV of the specified Perl hash.  If @code{create} is set and the Perl
+variable does not exist then it will be created.  If @code{create} is not
+set and the variable does not exist then null is returned.
+
+
+@example
+HV*     perl_get_hv _((char* name, I32 create));
+@end example
+
+@item perl_get_sv
+Returns the SV of the specified Perl scalar.  If @code{create} is set and the
+Perl variable does not exist then it will be created.  If @code{create} is not
+set and the variable does not exist then null is returned.
+
+
+@example
+SV*     perl_get_sv _((char* name, I32 create));
+@end example
+
+@item perl_parse
+Tells a Perl interpreter to parse a Perl script.  See @xref{perlembed,Perlembed}.
+
+@item perl_require_pv
+Tells Perl to require a module.
+
+
+@example
+void    perl_require_pv _((char* pv));
+@end example
+
+@item perl_run
+Tells a Perl interpreter to run.  See @xref{perlembed,Perlembed}.
+
+@item POPi
+Pops an integer off the stack.
+
+
+@example
+int POPi();
+@end example
+
+@item POPl
+Pops a long off the stack.
+
+
+@example
+long POPl();
+@end example
+
+@item POPp
+Pops a string off the stack.
+
+
+@example
+char * POPp();
+@end example
+
+@item POPn
+Pops a double off the stack.
+
+
+@example
+double POPn();
+@end example
+
+@item POPs
+Pops an SV off the stack.
+
+
+@example
+SV* POPs();
+@end example
+
+@item PUSHMARK
+Opening bracket for arguments on a callback.  See PUTBACK and @xref{perlcall,Perlcall}.
+
+
+@example
+PUSHMARK(p)
+@end example
+
+@item PUSHi
+Push an integer onto the stack.  The stack must have room for this element.
+See XPUSHi.
+
+
+@example
+PUSHi(int d)
+@end example
+
+@item PUSHn
+Push a double onto the stack.  The stack must have room for this element.
+See XPUSHn.
+
+
+@example
+PUSHn(double d)
+@end example
+
+@item PUSHp
+Push a string onto the stack.  The stack must have room for this element.
+The @code{len} indicates the length of the string.  See XPUSHp.
+
+
+@example
+PUSHp(char *c, int len )
+@end example
+
+@item PUSHs
+Push an SV onto the stack.  The stack must have room for this element.  See
+XPUSHs.
+
+
+@example
+PUSHs(sv)
+@end example
+
+@item PUTBACK
+Closing bracket for XSUB arguments.  This is usually handled by xsubpp.
+See PUSHMARK and @xref{perlcall,Perlcall}, for other uses.
+
+
+@example
+PUTBACK;
+@end example
+
+@item Renew
+The XSUB-writer@'s interface to the C @code{realloc} function.
+
+
+@example
+void * Renew( void *ptr, int size, type )
+@end example
+
+@item Renewc
+The XSUB-writer@'s interface to the C @code{realloc} function, with cast.
+
+
+@example
+void * Renewc( void *ptr, int size, type, cast )
+@end example
+
+@item RETVAL
+Variable which is setup by xsubpp to hold the return value for an XSUB.
+This is always the proper type for the XSUB.
+See @samp{"The RETVAL Variable"}, @xref{perlxs,Perlxs}.
+
+@item safefree
+The XSUB-writer@'s interface to the C @code{free} function.
+
+@item safemalloc
+The XSUB-writer@'s interface to the C @code{malloc} function.
+
+@item saferealloc
+The XSUB-writer@'s interface to the C @code{realloc} function.
+
+@item savepv
+Copy a string to a safe spot.  This does not use an SV.
+
+
+@example
+char*   savepv _((char* sv));
+@end example
+
+@item savepvn
+Copy a string to a safe spot.  The @code{len} indicates number of bytes to
+copy.  This does not use an SV.
+
+
+@example
+char*   savepvn _((char* sv, I32 len));
+@end example
+
+@item SAVETMPS
+Opening bracket for temporaries on a callback.  See FREETMPS and
+@xref{perlcall,Perlcall}.
+
+
+@example
+SAVETMPS;
+@end example
+
+@item SP
+Stack pointer.  This is usually handled by xsubpp.  See dSP and
+SPAGAIN.
+
+@item SPAGAIN
+Refetch the stack pointer.  Used after a callback.  See @xref{perlcall,Perlcall}.
+
+
+@example
+SPAGAIN;
+@end example
+
+@item ST
+Used to access elements on the XSUB@'s stack.
+
+
+@example
+SV* ST(int x)
+@end example
+
+@item strEQ
+Test two strings to see if they are equal.  Returns true or false.
+
+
+@example
+int strEQ( char *s1, char *s2 )
+@end example
+
+@item strGE
+Test two strings to see if the first, @code{s1}, is greater than or equal to the
+second, @code{s2}.  Returns true or false.
+
+
+@example
+int strGE( char *s1, char *s2 )
+@end example
+
+@item strGT
+Test two strings to see if the first, @code{s1}, is greater than the second,
+@code{s2}.  Returns true or false.
+
+
+@example
+int strGT( char *s1, char *s2 )
+@end example
+
+@item strLE
+Test two strings to see if the first, @code{s1}, is less than or equal to the
+second, @code{s2}.  Returns true or false.
+
+
+@example
+int strLE( char *s1, char *s2 )
+@end example
+
+@item strLT
+Test two strings to see if the first, @code{s1}, is less than the second,
+@code{s2}.  Returns true or false.
+
+
+@example
+int strLT( char *s1, char *s2 )
+@end example
+
+@item strNE
+Test two strings to see if they are different.  Returns true or false.
+
+
+@example
+int strNE( char *s1, char *s2 )
+@end example
+
+@item strnEQ
+Test two strings to see if they are equal.  The @code{len} parameter indicates
+the number of bytes to compare.  Returns true or false.
+
+
+@example
+int strnEQ( char *s1, char *s2 )
+@end example
+
+@item strnNE
+Test two strings to see if they are different.  The @code{len} parameter
+indicates the number of bytes to compare.  Returns true or false.
+
+
+@example
+int strnNE( char *s1, char *s2, int len )
+@end example
+
+@item sv_2mortal
+Marks an SV as mortal.  The SV will be destroyed when the current context
+ends.
+
+
+@example
+SV*     sv_2mortal _((SV* sv));
+@end example
+
+@item sv_bless
+Blesses an SV into a specified package.  The SV must be an RV.  The package
+must be designated by its stash (see @code{gv_stashpv()}).  The reference count
+of the SV is unaffected.
+
+
+@example
+SV*     sv_bless _((SV* sv, HV* stash));
+@end example
+
+@item sv_catpv
+Concatenates the string onto the end of the string which is in the SV.
+
+
+@example
+void    sv_catpv _((SV* sv, char* ptr));
+@end example
+
+@item sv_catpvn
+Concatenates the string onto the end of the string which is in the SV.  The
+@code{len} indicates number of bytes to copy.
+
+
+@example
+void    sv_catpvn _((SV* sv, char* ptr, STRLEN len));
+@end example
+
+@item sv_catpvf
+Processes its arguments like sprintf and appends the formatted output
+to an SV.
+
+
+@example
+void    sv_catpvf _((SV* sv, const char* pat, ...));
+@end example
+
+@item sv_catsv
+Concatenates the string from SV @code{ssv} onto the end of the string in SV
+@code{dsv}.
+
+
+@example
+void    sv_catsv _((SV* dsv, SV* ssv));
+@end example
+
+@item sv_cmp
+Compares the strings in two SVs.  Returns -1, 0, or 1 indicating whether the
+string in @code{sv1} is less than, equal to, or greater than the string in
+@code{sv2}.
+
+
+@example
+I32     sv_cmp _((SV* sv1, SV* sv2));
+@end example
+
+@item sv_cmp
+Compares the strings in two SVs.  Returns -1, 0, or 1 indicating whether the
+string in @code{sv1} is less than, equal to, or greater than the string in
+@code{sv2}.
+
+
+@example
+I32     sv_cmp _((SV* sv1, SV* sv2));
+@end example
+
+@item SvCUR
+Returns the length of the string which is in the SV.  See SvLEN.
+
+
+@example
+int SvCUR (SV* sv)
+@end example
+
+@item SvCUR_set
+Set the length of the string which is in the SV.  See SvCUR.
+
+
+@example
+SvCUR_set (SV* sv, int val )
+@end example
+
+@item sv_dec
+Auto-decrement of the value in the SV.
+
+
+@example
+void    sv_dec _((SV* sv));
+@end example
+
+@item sv_dec
+Auto-decrement of the value in the SV.
+
+
+@example
+void    sv_dec _((SV* sv));
+@end example
+
+@item SvEND
+Returns a pointer to the last character in the string which is in the SV.
+See SvCUR.  Access the character as
+
+
+@example
+*SvEND(sv)
+@end example
+
+@item sv_eq
+Returns a boolean indicating whether the strings in the two SVs are
+identical.
+
+
+@example
+I32     sv_eq _((SV* sv1, SV* sv2));
+@end example
+
+@item SvGROW
+Expands the character buffer in the SV.  Calls sv_grow to perform the
+expansion if necessary.  Returns a pointer to the character buffer.
+
+
+@example
+char * SvGROW( SV* sv, int len )
+@end example
+
+@item sv_grow
+Expands the character buffer in the SV.  This will use sv_unref and will
+upgrade the SV to SVt_PV.  Returns a pointer to the character buffer.
+Use SvGROW.
+
+@item sv_inc
+Auto-increment of the value in the SV.
+
+
+@example
+void    sv_inc _((SV* sv));
+@end example
+
+@item SvIOK
+Returns a boolean indicating whether the SV contains an integer.
+
+
+@example
+int SvIOK (SV* SV)
+@end example
+
+@item SvIOK_off
+Unsets the IV status of an SV.
+
+
+@example
+SvIOK_off (SV* sv)
+@end example
+
+@item SvIOK_on
+Tells an SV that it is an integer.
+
+
+@example
+SvIOK_on (SV* sv)
+@end example
+
+@item SvIOK_only
+Tells an SV that it is an integer and disables all other OK bits.
+
+
+@example
+SvIOK_on (SV* sv)
+@end example
+
+@item SvIOK_only
+Tells an SV that it is an integer and disables all other OK bits.
+
+
+@example
+SvIOK_on (SV* sv)
+@end example
+
+@item SvIOKp
+Returns a boolean indicating whether the SV contains an integer.  Checks the
+@strong{private} setting.  Use SvIOK.
+
+
+@example
+int SvIOKp (SV* SV)
+@end example
+
+@item sv_isa
+Returns a boolean indicating whether the SV is blessed into the specified
+class.  This does not know how to check for subtype, so it doesn@'t work in
+an inheritance relationship.
+
+
+@example
+int     sv_isa _((SV* sv, char* name));
+@end example
+
+@item SvIV
+Returns the integer which is in the SV.
+
+
+@example
+int SvIV (SV* sv)
+@end example
+
+@item sv_isobject
+Returns a boolean indicating whether the SV is an RV pointing to a blessed
+object.  If the SV is not an RV, or if the object is not blessed, then this
+will return false.
+
+
+@example
+int     sv_isobject _((SV* sv));
+@end example
+
+@item SvIVX
+Returns the integer which is stored in the SV.
+
+
+@example
+int  SvIVX (SV* sv);
+@end example
+
+@item SvLEN
+Returns the size of the string buffer in the SV.  See SvCUR.
+
+
+@example
+int SvLEN (SV* sv)
+@end example
+
+@item sv_len
+Returns the length of the string in the SV.  Use SvCUR.
+
+
+@example
+STRLEN  sv_len _((SV* sv));
+@end example
+
+@item sv_len
+Returns the length of the string in the SV.  Use SvCUR.
+
+
+@example
+STRLEN  sv_len _((SV* sv));
+@end example
+
+@item sv_magic
+Adds magic to an SV.
+
+
+@example
+void    sv_magic _((SV* sv, SV* obj, int how, char* name, I32 namlen));
+@end example
+
+@item sv_mortalcopy
+Creates a new SV which is a copy of the original SV.  The new SV is marked
+as mortal.
+
+
+@example
+SV*     sv_mortalcopy _((SV* oldsv));
+@end example
+
+@item SvOK
+Returns a boolean indicating whether the value is an SV.
+
+
+@example
+int SvOK (SV* sv)
+@end example
+
+@item sv_newmortal
+Creates a new SV which is mortal.  The reference count of the SV is set to 1.
+
+
+@example
+SV*     sv_newmortal _((void));
+@end example
+
+@item sv_no
+This is the @code{false} SV.  See sv_yes.  Always refer to this as @code{&sv_no}.
+
+@item SvNIOK
+Returns a boolean indicating whether the SV contains a number, integer or
+double.
+
+
+@example
+int SvNIOK (SV* SV)
+@end example
+
+@item SvNIOK_off
+Unsets the NV/IV status of an SV.
+
+
+@example
+SvNIOK_off (SV* sv)
+@end example
+
+@item SvNIOKp
+Returns a boolean indicating whether the SV contains a number, integer or
+double.  Checks the @strong{private} setting.  Use SvNIOK.
+
+
+@example
+int SvNIOKp (SV* SV)
+@end example
+
+@item SvNOK
+Returns a boolean indicating whether the SV contains a double.
+
+
+@example
+int SvNOK (SV* SV)
+@end example
+
+@item SvNOK_off
+Unsets the NV status of an SV.
+
+
+@example
+SvNOK_off (SV* sv)
+@end example
+
+@item SvNOK_on
+Tells an SV that it is a double.
+
+
+@example
+SvNOK_on (SV* sv)
+@end example
+
+@item SvNOK_only
+Tells an SV that it is a double and disables all other OK bits.
+
+
+@example
+SvNOK_on (SV* sv)
+@end example
+
+@item SvNOK_only
+Tells an SV that it is a double and disables all other OK bits.
+
+
+@example
+SvNOK_on (SV* sv)
+@end example
+
+@item SvNOKp
+Returns a boolean indicating whether the SV contains a double.  Checks the
+@strong{private} setting.  Use SvNOK.
+
+
+@example
+int SvNOKp (SV* SV)
+@end example
+
+@item SvNV
+Returns the double which is stored in the SV.
+
+
+@example
+double SvNV (SV* sv);
+@end example
+
+@item SvNVX
+Returns the double which is stored in the SV.
+
+
+@example
+double SvNVX (SV* sv);
+@end example
+
+@item SvPOK
+Returns a boolean indicating whether the SV contains a character string.
+
+
+@example
+int SvPOK (SV* SV)
+@end example
+
+@item SvPOK_off
+Unsets the PV status of an SV.
+
+
+@example
+SvPOK_off (SV* sv)
+@end example
+
+@item SvPOK_on
+Tells an SV that it is a string.
+
+
+@example
+SvPOK_on (SV* sv)
+@end example
+
+@item SvPOK_only
+Tells an SV that it is a string and disables all other OK bits.
+
+
+@example
+SvPOK_on (SV* sv)
+@end example
+
+@item SvPOK_only
+Tells an SV that it is a string and disables all other OK bits.
+
+
+@example
+SvPOK_on (SV* sv)
+@end example
+
+@item SvPOKp
+Returns a boolean indicating whether the SV contains a character string.
+Checks the @strong{private} setting.  Use SvPOK.
+
+
+@example
+int SvPOKp (SV* SV)
+@end example
+
+@item SvPV
+Returns a pointer to the string in the SV, or a stringified form of the SV
+if the SV does not contain a string.  If @code{len} is na then Perl will
+handle the length on its own.
+
+
+@example
+char * SvPV (SV* sv, int len )
+@end example
+
+@item SvPVX
+Returns a pointer to the string in the SV.  The SV must contain a string.
+
+
+@example
+char * SvPVX (SV* sv)
+@end example
+
+@item SvREFCNT
+Returns the value of the object@'s reference count.
+
+
+@example
+int SvREFCNT (SV* sv);
+@end example
+
+@item SvREFCNT_dec
+Decrements the reference count of the given SV.
+
+
+@example
+void SvREFCNT_dec (SV* sv)
+@end example
+
+@item SvREFCNT_inc
+Increments the reference count of the given SV.
+
+
+@example
+void SvREFCNT_inc (SV* sv)
+@end example
+
+@item SvROK
+Tests if the SV is an RV.
+
+
+@example
+int SvROK (SV* sv)
+@end example
+
+@item SvROK_off
+Unsets the RV status of an SV.
+
+
+@example
+SvROK_off (SV* sv)
+@end example
+
+@item SvROK_on
+Tells an SV that it is an RV.
+
+
+@example
+SvROK_on (SV* sv)
+@end example
+
+@item SvRV
+Dereferences an RV to return the SV.
+
+
+@example
+SV*     SvRV (SV* sv);
+@end example
+
+@item sv_setiv
+Copies an integer into the given SV.
+
+
+@example
+void    sv_setiv _((SV* sv, IV num));
+@end example
+
+@item sv_setnv
+Copies a double into the given SV.
+
+
+@example
+void    sv_setnv _((SV* sv, double num));
+@end example
+
+@item sv_setpv
+Copies a string into an SV.  The string must be null-terminated.
+
+
+@example
+void    sv_setpv _((SV* sv, char* ptr));
+@end example
+
+@item sv_setpvn
+Copies a string into an SV.  The @code{len} parameter indicates the number of
+bytes to be copied.
+
+
+@example
+void    sv_setpvn _((SV* sv, char* ptr, STRLEN len));
+@end example
+
+@item sv_setpvf
+Processes its arguments like sprintf and sets an SV to the formatted
+output.
+
+
+@example
+void    sv_setpvf _((SV* sv, const char* pat, ...));
+@end example
+
+@item sv_setref_iv
+Copies an integer into a new SV, optionally blessing the SV.  The @code{rv}
+argument will be upgraded to an RV.  That RV will be modified to point to
+the new SV.  The @code{classname} argument indicates the package for the
+blessing.  Set @code{classname} to Nullch to avoid the blessing.  The new SV
+will be returned and will have a reference count of 1.
+
+
+@example
+SV*     sv_setref_iv _((SV *rv, char *classname, IV iv));
+@end example
+
+@item sv_setref_nv
+Copies a double into a new SV, optionally blessing the SV.  The @code{rv}
+argument will be upgraded to an RV.  That RV will be modified to point to
+the new SV.  The @code{classname} argument indicates the package for the
+blessing.  Set @code{classname} to Nullch to avoid the blessing.  The new SV
+will be returned and will have a reference count of 1.
+
+
+@example
+SV*     sv_setref_nv _((SV *rv, char *classname, double nv));
+@end example
+
+@item sv_setref_pv
+Copies a pointer into a new SV, optionally blessing the SV.  The @code{rv}
+argument will be upgraded to an RV.  That RV will be modified to point to
+the new SV.  If the @code{pv} argument is NULL then sv_undef will be placed
+into the SV.  The @code{classname} argument indicates the package for the
+blessing.  Set @code{classname} to Nullch to avoid the blessing.  The new SV
+will be returned and will have a reference count of 1.
+
+
+@example
+SV*     sv_setref_pv _((SV *rv, char *classname, void* pv));
+@end example
+
+Do not use with integral Perl types such as HV, AV, SV, CV, because those
+objects will become corrupted by the pointer copy process.
+
+Note that sv_setref_pvn copies the string while this copies the pointer.
+
+@item sv_setref_pvn
+Copies a string into a new SV, optionally blessing the SV.  The length of the
+string must be specified with n.  The @code{rv} argument will be upgraded to
+an RV.  That RV will be modified to point to the new SV.  The @code{classname}
+argument indicates the package for the blessing.  Set @code{classname} to
+Nullch to avoid the blessing.  The new SV will be returned and will have
+a reference count of 1.
+
+
+@example
+SV*     sv_setref_pvn _((SV *rv, char *classname, char* pv, I32 n));
+@end example
+
+Note that sv_setref_pv copies the pointer while this copies the string.
+
+@item sv_setsv
+Copies the contents of the source SV @code{ssv} into the destination SV @code{dsv}.
+The source SV may be destroyed if it is mortal.
+
+
+@example
+void    sv_setsv _((SV* dsv, SV* ssv));
+@end example
+
+@item SvSTASH
+Returns the stash of the SV.
+
+
+@example
+HV * SvSTASH (SV* sv)
+@end example
+
+@item SVt_IV
+Integer type flag for scalars.  See svtype.
+
+@item SVt_PV
+Pointer type flag for scalars.  See svtype.
+
+@item SVt_PVAV
+Type flag for arrays.  See svtype.
+
+@item SVt_PVCV
+Type flag for code refs.  See svtype.
+
+@item SVt_PVHV
+Type flag for hashes.  See svtype.
+
+@item SVt_PVMG
+Type flag for blessed scalars.  See svtype.
+
+@item SVt_NV
+Double type flag for scalars.  See svtype.
+
+@item SvTRUE
+Returns a boolean indicating whether Perl would evaluate the SV as true or
+false, defined or undefined.
+
+
+@example
+int SvTRUE (SV* sv)
+@end example
+
+@item SvTYPE
+Returns the type of the SV.  See svtype.
+
+
+@example
+svtype  SvTYPE (SV* sv)
+@end example
+
+@item svtype
+An enum of flags for Perl types.  These are found in the file @strong{sv.h} in the
+svtype enum.  Test these flags with the SvTYPE macro.
+
+@item SvUPGRADE
+Used to upgrade an SV to a more complex form.  Uses sv_upgrade to perform
+the upgrade if necessary.  See svtype.
+
+
+@example
+bool    SvUPGRADE _((SV* sv, svtype mt));
+@end example
+
+@item sv_upgrade
+Upgrade an SV to a more complex form.  Use SvUPGRADE.  See svtype.
+
+@item sv_undef
+This is the undef SV.  Always refer to this as @code{&sv_undef}.
+
+@item sv_unref
+Unsets the RV status of the SV, and decrements the reference count of
+whatever was being referenced by the RV.  This can almost be thought of
+as a reversal of newSVrv.  See SvROK_off.
+
+
+@example
+void    sv_unref _((SV* sv));
+@end example
+
+@item sv_usepvn
+Tells an SV to use @code{ptr} to find its string value.  Normally the string is
+stored inside the SV but sv_usepvn allows the SV to use an outside string.
+The @code{ptr} should point to memory that was allocated by @code{malloc}.  The
+string length, @code{len}, must be supplied.  This function will realloc the
+memory pointed to by @code{ptr}, so that pointer should not be freed or used by
+the programmer after giving it to sv_usepvn.
+
+
+@example
+void    sv_usepvn _((SV* sv, char* ptr, STRLEN len));
+@end example
+
+@item sv_yes
+This is the @code{true} SV.  See sv_no.  Always refer to this as @code{&sv_yes}.
+
+@item THIS
+Variable which is setup by xsubpp to designate the object in a C++ XSUB.
+This is always the proper type for the C++ object.  See CLASS and
+@samp{"Using XS With C++"}, @xref{perlxs,Perlxs}.
+
+@item toLOWER
+Converts the specified character to lowercase.
+
+
+@example
+int toLOWER (char c)
+@end example
+
+@item toUPPER
+Converts the specified character to uppercase.
+
+
+@example
+int toUPPER (char c)
+@end example
+
+@item warn
+This is the XSUB-writer@'s interface to Perl@'s warn function.  Use this
+function the same way you use the C printf function.  See @code{croak()}.
+
+@item XPUSHi
+Push an integer onto the stack, extending the stack if necessary.  See
+PUSHi.
+
+
+@example
+XPUSHi(int d)
+@end example
+
+@item XPUSHn
+Push a double onto the stack, extending the stack if necessary.  See
+PUSHn.
+
+
+@example
+XPUSHn(double d)
+@end example
+
+@item XPUSHp
+Push a string onto the stack, extending the stack if necessary.  The @code{len}
+indicates the length of the string.  See PUSHp.
+
+
+@example
+XPUSHp(char *c, int len)
+@end example
+
+@item XPUSHs
+Push an SV onto the stack, extending the stack if necessary.  See PUSHs.
+
+
+@example
+XPUSHs(sv)
+@end example
+
+@item XS
+Macro to declare an XSUB and its C parameter list.  This is handled by
+xsubpp.
+
+@item XSRETURN
+Return from XSUB, indicating number of items on the stack.  This is usually
+handled by xsubpp.
+
+
+@example
+XSRETURN(int x);
+@end example
+
+@item XSRETURN_EMPTY
+Return an empty list from an XSUB immediately.
+
+
+@example
+XSRETURN_EMPTY;
+@end example
+
+@item XSRETURN_IV
+Return an integer from an XSUB immediately.  Uses XST_mIV.
+
+
+@example
+XSRETURN_IV(IV v);
+@end example
+
+@item XSRETURN_NO
+Return @code{&sv_no} from an XSUB immediately.  Uses XST_mNO.
+
+
+@example
+XSRETURN_NO;
+@end example
+
+@item XSRETURN_NV
+Return an double from an XSUB immediately.  Uses XST_mNV.
+
+
+@example
+XSRETURN_NV(NV v);
+@end example
+
+@item XSRETURN_PV
+Return a copy of a string from an XSUB immediately.  Uses XST_mPV.
+
+
+@example
+XSRETURN_PV(char *v);
+@end example
+
+@item XSRETURN_UNDEF
+Return @code{&sv_undef} from an XSUB immediately.  Uses XST_mUNDEF.
+
+
+@example
+XSRETURN_UNDEF;
+@end example
+
+@item XSRETURN_YES
+Return @code{&sv_yes} from an XSUB immediately.  Uses XST_mYES.
+
+
+@example
+XSRETURN_YES;
+@end example
+
+@item XST_mIV
+Place an integer into the specified position i on the stack.  The value is
+stored in a new mortal SV.
+
+
+@example
+XST_mIV( int i, IV v );
+@end example
+
+@item XST_mNV
+Place a double into the specified position i on the stack.  The value is
+stored in a new mortal SV.
+
+
+@example
+XST_mNV( int i, NV v );
+@end example
+
+@item XST_mNO
+Place @code{&sv_no} into the specified position i on the stack.
+
+
+@example
+XST_mNO( int i );
+@end example
+
+@item XST_mPV
+Place a copy of a string into the specified position i on the stack.  The
+value is stored in a new mortal SV.
+
+
+@example
+XST_mPV( int i, char *v );
+@end example
+
+@item XST_mUNDEF
+Place @code{&sv_undef} into the specified position i on the stack.
+
+
+@example
+XST_mUNDEF( int i );
+@end example
+
+@item XST_mYES
+Place @code{&sv_yes} into the specified position i on the stack.
+
+
+@example
+XST_mYES( int i );
+@end example
+
+@item XS_VERSION
+The version identifier for an XS module.  This is usually handled
+automatically by ExtUtils::MakeMaker.  See XS_VERSION_BOOTCHECK.
+
+@item XS_VERSION_BOOTCHECK
+Macro to verify that a PM module@'s $VERSION variable matches the XS module@'s
+XS_VERSION variable.  This is usually handled automatically by
+xsubpp.  See @samp{"The VERSIONCHECK: Keyword"}, @xref{perlxs,Perlxs}.
+
+@item Zero
+The XSUB-writer@'s interface to the C @code{memzero} function.  The d is the
+destination, n is the number of items, and t is the type.
+
+
+@example
+(void) Zero( d, n, t );
+@end example
+
+@end table
+@unnumberedsec EDITOR
+Jeff Okamoto <@file{okamoto@@corp.hp.com}>
+
+With lots of help and suggestions from Dean Roehrich, Malcolm Beattie,
+Andreas Koenig, Paul Hudson, Ilya Zakharevich, Paul Marquess, Neil
+Bowers, Matthew Green, Tim Bunce, Spider Boardman, and Ulrich Pfeifer.
+
+API Listing by Dean Roehrich <@file{roehrich@@cray.com}>.
+
+@unnumberedsec DATE
+Version 31.7: 1997/5/1

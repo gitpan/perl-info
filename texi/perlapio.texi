@@ -1,0 +1,237 @@
+@node perlapio, perlxs, perlembed, Top
+@unnumberedsec NAME
+perlapio - perl@'s IO abstraction interface.
+
+@unnumberedsec SYNOPSIS
+
+@example
+PerlIO *PerlIO_stdin(void);
+PerlIO *PerlIO_stdout(void);
+PerlIO *PerlIO_stderr(void);
+
+PerlIO *PerlIO_open(const char *,const char *);
+int     PerlIO_close(PerlIO *);
+
+int     PerlIO_stdoutf(const char *,...)
+int     PerlIO_puts(PerlIO *,const char *);
+int     PerlIO_putc(PerlIO *,int);
+int     PerlIO_write(PerlIO *,const void *,size_t);
+int     PerlIO_printf(PerlIO *, const char *,...);
+int     PerlIO_vprintf(PerlIO *, const char *, va_list);
+int     PerlIO_flush(PerlIO *);
+
+int     PerlIO_eof(PerlIO *);
+int     PerlIO_error(PerlIO *);
+void    PerlIO_clearerr(PerlIO *);
+
+int     PerlIO_getc(PerlIO *);
+int     PerlIO_ungetc(PerlIO *,int);
+int     PerlIO_read(PerlIO *,void *,size_t);
+
+int     PerlIO_fileno(PerlIO *);
+PerlIO *PerlIO_fdopen(int, const char *);
+PerlIO *PerlIO_importFILE(FILE *);
+FILE   *PerlIO_exportFILE(PerlIO *);
+FILE   *PerlIO_findFILE(PerlIO *);
+void    PerlIO_releaseFILE(PerlIO *,FILE *);
+
+void    PerlIO_setlinebuf(PerlIO *);
+
+long    PerlIO_tell(PerlIO *);
+int     PerlIO_seek(PerlIO *,off_t,int);
+int     PerlIO_getpos(PerlIO *,Fpos_t *)
+int     PerlIO_setpos(PerlIO *,Fpos_t *)
+void    PerlIO_rewind(PerlIO *);
+
+int     PerlIO_has_base(PerlIO *);
+int     PerlIO_has_cntptr(PerlIO *);
+int     PerlIO_fast_gets(PerlIO *);
+int     PerlIO_canset_cnt(PerlIO *);
+
+char   *PerlIO_get_ptr(PerlIO *);
+int     PerlIO_get_cnt(PerlIO *);
+void    PerlIO_set_cnt(PerlIO *,int);
+void    PerlIO_set_ptrcnt(PerlIO *,char *,int);
+char   *PerlIO_get_base(PerlIO *);
+int     PerlIO_get_bufsiz(PerlIO *);
+@end example
+
+@unnumberedsec DESCRIPTION
+Perl@'s source code should use the above functions instead of those
+defined in ANSI C@'s @emph{stdio.h},  @emph{perlio.h} will the @code{#define} them to
+the I/O mechanism selected at Configure time.
+
+The functions are modeled on those in @emph{stdio.h}, but parameter order
+has been "tidied up a little".
+
+@table @asis
+@item @strong{PerlIO *}
+This takes the place of FILE *. Unlike FILE * it should be treated as
+opaque (it is probably safe to assume it is a pointer to something).
+
+@item @strong{PerlIO_stdin()}, @strong{PerlIO_stdout()}, @strong{PerlIO_stderr()}
+Use these rather than @code{stdin}, @code{stdout}, @code{stderr}. They are written
+to look like "function calls" rather than variables because this makes
+it easier to @emph{make them} function calls if platform cannot export data
+to loaded modules, or if (say) different "threads" might have different
+values.
+
+@item @strong{PerlIO_open(path, mode)}, @strong{PerlIO_fdopen(fd,mode)}
+These correspond to fopen()/fdopen() arguments are the same.
+
+@item @strong{PerlIO_printf(f,fmt,...)}, @strong{PerlIO_vprintf(f,fmt,a)}
+These are is fprintf()/vfprintf equivalents.
+
+@item PerlIO_stdoutf(fmt,...)
+This is printf() equivalent. printf is #defined to this function,
+so it is (currently) legal to use @code{printf(fmt,...)} in perl sources.
+
+@item @strong{PerlIO_read(f,buf,count)}, @strong{PerlIO_write(f,buf,count)}
+These correspond to fread() and fwrite(). Note that arguments
+are different, there is only one "count" and order has
+"file" first.
+
+@item PerlIO_close(f)
+@itemx @strong{PerlIO_puts(s,f)}, @strong{PerlIO_putc(c,f)}
+These correspond to fputs() and fputc().
+Note that arguments have been revised to have "file" first.
+
+@item PerlIO_ungetc(c,f)
+This corresponds to ungetc().
+Note that arguments have been revised to have "file" first.
+
+@item PerlIO_getc(f)
+This corresponds to getc().
+
+@item PerlIO_eof(f)
+This corresponds to feof().
+
+@item PerlIO_error(f)
+This corresponds to ferror().
+
+@item PerlIO_fileno(f)
+This corresponds to fileno(), note that on some platforms,
+the meaning of "fileno" may not match Unix.
+
+@item PerlIO_clearerr(f)
+This corresponds to clearerr(), i.e., clears @'eof@' and @'error@'
+flags for the "stream".
+
+@item PerlIO_flush(f)
+This corresponds to fflush().
+
+@item PerlIO_tell(f)
+This corresponds to ftell().
+
+@item PerlIO_seek(f,o,w)
+This corresponds to fseek().
+
+@item @strong{PerlIO_getpos(f,p)}, @strong{PerlIO_setpos(f,p)}
+These correspond to fgetpos() and fsetpos(). If platform does not
+have the stdio calls then they are implemented in terms of PerlIO_tell()
+and PerlIO_seek().
+
+@item PerlIO_rewind(f)
+This corresponds to rewind(). Note may be redefined
+in terms of PerlIO_seek() at some point.
+
+@item PerlIO_tmpfile()
+This corresponds to tmpfile(), i.e., returns an anonymous
+PerlIO which will automatically be deleted when closed.
+
+@end table
+@unnumberedsubsec Co-existence with stdio
+There is outline support for co-existence of PerlIO with stdio.
+Obviously if PerlIO is implemented in terms of stdio there is
+no problem. However if perlio is implemented on top of (say) sfio
+then mechanisms must exist to create a FILE * which can be passed
+to library code which is going to use stdio calls.
+
+@table @asis
+@item PerlIO_importFILE(f,flags)
+Used to get a PerlIO * from a FILE *.
+May need additional arguments, interface under review.
+
+@item PerlIO_exportFILE(f,flags)
+Given an PerlIO * return a @'native@' FILE * suitable for
+passing to code expecting to be compiled and linked with
+ANSI C @emph{stdio.h}.
+
+The fact that such a FILE * has been @'exported@' is recorded,
+and may affect future PerlIO operations on the original
+PerlIO *.
+
+@item PerlIO_findFILE(f)
+Returns previously @'exported@' FILE * (if any).
+Place holder until interface is fully defined.
+
+@item PerlIO_releaseFILE(p,f)
+Calling PerlIO_releaseFILE informs PerlIO that all use
+of FILE * is complete. It is removed from list of @'exported@'
+FILE *s, and associated PerlIO * should revert to original
+behaviour.
+
+@item PerlIO_setlinebuf(f)
+This corresponds to setlinebuf(). Use is deprecated pending
+further discussion. (Perl core uses it @emph{only} when "dumping"
+is has nothing to do with $| auto-flush.)
+
+@end table
+In addition to user API above there is an "implementation" interface
+which allows perl to get at internals of PerlIO.
+The following calls correspond to the various FILE_xxx macros determined
+by Configure. This section is really of interest to only those
+concerned with detailed perl-core behaviour or implementing a
+PerlIO mapping.
+
+@table @asis
+@item PerlIO_has_cntptr(f)
+Implementation can return pointer to current position in the "buffer" and
+a count of bytes available in the buffer.
+
+@item PerlIO_get_ptr(f)
+Return pointer to next readable byte in buffer.
+
+@item PerlIO_get_cnt(f)
+Return count of readable bytes in the buffer.
+
+@item PerlIO_canset_cnt(f)
+Implementation can adjust its idea of number of
+bytes in the buffer.
+
+@item PerlIO_fast_gets(f)
+Implementation has all the interfaces required to
+allow perl@'s fast code to handle <FILE> mechanism.
+
+
+@example
+PerlIO_fast_gets(f) = PerlIO_has_cntptr(f) && \
+                      PerlIO_canset_cnt(f) && \
+                      @`Can set pointer into buffer@'
+@end example
+
+@item PerlIO_set_ptrcnt(f,p,c)
+Set pointer into buffer, and a count of bytes still in the
+buffer. Should be used only to set
+pointer to within range implied by previous calls
+to @code{PerlIO_get_ptr} and @code{PerlIO_get_cnt}.
+
+@item PerlIO_set_cnt(f,c)
+Obscure - set count of bytes in the buffer. Deprecated.
+Currently used in only doio.c to force count < -1 to -1.
+Perhaps should be PerlIO_set_empty or similar.
+This call may actually do nothing if "count" is deduced from pointer
+and a "limit".
+
+@item PerlIO_has_base(f)
+Implementation has a buffer, and can return pointer
+to whole buffer and its size. Used by perl for -T / @strong{-B} tests.
+Other uses would be very obscure...
+
+@item PerlIO_get_base(f)
+Return @emph{start} of buffer.
+
+@item PerlIO_get_bufsiz(f)
+Return @emph{total size} of buffer.
+
+@end table

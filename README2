@@ -1,0 +1,23 @@
+		       README2: Addendum to README
+		       ===========================
+
+Notes on the conversion of the perl 5.002 pod documentation to GNU Info format.
+Converted by Nick Gianniotis <nico@acm.org>, Mon Jun 10 1996.
+
+1. Please read the notes in README, which explain the original process by which
+   Krishna Sethuraman (krishna@mit.edu) converted the perl 5.000 pods into
+   Info format.
+
+2. I followed pretty much exactly the same steps, converting pod ->
+   texinfo via pod2texinfo.pl, and texinfo -> info via
+   `texinfo-format-buffer' in emacs.
+
+3. As the original notes explain, extensive manual "cleaning up" of the
+   texinfo files was required again. I did not alter or improve the perl
+   program pod2texinfo.pl, as many problems were of a irregular nature and
+   some due to incorrect mark-ups in the pod files. This step will always
+   remain manual as information not present in the pods must be added.
+
+4. Only the core perl pods which come bundled with perl 5.002 were
+   converted. The modpods remain as a project for the next hapless
+   volunteer with a spare afternoon!

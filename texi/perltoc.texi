@@ -1,0 +1,3223 @@
+@node perltoc, perldelta, perl, Top
+@unnumberedsec NAME
+perltoc - perl documentation table of contents
+
+@unnumberedsec DESCRIPTION
+This page provides a brief table of contents for the rest of the Perl
+documentation set.  It is meant to be scanned quickly or grepped
+through to locate the proper section you@'re looking for.
+
+@unnumberedsec BASIC DOCUMENTATION
+@unnumberedsubsec perl - Practical Extraction and Report Language
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+Many usability enhancements, Simplified grammar, Lexical scoping,
+Arbitrarily nested data structures, Modularity and reusability,
+Object-oriented programming, Embeddable and Extensible, POSIX compliant,
+Package constructors and destructors, Multiple simultaneous DBM
+implementations, Subroutine definitions may now be autoloaded, Regular
+expression enhancements, Innumerable Unbundled Modules, Compilability
+
+@item ENVIRONMENT
+@itemx AUTHOR
+@itemx FILES
+@itemx SEE ALSO
+@itemx DIAGNOSTICS
+@itemx BUGS
+@itemx NOTES
+@end table
+@unnumberedsubsec perlfaq - frequently asked questions about Perl ($Date: 1997/04/24 22:46:06 $)
+@table @asis
+@itemx DESCRIPTION
+perlfaq: Structural overview of the FAQ, @xref{perlfaq1,Perlfaq1},: General Questions
+About Perl, @xref{perlfaq2,Perlfaq2},: Obtaining and Learning about Perl, @xref{perlfaq3,Perlfaq3},:
+Programming Tools, @xref{perlfaq4,Perlfaq4},: Data Manipulation, @xref{perlfaq5,Perlfaq5},: Files and
+Formats, @xref{perlfaq6,Perlfaq6},: Regexps, @xref{perlfaq7,Perlfaq7},: General Perl Language Issues,
+@xref{perlfaq8,Perlfaq8},: System Interaction, @xref{perlfaq9,Perlfaq9},: Networking
+
+@item Where to get this document
+@itemx How to contribute to this document
+@itemx What will happen if you mail your Perl programming problems to the authors
+@end table
+@table @asis
+@itemx Credits
+@itemx Author and Copyright Information
+@itemx Noncommercial Reproduction
+@itemx Commercial Reproduction
+@itemx Disclaimer
+@end table
+@table @asis
+@itemx Changes
+24/April/97, 23/April/97, 25/March/97, 18/March/97, 17/March/97 Version,
+Initial Release: 11/March/97
+
+@end table
+@unnumberedsubsec perlfaq1 - General Questions About Perl ($Revision: 1.12 $, $Date: 1997/04/24 22:43:34 $)
+@table @asis
+@item DESCRIPTION
+@itemx What is Perl?
+@itemx Who supports Perl?  Who develops it?  Why is it free?
+@itemx Which version of Perl should I use?
+@itemx What are perl4 and perl5?
+@itemx How stable is Perl?
+@itemx Is Perl difficult to learn?
+@itemx How does Perl compare with other languages like Java, Python, REXX, Scheme, or Tcl?
+@itemx Can I do [task] in Perl?
+@itemx When shouldn@'t I program in Perl?
+@itemx What@'s the difference between "perl" and "Perl"?
+@itemx Is it a Perl program or a Perl script?
+@itemx What is a JAPH?
+@itemx Where can I get a list of Larry Wall witticisms?
+@itemx How can I convince my sysadmin/supervisor/employees to use version (5/5.004/Perl instead of some other language)?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perlfaq2 - Obtaining and Learning about Perl ($Revision: 1.16 $, $Date: 1997/04/23 18:04:09 $)
+@table @asis
+@itemx DESCRIPTION
+@itemx What machines support Perl?  Where do I get it?
+@itemx How can I get a binary version of Perl?
+@itemx I don@'t have a C compiler on my system.  How can I compile perl?
+@itemx I copied the Perl binary from one machine to another, but scripts don@'t work.
+@itemx I grabbed the sources and tried to compile but gdbm/dynamic loading/malloc/linking/... failed.  How do I make it work?
+@itemx What modules and extensions are available for Perl?  What is CPAN?  What does CPAN/src/... mean?
+@itemx Is there an ISO or ANSI certified version of Perl?
+@itemx Where can I get information on Perl?
+@itemx What are the Perl newsgroups on USENET?  Where do I post questions?
+@itemx Where should I post source code?
+@itemx Perl Books
+@itemx Perl in Magazines
+@itemx Perl on the Net: FTP and WWW Access
+@itemx What mailing lists are there for perl?
+MacPerl, Perl5-Porters, NTPerl, Perl-Packrats
+
+@item Archives of comp.lang.perl.misc
+@itemx Perl Training
+@itemx Where can I buy a commercial version of Perl?
+@itemx Where do I send bug reports?
+@itemx What is perl.com?  perl.org?  The Perl Institute?
+@itemx How do I learn about object-oriented Perl programming?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perlfaq3 - Programming Tools ($Revision: 1.22 $, $Date: 1997/04/24 22:43:42 $)
+@table @asis
+@itemx DESCRIPTION
+@itemx How do I do (anything)?
+@itemx How can I use Perl interactively?
+@itemx Is there a Perl shell?
+@itemx How do I debug my Perl programs?
+@itemx How do I profile my Perl programs?
+@itemx How do I cross-reference my Perl programs?
+@itemx Is there a pretty-printer (formatter) for Perl?
+@itemx Is there a ctags for Perl?
+@itemx Where can I get Perl macros for vi?
+@itemx Where can I get perl-mode for emacs?
+@itemx How can I use curses with Perl?
+@itemx How can I use X or Tk with Perl?
+@itemx How can I generate simple menus without using CGI or Tk?
+@itemx Can I dynamically load C routines into Perl?
+@itemx What is undump?
+@itemx How can I make my Perl program run faster?
+@itemx How can I make my Perl program take less memory?
+@itemx Is it unsafe to return a pointer to local data?
+@itemx How can I free an array or hash so my program shrinks?
+@itemx How can I make my CGI script more efficient?
+@itemx How can I hide the source for my Perl program?
+@itemx How can I compile my Perl program into byte code or C?
+@itemx How can I get @'#!perl@' to work on [MS-DOS,NT,...]?
+@itemx Can I write useful perl programs on the command line?
+@itemx Why don@'t perl one-liners work on my DOS/Mac/VMS system?
+@itemx Where can I learn about CGI or Web programming in Perl?
+@itemx Where can I learn about object-oriented Perl programming?
+@itemx Where can I learn about linking C with Perl? [h2xs, xsubpp]
+@itemx I@'ve read perlembed, perlguts, etc., but I can@'t embed perl in my C program, what am I doing wrong?
+@itemx When I tried to run my script, I got this message. What does it mean?
+@itemx What@'s MakeMaker?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perlfaq4 - Data Manipulation ($Revision: 1.19 $, $Date: 1997/04/24 22:43:57 $)
+@table @asis
+@itemx DESCRIPTION
+@itemx Data: Numbers
+@itemx Why am I getting long decimals (eg, 19.9499999999999) instead of the numbers I should be getting (eg, 19.95)?
+@itemx Why isn@'t my octal data interpreted correctly?
+@itemx Does perl have a round function? What about ceil() and floor()? Trig functions?
+@itemx How do I convert bits into ints?
+@itemx How do I multiply matrices?
+@itemx How do I perform an operation on a series of integers?
+@itemx How can I output Roman numerals?
+@itemx Why aren@'t my random numbers random?
+@end table
+@table @asis
+@itemx Data: Dates
+@itemx How do I find the week-of-the-year/day-of-the-year?
+@itemx How can I compare two date strings?
+@itemx How can I take a string and turn it into epoch seconds?
+@itemx How can I find the Julian Day?
+@itemx Does Perl have a year 2000 problem?
+@end table
+@table @asis
+@itemx Data: Strings
+@itemx How do I validate input?
+@itemx How do I unescape a string?
+@itemx How do I remove consecutive pairs of characters?
+@itemx How do I expand function calls in a string?
+@itemx How do I find matching/nesting anything?
+@itemx How do I reverse a string?
+@itemx How do I expand tabs in a string?
+@itemx How do I reformat a paragraph?
+@itemx How can I access/change the first N letters of a string?
+@itemx How do I change the Nth occurrence of something?
+@itemx How can I count the number of occurrences of a substring within a string?
+@itemx How do I capitalize all the words on one line?
+@itemx How can I split a [character] delimited string except when inside [character]? (Comma-separated files)
+@itemx How do I strip blank space from the beginning/end of a string?
+@itemx How do I extract selected columns from a string?
+@itemx How do I find the soundex value of a string?
+@itemx How can I expand variables in text strings?
+@itemx What@'s wrong with always quoting "$vars"?
+@itemx Why don@'t my <<HERE documents work?
+1. There must be no space after the << part, 2. There (probably) should be
+a semicolon at the end, 3. You can@'t (easily) have any space in front of
+the tag
+
+@end table
+@table @asis
+@item Data: Arrays
+@itemx What is the difference between $array[1] and @@array[1]?
+@itemx How can I extract just the unique elements of an array?
+a) If @@in is sorted, and you want @@out to be sorted:, b) If you don@'t know
+whether @@in is sorted:, c) Like (b), but @@in contains only small integers:,
+d) A way to do (b) without any loops or greps:, e) Like (d), but @@in
+contains only small positive integers:
+
+@item How can I tell whether an array contains a certain element?
+@itemx How do I compute the difference of two arrays?  How do I compute the intersection of two arrays?
+@itemx How do I find the first array element for which a condition is true?
+@itemx How do I handle linked lists?
+@itemx How do I handle circular lists?
+@itemx How do I shuffle an array randomly?
+@itemx How do I process/modify each element of an array?
+@itemx How do I select a random element from an array?
+@itemx How do I permute N elements of a list?
+@itemx How do I sort an array by (anything)?
+@itemx How do I manipulate arrays of bits?
+@itemx Why does defined() return true on empty arrays and hashes?
+@end table
+@table @asis
+@itemx Data: Hashes (Associative Arrays)
+@itemx How do I process an entire hash?
+@itemx What happens if I add or remove keys from a hash while iterating over it?
+@itemx How do I look up a hash element by value?
+@itemx How can I know how many entries are in a hash?
+@itemx How do I sort a hash (optionally by value instead of key)?
+@itemx How can I always keep my hash sorted?
+@itemx What@'s the difference between "delete" and "undef" with hashes?
+@itemx Why don@'t my tied hashes make the defined/exists distinction?
+@itemx How do I reset an each() operation part-way through?
+@itemx How can I get the unique keys from two hashes?
+@itemx How can I store a multidimensional array in a DBM file?
+@itemx How can I make my hash remember the order I put elements into it?
+@itemx Why does passing a subroutine an undefined element in a hash create it?
+@itemx How can I make the Perl equivalent of a C structure/C++ class/hash or array of hashes or arrays?
+@itemx How can I use a reference as a hash key?
+@end table
+@table @asis
+@itemx Data: Misc
+@itemx How do I handle binary data correctly?
+@itemx How do I determine whether a scalar is a number/whole/integer/float?
+@itemx How do I keep persistent data across program calls?
+@itemx How do I print out or copy a recursive data structure?
+@itemx How do I define methods for every class/object?
+@itemx How do I verify a credit card checksum?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perlfaq5 - Files and Formats ($Revision: 1.22 $, $Date: 1997/04/24 22:44:02 $)
+@table @asis
+@itemx DESCRIPTION
+@itemx How do I flush/unbuffer a filehandle?  Why must I do this?
+@itemx How do I change one line in a file/delete a line in a file/insert a line in the middle of a file/append to the beginning of a file?
+@itemx How do I count the number of lines in a file?
+@itemx How do I make a temporary file name?
+@itemx How can I manipulate fixed-record-length files?
+@itemx How can I make a filehandle local to a subroutine?  How do I pass filehandles between subroutines?  How do I make an array of filehandles?
+@itemx How can I set up a footer format to be used with write()?
+@itemx How can I write() into a string?
+@itemx How can I output my numbers with commas added?
+@itemx How can I translate tildes (~) in a filename?
+@itemx How come when I open the file read-write it wipes it out?
+@itemx Why do I sometimes get an "Argument list too long" when I use <*>?
+@itemx Is there a leak/bug in glob()?
+@itemx How can I open a file with a leading ">" or trailing blanks?
+@itemx How can I reliably rename a file?
+@itemx How can I lock a file?
+@itemx What can@'t I just open(FH, ">file.lock")?
+@itemx I still don@'t get locking.  I just want to increment the number in the file.  How can I do this?
+@itemx How do I randomly update a binary file?
+@itemx How do I get a file@'s timestamp in perl?
+@itemx How do I set a file@'s timestamp in perl?
+@itemx How do I print to more than one file at once?
+@itemx How can I read in a file by paragraphs?
+@itemx How can I read a single character from a file?  From the keyboard?
+@itemx How can I tell if there@'s a character waiting on a filehandle?
+@itemx How do I open a file without blocking?
+@itemx How do I create a file only if it doesn@'t exist?
+@itemx How do I do a @code{tail -f} in perl?
+@itemx How do I dup() a filehandle in Perl?
+@itemx How do I close a file descriptor by number?
+@itemx Why can@'t I use "C:\temp\foo" in DOS paths?  What doesn@'t @`C:\temp\foo.exe@` work?
+@itemx Why doesn@'t glob("*.*") get all the files?
+@itemx Why does Perl let me delete read-only files?  Why does -i clobber protected files?  Isn@'t this a bug in Perl?
+@itemx How do I select a random line from a file?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perlfaq6 - Regexps ($Revision: 1.17 $, $Date: 1997/04/24 22:44:10 $)
+@table @asis
+@itemx DESCRIPTION
+@itemx How can I hope to use regular expressions without creating illegible and unmaintainable code?
+Comments Outside the Regexp, Comments Inside the Regexp, Different
+Delimiters
+
+@item I@'m having trouble matching over more than one line.  What@'s wrong?
+@itemx How can I pull out lines between two patterns that are themselves on different lines?
+@itemx I put a regular expression into $/ but it didn@'t work. What@'s wrong?
+@itemx How do I substitute case insensitively on the LHS, but preserving case on the RHS?
+@itemx How can I make @code{\w} match accented characters?
+@itemx How can I match a locale-smart version of @code{/[a-zA-Z]/}?
+@itemx How can I quote a variable to use in a regexp?
+@itemx What is @code{/o} really for?
+@itemx How do I use a regular expression to strip C style comments from a file?
+@itemx Can I use Perl regular expressions to match balanced text?
+@itemx What does it mean that regexps are greedy?  How can I get around it?
+@itemx How do I process each word on each line?
+@itemx How can I print out a word-frequency or line-frequency summary?
+@itemx How can I do approximate matching?
+@itemx How do I efficiently match many regular expressions at once?
+@itemx Why don@'t word-boundary searches with @code{\b} work for me?
+@itemx Why does using $&, $@`, or $@' slow my program down?
+@itemx What good is @code{\G} in a regular expression?
+@itemx Are Perl regexps DFAs or NFAs?  Are they POSIX compliant?
+@itemx What@'s wrong with using grep or map in a void context?
+@itemx How can I match strings with multibyte characters?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perlfaq7 - Perl Language Issues ($Revision: 1.18 $, $Date: 1997/04/24 22:44:14 $)
+@table @asis
+@itemx DESCRIPTION
+@itemx Can I get a BNF/yacc/RE for the Perl language?
+@itemx What are all these $@@%* punctuation signs, and how do I know when to use them?
+@itemx Do I always/never have to quote my strings or use semicolons and commas?
+@itemx How do I skip some return values?
+@itemx How do I temporarily block warnings?
+@itemx What@'s an extension?
+@itemx Why do Perl operators have different precedence than C operators?
+@itemx How do I declare/create a structure?
+@itemx How do I create a module?
+@itemx How do I create a class?
+@itemx How can I tell if a variable is tainted?
+@itemx What@'s a closure?
+@itemx What is variable suicide and how can I prevent it?
+@itemx How can I pass/return a @{Function, FileHandle, Array, Hash, Method, Regexp@}?
+Passing Variables and Functions, Passing Filehandles, Passing Regexps,
+Passing Methods
+
+@item How do I create a static variable?
+@itemx What@'s the difference between dynamic and lexical (static) scoping?  Between local() and my()?
+@itemx How can I access a dynamic variable while a similarly named lexical is in scope?
+@itemx What@'s the difference between deep and shallow binding?
+@itemx Why doesn@'t "local($foo) = <FILE>;" work right?
+@itemx How do I redefine a builtin function, operator, or method?
+@itemx What@'s the difference between calling a function as &foo and foo()?
+@itemx How do I create a switch or case statement?
+@itemx How can I catch accesses to undefined variables/functions/methods?
+@itemx Why can@'t a method included in this same file be found?
+@itemx How can I find out my current package?
+@itemx How can I comment out a large block of perl code?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perlfaq8 - System Interaction ($Revision: 1.21 $, $Date: 1997/04/24 22:44:19 $)
+@table @asis
+@itemx DESCRIPTION
+@itemx How do I find out which operating system I@'m running under?
+@itemx How come exec() doesn@'t return?
+@itemx How do I do fancy stuff with the keyboard/screen/mouse?
+Keyboard, Screen, Mouse
+
+@item How do I ask the user for a password?
+@itemx How do I read and write the serial port?
+lockfiles, open mode, end of line, flushing output, non-blocking input
+
+@item How do I decode encrypted password files?
+@itemx How do I start a process in the background?
+STDIN, STDOUT and STDERR are shared, Signals, Zombies
+
+@item How do I trap control characters/signals?
+@itemx How do I modify the shadow password file on a Unix system?
+@itemx How do I set the time and date?
+@itemx How can I sleep() or alarm() for under a second?
+@itemx How can I measure time under a second?
+@itemx How can I do an atexit() or setjmp()/longjmp()? (Exception handling)
+@itemx Why doesn@'t my sockets program work under System V (Solaris)? What does the error message "Protocol not supported" mean?
+@itemx How can I call my system@'s unique C functions from Perl?
+@itemx Where do I get the include files to do ioctl() or syscall()?
+@itemx Why do setuid perl scripts complain about kernel problems?
+@itemx How can I open a pipe both to and from a command?
+@itemx Why can@'t I get the output of a command with system()?
+@itemx How can I capture STDERR from an external command?
+@itemx Why doesn@'t open() return an error when a pipe open fails?
+@itemx What@'s wrong with using backticks in a void context?
+@itemx How can I call backticks without shell processing?
+@itemx Why can@'t my script read from STDIN after I gave it EOF (^D on Unix, ^Z on MS-DOS)?
+@itemx How can I convert my shell script to perl?
+@itemx Can I use perl to run a telnet or ftp session?
+@itemx How can I write expect in Perl?
+@itemx Is there a way to hide perl@'s command line from programs such as "ps"?
+@itemx I @{changed directory, modified my environment@} in a perl script.       How come the change disappeared when I exited the script?  How do I get my changes to be visible?
+Unix, VMS
+
+@item How do I close a process@'s filehandle without waiting for it to complete?
+@itemx How do I fork a daemon process?
+@itemx How do I make my program run with sh and csh?
+@itemx How do I find out if I@'m running interactively or not?
+@itemx How do I timeout a slow event?
+@itemx How do I set CPU limits?
+@itemx How do I avoid zombies on a Unix system?
+@itemx How do I use an SQL database?
+@itemx How do I make a system() exit on control-C?
+@itemx How do I open a file without blocking?
+@itemx How do I install a CPAN module?
+@itemx How do I keep my own module/library directory?
+@itemx How do I add the directory my program lives in to the module/library search path?
+@itemx How do I add a directory to my include path at runtime?
+@end table
+@table @asis
+@itemx How do I get one key from the terminal at a time, under POSIX?
+@itemx AUTHOR AND COPYRIGHT
+@itemx DESCRIPTION
+@itemx My CGI script runs from the command line but not the browser.  Can you help me fix it?
+@itemx How do I remove HTML from a string?
+@itemx How do I extract URLs?
+@itemx How do I download a file from the user@'s machine?  How do I open a file on another machine?
+@itemx How do I make a pop-up menu in HTML?
+@itemx How do I fetch an HTML file?
+@itemx how do I decode or create those %-encodings on the web?
+@itemx How do I redirect to another page?
+@itemx How do I put a password on my web pages?
+@itemx How do I edit my .htpasswd and .htgroup files with Perl?
+@itemx How do I make sure users can@'t enter values into a form that cause my CGI script to do bad things?
+@itemx How do I parse an email header?
+@itemx How do I decode a CGI form?
+@itemx How do I check a valid email address?
+@itemx How do I decode a MIME/BASE64 string?
+@itemx How do I return the user@'s email address?
+@itemx How do I send/read mail?
+@itemx How do I find out my hostname/domainname/IP address?
+@itemx How do I fetch a news article or the active newsgroups?
+@itemx How do I fetch/put an FTP file?
+@itemx How can I do RPC in Perl?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perlfaq9 - Networking ($Revision: 1.16 $, $Date: 1997/04/23 18:12:06 $)
+@table @asis
+@itemx DESCRIPTION
+@itemx My CGI script runs from the command line but not the browser.  Can you help me fix it?
+@itemx How do I remove HTML from a string?
+@itemx How do I extract URLs?
+@itemx How do I download a file from the user@'s machine?  How do I open a file on another machine?
+@itemx How do I make a pop-up menu in HTML?
+@itemx How do I fetch an HTML file?
+@itemx how do I decode or create those %-encodings on the web?
+@itemx How do I redirect to another page?
+@itemx How do I put a password on my web pages?
+@itemx How do I edit my .htpasswd and .htgroup files with Perl?
+@itemx How do I make sure users can@'t enter values into a form that cause my CGI script to do bad things?
+@itemx How do I parse an email header?
+@itemx How do I decode a CGI form?
+@itemx How do I check a valid email address?
+@itemx How do I decode a MIME/BASE64 string?
+@itemx How do I return the user@'s email address?
+@itemx How do I send/read mail?
+@itemx How do I find out my hostname/domainname/IP address?
+@itemx How do I fetch a news article or the active newsgroups?
+@itemx How do I fetch/put an FTP file?
+@itemx How can I do RPC in Perl?
+@end table
+@table @asis
+@itemx AUTHOR AND COPYRIGHT
+@end table
+@unnumberedsubsec perldelta - what@'s new for perl5.004
+@table @asis
+@itemx DESCRIPTION
+@itemx Supported Environments
+@itemx Core Changes
+@itemx Compilation option: Binary compatibility with 5.003
+@itemx $PERL5OPT environment variable
+@itemx Limitations on -M, -m, and -T options
+@itemx More precise warnings
+@itemx Deprecated: Inherited @code{AUTOLOAD} for non-methods
+@itemx Subroutine arguments created only when they@'re modified
+@itemx Group vector changeable with $)
+@itemx Fixed parsing of $$<digit>, &$<digit>, etc.
+@itemx No resetting of $. on implicit close
+@itemx wantarray may return undef
+@itemx Changes to tainting checks
+No glob() or <*>, No spawning if tainted $CDPATH, $ENV, $BASH_ENV, No
+spawning if tainted $TERM doesn@'t look like a terminal name
+
+@item New Opcode module and revised Safe module
+@itemx Embedding improvements
+@itemx Internal change: FileHandle class based on IO::* classes
+@itemx Internal change: PerlIO abstraction interface
+@itemx New and changed syntax
+$coderef->(PARAMS)
+
+@item New and changed builtin constants
+__PACKAGE__
+
+@item New and changed builtin variables
+$^E, $^H, $^M
+
+@item New and changed builtin functions
+delete on slices, flock, printf and sprintf, keys as an lvalue, my() in
+Control Structures, pack() and unpack(), sysseek(), use VERSION, use Module
+VERSION LIST, prototype(FUNCTION), srand, $_ as Default, @code{m//gc} does not
+reset search position on failure, @code{m//x} ignores whitespace before ?*+@{@},
+nested @code{sub@{@}} closures work now, formats work right on changing lexicals
+
+@item New builtin methods
+isa(CLASS), can(METHOD), VERSION( [NEED] )
+
+@item TIEHANDLE now supported
+TIEHANDLE classname, LIST, PRINT this, LIST, PRINTF this, LIST, READ this
+LIST, READLINE this, GETC this, DESTROY this
+
+@item Malloc enhancements
+-DDEBUGGING_MSTATS, -DEMERGENCY_SBRK, -DPACK_MALLOC, -DTWO_POT_OPTIMIZE
+
+@item Miscellaneous efficiency enhancements
+@end table
+@table @asis
+@itemx Support for More Operating Systems
+@itemx Win32
+@itemx Plan 9
+@itemx QNX
+@itemx AmigaOS
+@end table
+@table @asis
+@itemx Pragmata
+use autouse MODULE => qw(sub1 sub2 sub3), use blib, use blib @'dir@', use
+constant NAME => VALUE, use locale, use ops, use vmsish
+
+@item Modules
+@itemx Required Updates
+@itemx Installation directories
+@itemx Module information summary
+@itemx Fcntl
+@itemx IO
+@itemx Math::Complex
+@itemx Math::Trig
+@itemx DB_File
+@itemx Net::Ping
+@itemx Object-oriented overrides for builtin operators
+@end table
+@table @asis
+@itemx Utility Changes
+@itemx pod2html
+Sends converted HTML to standard output
+
+@item xsubpp
+@code{void} XSUBs now default to returning nothing
+
+@end table
+@table @asis
+@item C Language API Changes
+gv_fetchmethod and perl_call_sv, perl_eval_pv, Extended API for
+manipulating hashes
+
+@item Documentation Changes
+@xref{perldelta,Perldelta}, @xref{perlfaq,Perlfaq},, @xref{perllocale,Perllocale},, @xref{perltoot,Perltoot},, @xref{perlapio,Perlapio},,
+@xref{perlmodlib,Perlmodlib}, @xref{perldebug,Perldebug},, @xref{perlsec,Perlsec},
+
+@item New Diagnostics
+"my" variable %s masks earlier declaration in same scope, %s argument is
+not a HASH element or slice, Allocation too large: %lx, Allocation too
+large, Applying %s to %s will act on scalar(%s), Attempt to free
+nonexistent shared string, Attempt to use reference as lvalue in substr,
+Can@'t redefine active sort subroutine %s, Can@'t use bareword ("%s") as %s
+ref while "strict refs" in use, Cannot resolve method @`%s@' overloading @`%s@'
+in package @`%s@', Constant subroutine %s redefined, Constant subroutine %s
+undefined, Copy method did not return a reference, Died, Exiting
+pseudo-block via %s, Identifier too long, Illegal character %s (carriage
+return), Illegal switch in PERL5OPT: %s, Integer overflow in hex number,
+Integer overflow in octal number, internal error: glob failed, Invalid
+conversion in %s: "%s", Invalid type in pack: @'%s@', Invalid type in unpack:
+@'%s@', Name "%s::%s" used only once: possible typo, Null picture in
+formline, Offset outside string, Out of memory!, Out of memory during
+request for %s, panic: frexp, Possible attempt to put comments in qw()
+list, Possible attempt to separate words with commas, Scalar value @@%s@{%s@}
+better written as $%s@{%s@}, Stub found while resolving method @`%s@'
+overloading @`%s@' in package @`%s@', Too late for "-T" option, untie
+attempted while %d inner references still exist, Unrecognized character %s,
+Unsupported function fork, Use of "$$<digit>" to mean "$@{$@}<digit>" is
+deprecated, Value of %s can be "0"; test with defined(), Variable "%s" may
+be unavailable, Variable "%s" will not stay shared, Warning: something@'s
+wrong, Ill-formed logical name |%s| in prime_env_iter, Got an error from
+DosAllocMem, Malformed PERLLIB_PREFIX, PERL_SH_DIR too long, Process
+terminated by SIG%s
+
+@item BUGS
+@itemx SEE ALSO
+@itemx HISTORY
+@end table
+@unnumberedsubsec perldata - Perl data types
+@table @asis
+@itemx DESCRIPTION
+@itemx Variable names
+@itemx Context
+@itemx Scalar values
+@itemx Scalar value constructors
+@itemx List value constructors
+@itemx Typeglobs and Filehandles
+@end table
+@unnumberedsubsec perlsyn - Perl syntax
+@table @asis
+@itemx DESCRIPTION
+@itemx Declarations
+@itemx Simple statements
+@itemx Compound statements
+@itemx Loop Control
+@itemx For Loops
+@itemx Foreach Loops
+@itemx Basic BLOCKs and Switch Statements
+@itemx Goto
+@itemx PODs: Embedded Documentation
+@itemx Plain Old Comments (Not!)
+@end table
+@unnumberedsubsec perlop - Perl operators and precedence
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Terms and List Operators (Leftward)
+@itemx The Arrow Operator
+@itemx Auto-increment and Auto-decrement
+@itemx Exponentiation
+@itemx Symbolic Unary Operators
+@itemx Binding Operators
+@itemx Multiplicative Operators
+@itemx Additive Operators
+@itemx Shift Operators
+@itemx Named Unary Operators
+@itemx Relational Operators
+@itemx Equality Operators
+@itemx Bitwise And
+@itemx Bitwise Or and Exclusive Or
+@itemx C-style Logical And
+@itemx C-style Logical Or
+@itemx Range Operator
+@itemx Conditional Operator
+@itemx Assignment Operators
+@itemx Comma Operator
+@itemx List Operators (Rightward)
+@itemx Logical Not
+@itemx Logical And
+@itemx Logical or and Exclusive Or
+@itemx C Operators Missing From Perl
+unary &, unary *, (TYPE)
+
+@item Quote and Quote-like Operators
+@itemx Regexp Quote-Like Operators
+?PATTERN?, m/PATTERN/gimosx, /PATTERN/gimosx, q/STRING/, @code{@'STRING@'},
+qq/STRING/, "STRING", qx/STRING/, @`STRING@`, qw/STRING/,
+s/PATTERN/REPLACEMENT/egimosx, tr/SEARCHLIST/REPLACEMENTLIST/cds,
+y/SEARCHLIST/REPLACEMENTLIST/cds
+
+@item I/O Operators
+@itemx Constant Folding
+@itemx Integer Arithmetic
+@itemx Floating-point Arithmetic
+@end table
+@unnumberedsubsec perlre - Perl regular expressions
+@table @asis
+@itemx DESCRIPTION
+i, m, s, x
+
+@item Regular Expressions
+(?#text), (?:regexp), (?=regexp), (?!regexp), (?imsx)
+
+@item Backtracking
+@itemx Version 8 Regular Expressions
+@itemx WARNING on \1 vs $1
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec perlrun - how to execute the Perl interpreter
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx #! and quoting on non-Unix systems
+OS/2, MS-DOS, Win95/NT, Macintosh
+
+@item Switches
+@ifinfo
+-0[digits], -a, -c, -d, -d:foo, -Dnumber,
+-Dlist, -e commandline, -Fpattern, -h,
+-i[extension], -Idirectory, -l[octnum],
+-m[-]module, -M[-]module, -M[-]@'module ...@',
+-[mM][-]module=arg[,arg]..., -n, -p, -P, -s, -S,
+-T, -u, -U, -v, -V, -V:name, -w, -x directory
+@end ifinfo
+@iftex
+-0[@emph{digits}], -a, -c, -d, @strong{-d:}@emph{foo}, -D@emph{number},
+-D@emph{list}, -e @emph{commandline}, -F@emph{pattern}, -h,
+-i[@emph{extension}], -I@emph{directory}, -l[@emph{octnum}],
+-m[-]@emph{module}, -M[-]@emph{module}, -M[-]@emph{@'module @dots{}@'},
+@strong{-[mM]}[-]@emph{module=arg[,arg]@dots{}}, -n, -p, -P, -s, -S,
+-T, -u, -U, -v, -V, @strong{-V:}@emph{name}, -w, -x @emph{directory}
+@end iftex
+
+@end table
+@table @asis
+@item ENVIRONMENT
+HOME, LOGDIR, PATH, PERL5LIB, PERL5OPT, PERLLIB, PERL5DB,
+PERL_DEBUG_MSTATS, PERL_DESTRUCT_LEVEL
+
+@end table
+@unnumberedsubsec perlfunc - Perl builtin functions
+@table @asis
+@item DESCRIPTION
+
+@example
+I<THERE IS NO GENERAL RULE FOR CONVERTING A LIST INTO A SCALAR!>
+@end example
+
+@itemx Perl Functions by Category
+Functions for SCALARs or strings, Regular expressions and pattern matching,
+Numeric functions, Functions for real @@ARRAYs, Functions for list data,
+Functions for real %HASHes, Input and output functions, Functions for fixed
+length data or records, Functions for filehandles, files, or directories,
+Keywords related to the control flow of your perl program, Keywords related
+to scoping, Miscellaneous functions, Functions for processes and process
+groups, Keywords related to perl modules, Keywords related to classes and
+object-orientedness, Low-level socket functions, System V interprocess
+communication functions, Fetching user and group info, Fetching network
+info, Time-related functions, Functions new in perl5, Functions obsoleted
+in perl5
+
+@item Alphabetical Listing of Perl Functions
+-X FILEHANDLE, -X EXPR, -X, abs VALUE, abs, accept
+NEWSOCKET,GENERICSOCKET, alarm SECONDS, alarm, atan2 Y,X, bind SOCKET,NAME,
+binmode FILEHANDLE, bless REF,CLASSNAME, bless REF, caller EXPR, caller,
+chdir EXPR, chmod LIST, chomp VARIABLE, chomp LIST, chomp, chop VARIABLE,
+chop LIST, chop, chown LIST, chr NUMBER, chr, chroot FILENAME, chroot,
+close FILEHANDLE, closedir DIRHANDLE, connect SOCKET,NAME, continue BLOCK,
+cos EXPR, crypt PLAINTEXT,SALT, dbmclose HASH, dbmopen HASH,DBNAME,MODE,
+defined EXPR, defined, delete EXPR, die LIST, do BLOCK, do
+SUBROUTINE(LIST), do EXPR, dump LABEL, each HASH, eof FILEHANDLE, eof (),
+eof, eval EXPR, eval BLOCK, exec LIST, exists EXPR, exit EXPR, exp EXPR,
+exp, fcntl FILEHANDLE,FUNCTION,SCALAR, fileno FILEHANDLE, flock
+FILEHANDLE,OPERATION, fork, format, formline PICTURE,LIST, getc FILEHANDLE,
+getc, getlogin, getpeername SOCKET, getpgrp PID, getppid, getpriority
+WHICH,WHO, getpwnam NAME, getgrnam NAME, gethostbyname NAME, getnetbyname
+NAME, getprotobyname NAME, getpwuid UID, getgrgid GID, getservbyname
+NAME,PROTO, gethostbyaddr ADDR,ADDRTYPE, getnetbyaddr ADDR,ADDRTYPE,
+getprotobynumber NUMBER, getservbyport PORT,PROTO, getpwent, getgrent,
+gethostent, getnetent, getprotoent, getservent, setpwent, setgrent,
+sethostent STAYOPEN, setnetent STAYOPEN, setprotoent STAYOPEN, setservent
+STAYOPEN, endpwent, endgrent, endhostent, endnetent, endprotoent,
+endservent, getsockname SOCKET, getsockopt SOCKET,LEVEL,OPTNAME, glob EXPR,
+glob, gmtime EXPR, goto LABEL, goto EXPR, goto &NAME, grep BLOCK LIST, grep
+EXPR,LIST, hex EXPR, hex, import, index STR,SUBSTR,POSITION, index
+STR,SUBSTR, int EXPR, int, ioctl FILEHANDLE,FUNCTION,SCALAR, join
+EXPR,LIST, keys HASH, kill LIST, last LABEL, last, lc EXPR, lc, lcfirst
+EXPR, lcfirst, length EXPR, length, link OLDFILE,NEWFILE, listen
+SOCKET,QUEUESIZE, local EXPR, localtime EXPR, log EXPR, log, lstat
+FILEHANDLE, lstat EXPR, lstat, m//, map BLOCK LIST, map EXPR,LIST, mkdir
+FILENAME,MODE, msgctl ID,CMD,ARG, msgget KEY,FLAGS, msgsnd ID,MSG,FLAGS,
+msgrcv ID,VAR,SIZE,TYPE,FLAGS, my EXPR, next LABEL, next, no Module LIST,
+oct EXPR, oct, open FILEHANDLE,EXPR, open FILEHANDLE, opendir
+DIRHANDLE,EXPR, ord EXPR, ord, pack TEMPLATE,LIST, package NAMESPACE, pipe
+READHANDLE,WRITEHANDLE, pop ARRAY, pop, pos SCALAR, pos, print FILEHANDLE
+LIST, print LIST, print, printf FILEHANDLE FORMAT, LIST, printf FORMAT,
+LIST, prototype FUNCTION, push ARRAY,LIST, q/STRING/, qq/STRING/,
+qx/STRING/, qw/STRING/, quotemeta EXPR, quotemeta, rand EXPR, rand, read
+FILEHANDLE,SCALAR,LENGTH,OFFSET, read FILEHANDLE,SCALAR,LENGTH, readdir
+DIRHANDLE, readlink EXPR, readlink, recv SOCKET,SCALAR,LEN,FLAGS, redo
+LABEL, redo, ref EXPR, ref, rename OLDNAME,NEWNAME, require EXPR, require,
+reset EXPR, reset, return EXPR, return, reverse LIST, rewinddir DIRHANDLE,
+rindex STR,SUBSTR,POSITION, rindex STR,SUBSTR, rmdir FILENAME, rmdir, s///,
+scalar EXPR, seek FILEHANDLE,POSITION,WHENCE, seekdir DIRHANDLE,POS, select
+FILEHANDLE, select, select RBITS,WBITS,EBITS,TIMEOUT, semctl
+ID,SEMNUM,CMD,ARG, semget KEY,NSEMS,FLAGS, semop KEY,OPSTRING, send
+SOCKET,MSG,FLAGS,TO, send SOCKET,MSG,FLAGS, setpgrp PID,PGRP, setpriority
+WHICH,WHO,PRIORITY, setsockopt SOCKET,LEVEL,OPTNAME,OPTVAL, shift ARRAY,
+shift, shmctl ID,CMD,ARG, shmget KEY,SIZE,FLAGS, shmread ID,VAR,POS,SIZE,
+shmwrite ID,STRING,POS,SIZE, shutdown SOCKET,HOW, sin EXPR, sin, sleep
+EXPR, sleep, socket SOCKET,DOMAIN,TYPE,PROTOCOL, socketpair
+SOCKET1,SOCKET2,DOMAIN,TYPE,PROTOCOL, sort SUBNAME LIST, sort BLOCK LIST,
+sort LIST, splice ARRAY,OFFSET,LENGTH,LIST, splice ARRAY,OFFSET,LENGTH,
+splice ARRAY,OFFSET, split /PATTERN/,EXPR,LIMIT, split /PATTERN/,EXPR,
+split /PATTERN/, split, sprintf FORMAT, LIST, sqrt EXPR, sqrt, srand EXPR,
+srand, stat FILEHANDLE, stat EXPR, stat, study SCALAR, study, sub BLOCK,
+sub NAME, sub NAME BLOCK, substr EXPR,OFFSET,LEN, substr EXPR,OFFSET,
+symlink OLDFILE,NEWFILE, syscall LIST, sysopen FILEHANDLE,FILENAME,MODE,
+sysopen FILEHANDLE,FILENAME,MODE,PERMS, sysread
+FILEHANDLE,SCALAR,LENGTH,OFFSET, sysread FILEHANDLE,SCALAR,LENGTH, sysseek
+FILEHANDLE,POSITION,WHENCE, system LIST, syswrite
+FILEHANDLE,SCALAR,LENGTH,OFFSET, syswrite FILEHANDLE,SCALAR,LENGTH, tell
+FILEHANDLE, tell, telldir DIRHANDLE, tie VARIABLE,CLASSNAME,LIST, tied
+VARIABLE, time, times, tr///, truncate FILEHANDLE,LENGTH, truncate
+EXPR,LENGTH, uc EXPR, uc, ucfirst EXPR, ucfirst, umask EXPR, umask, undef
+EXPR, undef, unlink LIST, unlink, unpack TEMPLATE,EXPR, untie VARIABLE,
+unshift ARRAY,LIST, use Module LIST, use Module, use Module VERSION LIST,
+use VERSION, utime LIST, values HASH, vec EXPR,OFFSET,BITS, wait, waitpid
+PID,FLAGS, wantarray, warn LIST, write FILEHANDLE, write EXPR, write, y///
+
+@end table
+@unnumberedsubsec perlvar - Perl predefined variables
+@table @asis
+@item DESCRIPTION
+@itemx Predefined Names
+$ARG, $_, $<@emph{digit}>, $MATCH, $&, $PREMATCH, $@`, $POSTMATCH, $@',
+$LAST_PAREN_MATCH, $+, $MULTILINE_MATCHING, $*, input_line_number HANDLE
+EXPR, $INPUT_LINE_NUMBER, $NR, $, input_record_separator HANDLE EXPR,
+$INPUT_RECORD_SEPARATOR, $RS, $/, autoflush HANDLE EXPR, $OUTPUT_AUTOFLUSH,
+$|, output_field_separator HANDLE EXPR, $OUTPUT_FIELD_SEPARATOR, $OFS, $,,
+output_record_separator HANDLE EXPR, $OUTPUT_RECORD_SEPARATOR, $ORS, $\,
+$LIST_SEPARATOR, $", $SUBSCRIPT_SEPARATOR, $SUBSEP, $;, $OFMT, $#,
+format_page_number HANDLE EXPR, $FORMAT_PAGE_NUMBER, $%,
+format_lines_per_page HANDLE EXPR, $FORMAT_LINES_PER_PAGE, $=,
+format_lines_left HANDLE EXPR, $FORMAT_LINES_LEFT, $-, format_name HANDLE
+EXPR, $FORMAT_NAME, $~, format_top_name HANDLE EXPR, $FORMAT_TOP_NAME, $^,
+format_line_break_characters HANDLE EXPR, $FORMAT_LINE_BREAK_CHARACTERS,
+$:, format_formfeed HANDLE EXPR, $FORMAT_FORMFEED, $^L, $ACCUMULATOR, $^A,
+$CHILD_ERROR, $?, $OS_ERROR, $ERRNO, $!, $EXTENDED_OS_ERROR, $^E,
+$EVAL_ERROR, $@@, $PROCESS_ID, $PID, $$, $REAL_USER_ID, $UID, $<,
+$EFFECTIVE_USER_ID, $EUID, $>, $REAL_GROUP_ID, $GID, $(,
+$EFFECTIVE_GROUP_ID, $EGID, $), $PROGRAM_NAME, $0, $[, $PERL_VERSION, $],
+$DEBUGGING, $^D, $SYSTEM_FD_MAX, $^F, $^H, $INPLACE_EDIT, $^I, $OSNAME,
+$^O, $PERLDB, $^P, $BASETIME, $^T, $WARNING, $^W, $EXECUTABLE_NAME, $^X,
+$ARGV, @@ARGV, @@INC, %INC, $ENV@{expr@}, $SIG@{expr@}, $^M
+
+@end table
+@unnumberedsubsec perlsub - Perl subroutines
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+@itemx Private Variables via my()
+@itemx Temporary Values via local()
+@itemx Passing Symbol Table Entries (typeglobs)
+@itemx Pass by Reference
+@itemx Prototypes
+@itemx Constant Functions
+@itemx Overriding Builtin Functions
+@itemx Autoloading
+@end table
+@table @asis
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec perlmod - Perl modules (packages and symbol tables)
+@table @asis
+@itemx DESCRIPTION
+@itemx Packages
+@itemx Symbol Tables
+@itemx Package Constructors and Destructors
+@itemx Perl Classes
+@itemx Perl Modules
+@end table
+@table @asis
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec perlmodlib - constructing new Perl modules and finding
+existing ones
+@table @asis
+@itemx DESCRIPTION
+@itemx THE PERL MODULE LIBRARY
+@itemx Pragmatic Modules
+use autouse MODULE => qw(sub1 sub2 sub3), blib, diagnostics, integer, less,
+lib, locale, ops, overload, sigtrap, strict, subs, vmsish, vars
+
+@item Standard Modules
+AnyDBM_File, AutoLoader, AutoSplit, Benchmark, CPAN, CPAN::FirstTime,
+CPAN::Nox, Carp, Class::Struct, Config, Cwd, DB_File, Devel::SelfStubber,
+DirHandle, DynaLoader, English, Env, Exporter, ExtUtils::Embed,
+ExtUtils::Install, ExtUtils::Liblist, ExtUtils::MM_OS2, ExtUtils::MM_Unix,
+ExtUtils::MM_VMS, ExtUtils::MakeMaker, ExtUtils::Manifest,
+ExtUtils::Mkbootstrap, ExtUtils::Mksymlists, ExtUtils::testlib, Fcntl,
+File::Basename, File::CheckTree, File::Compare, File::Copy, File::Find,
+File::Path, File::stat, FileCache, FileHandle, FindBin, GDBM_File,
+Getopt::Long, Getopt::Std, I18N::Collate, IO, IO::File, IO::Handle,
+IO::Pipe, IO::Seekable, IO::Select, IO::Socket, IPC::Open2, IPC::Open3,
+Math::BigFloat, Math::BigInt, Math::Complex, Math::Trig, NDBM_File,
+Net::Ping, Net::hostent, Net::netent, Net::protoent, Net::servent, Opcode,
+Pod::Text, POSIX, SDBM_File, Safe, Search::Dict, SelectSaver, SelfLoader,
+Shell, Socket, Symbol, Sys::Hostname, Sys::Syslog, Term::Cap,
+Term::Complete, Term::ReadLine, Test::Harness, Text::Abbrev,
+Text::ParseWords, Text::Soundex, Text::Tabs, Text::Wrap, Tie::Hash,
+Tie::RefHash, Tie::Scalar, Tie::SubstrHash, Time::Local, Time::gmtime,
+Time::localtime, Time::tm, UNIVERSAL, User::grent, User::pwent
+
+@item Extension Modules
+@end table
+@table @asis
+@itemx CPAN
+Language Extensions and Documentation Tools, Development Support, Operating
+System Interfaces, Networking, Device Control (modems) and InterProcess
+Communication, Data Types and Data Type Utilities, Database Interfaces,
+User Interfaces, Interfaces to / Emulations of Other Programming Languages,
+File Names, File Systems and File Locking (see also File Handles), String
+Processing, Language Text Processing, Parsing, and Searching, Option,
+Argument, Parameter, and Configuration File Processing,
+Internationalization and Locale, Authentication, Security, and Encryption,
+World Wide Web, HTML, HTTP, CGI, MIME, Server and Daemon Utilities,
+Archiving and Compression, Images, Pixmap and Bitmap Manipulation, Drawing,
+and Graphing, Mail and Usenet News, Control Flow Utilities (callbacks and
+exceptions etc), File Handle and Input/Output Stream Utilities,
+Miscellaneous Modules, Africa, Asia, Australasia, Europe, North America,
+South America
+
+@item Modules: Creation, Use, and Abuse
+@itemx Guidelines for Module Creation
+Do similar modules already exist in some form?, Try to design the new
+module to be easy to extend and reuse, Some simple style guidelines, Select
+what to export, Select a name for the module, Have you got it right?,
+README and other Additional Files, A description of the
+module/package/extension etc, A copyright notice - see below, Prerequisites
+- what else you may need to have, How to build it - possible changes to
+Makefile.PL etc, How to install it, Recent changes in this release,
+especially incompatibilities, Changes / enhancements you plan to make in
+the future, Adding a Copyright Notice, Give the module a
+version/issue/release number, How to release and distribute a module, Take
+care when changing a released module
+
+@item Guidelines for Converting Perl 4 Library Scripts into Modules
+There is no requirement to convert anything, Consider the implications,
+Make the most of the opportunity, The pl2pm utility will get you started,
+Adds the standard Module prologue lines, Converts package specifiers from @'
+to ::, Converts die(...) to croak(...), Several other minor changes
+
+@item Guidelines for Reusing Application Code
+Complete applications rarely belong in the Perl Module Library, Many
+applications contain some perl code which could be reused, Break-out the
+reusable code into one or more separate module files, Take the opportunity
+to reconsider and redesign the interfaces, In some cases the @'application@'
+can then be reduced to a small
+
+@end table
+@table @asis
+@item NOTE
+@end table
+@unnumberedsubsec perlform - Perl formats
+@table @asis
+@itemx DESCRIPTION
+@itemx Format Variables
+@end table
+@table @asis
+@itemx NOTES
+@itemx Footers
+@itemx Accessing Formatting Internals
+@end table
+@table @asis
+@itemx WARNINGS
+@end table
+@unnumberedsubsec perllocale - Perl locale handling (internationalization and localization)
+@table @asis
+@itemx DESCRIPTION
+@itemx PREPARING TO USE LOCALES
+@itemx USING LOCALES
+@itemx The use locale pragma
+@itemx The setlocale function
+@itemx The localeconv function
+@end table
+@table @asis
+@itemx LOCALE CATEGORIES
+@itemx Category LC_COLLATE: Collation
+@itemx Category LC_CTYPE: Character Types
+@itemx Category LC_NUMERIC: Numeric Formatting
+@itemx Category LC_MONETARY: Formatting of monetary amounts
+@itemx LC_TIME
+@itemx Other categories
+@end table
+@table @asis
+@itemx SECURITY
+@strong{Comparison operators} (@code{lt}, @code{le}, @code{ge}, @code{gt} and @code{cmp}):,
+@strong{Case-mapping interpolation} (with @code{\l}, @code{\L}, @code{\u} or <\U>),
+@strong{Matching operator} (m//):, @strong{Substitution operator} (s///):,
+@strong{In-memory formatting function} (sprintf()):, @strong{Output formatting
+functions} (printf() and write()):, @strong{Case-mapping functions} (lc(),
+lcfirst(), uc(), ucfirst()):, @strong{POSIX locale-dependent functions}
+(localeconv(), strcoll(),strftime(), strxfrm()):, @strong{POSIX character class
+tests} (isalnum(), isalpha(), isdigit(),isgraph(), islower(), isprint(),
+ispunct(), isspace(), isupper(),
+isxdigit()):
+
+@item ENVIRONMENT
+PERL_BADLANG, LC_ALL, LC_CTYPE, LC_COLLATE, LC_MONETARY, LC_NUMERIC,
+LC_TIME, LANG
+
+@item NOTES
+@itemx Backward compatibility
+@itemx I18N:Collate obsolete
+@itemx Sort speed and memory use impacts
+@itemx write() and LC_NUMERIC
+@itemx Freely available locale definitions
+@itemx I18n and l10n
+@itemx An imperfect standard
+@end table
+@table @asis
+@itemx BUGS
+@itemx Broken systems
+@end table
+@table @asis
+@itemx SEE ALSO
+@itemx HISTORY
+@end table
+@unnumberedsubsec perlref - Perl references and nested data structures
+@table @asis
+@itemx DESCRIPTION
+@itemx Symbolic references
+@itemx Not-so-symbolic references
+@end table
+@table @asis
+@itemx WARNING
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec perldsc - Perl Data Structures Cookbook
+@table @asis
+@itemx DESCRIPTION
+arrays of arrays, hashes of arrays, arrays of hashes, hashes of hashes,
+more elaborate constructs
+
+@item REFERENCES
+@itemx COMMON MISTAKES
+@itemx CAVEAT ON PRECEDENCE
+@itemx WHY YOU SHOULD ALWAYS @code{use strict}
+@itemx DEBUGGING
+@itemx CODE EXAMPLES
+@itemx LISTS OF LISTS
+@itemx Declaration of a LIST OF LISTS
+@itemx Generation of a LIST OF LISTS
+@itemx Access and Printing of a LIST OF LISTS
+@end table
+@table @asis
+@itemx HASHES OF LISTS
+@itemx Declaration of a HASH OF LISTS
+@itemx Generation of a HASH OF LISTS
+@itemx Access and Printing of a HASH OF LISTS
+@end table
+@table @asis
+@itemx LISTS OF HASHES
+@itemx Declaration of a LIST OF HASHES
+@itemx Generation of a LIST OF HASHES
+@itemx Access and Printing of a LIST OF HASHES
+@end table
+@table @asis
+@itemx HASHES OF HASHES
+@itemx Declaration of a HASH OF HASHES
+@itemx Generation of a HASH OF HASHES
+@itemx Access and Printing of a HASH OF HASHES
+@end table
+@table @asis
+@itemx MORE ELABORATE RECORDS
+@itemx Declaration of MORE ELABORATE RECORDS
+@itemx Declaration of a HASH OF COMPLEX RECORDS
+@itemx Generation of a HASH OF COMPLEX RECORDS
+@end table
+@table @asis
+@itemx Database Ties
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec perllol, perlLoL - Manipulating Lists of Lists in Perl
+@table @asis
+@itemx DESCRIPTION
+@itemx Declaration and Access of Lists of Lists
+@itemx Growing Your Own
+@itemx Access and Printing
+@itemx Slices
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec perltoot - Tom@'s object-oriented tutorial for perl
+@table @asis
+@itemx DESCRIPTION
+@itemx Creating a Class
+@itemx Object Representation
+@itemx Class Interface
+@itemx Constructors and Instance Methods
+@itemx Planning for the Future: Better Constructors
+@itemx Destructors
+@itemx Other Object Methods
+@end table
+@table @asis
+@itemx Class Data
+@itemx Accessing Class Data
+@itemx Debugging Methods
+@itemx Class Destructors
+@itemx Documenting the Interface
+@end table
+@table @asis
+@itemx Aggregation
+@itemx Inheritance
+@itemx Overridden Methods
+@itemx Multiple Inheritance
+@itemx UNIVERSAL: The Root of All Objects
+@end table
+@table @asis
+@itemx Alternate Object Representations
+@itemx Arrays as Objects
+@itemx Closures as Objects
+@end table
+@table @asis
+@itemx AUTOLOAD: Proxy Methods
+@itemx Autoloaded Data Methods
+@itemx Inherited Autoloaded Data Methods
+@end table
+@table @asis
+@itemx Metaclassical Tools
+@itemx Class::Struct
+@itemx Data Members as Variables
+@itemx NOTES
+@itemx Object Terminology
+@end table
+@table @asis
+@itemx SEE ALSO
+@itemx COPYRIGHT
+@itemx Acknowledgments
+@end table
+@unnumberedsubsec perlobj - Perl objects
+@table @asis
+@itemx DESCRIPTION
+@itemx An Object is Simply a Reference
+@itemx A Class is Simply a Package
+@itemx A Method is Simply a Subroutine
+@itemx Method Invocation
+@itemx Default UNIVERSAL methods
+isa(CLASS), can(METHOD), VERSION( [NEED] )
+
+@item Destructors
+@itemx WARNING
+@itemx Summary
+@itemx Two-Phased Garbage Collection
+@end table
+@table @asis
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec perltie - how to hide an object class in a simple variable
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Tying Scalars
+TIESCALAR classname, LIST, FETCH this, STORE this, value, DESTROY this
+
+@item Tying Arrays
+TIEARRAY classname, LIST, FETCH this, index, STORE this, index, value,
+DESTROY this
+
+@item Tying Hashes
+USER, HOME, CLOBBER, LIST, TIEHASH classname, LIST, FETCH this, key, STORE
+this, key, value, DELETE this, key, CLEAR this, EXISTS this, key, FIRSTKEY
+this, NEXTKEY this, lastkey, DESTROY this
+
+@item Tying FileHandles
+TIEHANDLE classname, LIST, PRINT this, LIST, PRINTF this, LIST, READ this
+LIST, READLINE this, GETC this, DESTROY this
+
+@item The untie Gotcha
+@end table
+@table @asis
+@itemx SEE ALSO
+@itemx BUGS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec perlbot - Bag@'o Object Tricks (the BOT)
+@table @asis
+@itemx DESCRIPTION
+@itemx OO SCALING TIPS
+@itemx INSTANCE VARIABLES
+@itemx SCALAR INSTANCE VARIABLES
+@itemx INSTANCE VARIABLE INHERITANCE
+@itemx OBJECT RELATIONSHIPS
+@itemx OVERRIDING SUPERCLASS METHODS
+@itemx USING RELATIONSHIP WITH SDBM
+@itemx THINKING OF CODE REUSE
+@itemx CLASS CONTEXT AND THE OBJECT
+@itemx INHERITING A CONSTRUCTOR
+@itemx DELEGATION
+@end table
+@unnumberedsubsec perlipc - Perl interprocess communication (signals, fifos, pipes, safe subprocesses, sockets, and semaphores)
+@table @asis
+@itemx DESCRIPTION
+@itemx Signals
+@itemx Named Pipes
+@itemx Using open() for IPC
+@itemx Filehandles
+@itemx Background Processes
+@itemx Complete Dissociation of Child from Parent
+@itemx Safe Pipe Opens
+@itemx Bidirectional Communication with Another Process
+@end table
+@table @asis
+@itemx Sockets: Client/Server Communication
+@itemx Internet TCP Clients and Servers
+@itemx Unix-Domain TCP Clients and Servers
+@end table
+@table @asis
+@itemx TCP Clients with IO::Socket
+@itemx A Simple Client
+Proto, @code{PeerAddr}, @code{PeerPort}
+
+@item A Webget Client
+@itemx Interactive Client with IO::Socket
+@end table
+@table @asis
+@itemx TCP Servers with IO::Socket
+Proto, LocalPort, Listen, Reuse
+
+@item UDP: Message Passing
+@itemx SysV IPC
+@itemx NOTES
+@itemx BUGS
+@itemx AUTHOR
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec perldebug - Perl debugging
+@table @asis
+@itemx DESCRIPTION
+@itemx The Perl Debugger
+@itemx Debugger Commands
+h [command], p expr, x expr, V [pkg [vars]], X [vars], T, s [expr], n
+[expr], <CR>, c [line|sub], l, l min+incr, l min-max, l line, l
+subname, -, w [line], f filename, /pattern/, ?pattern?, L, S [[!]pattern],
+t, t expr, b [line] [condition], b subname [condition], b postpone subname
+[condition], b load filename, b compile subname, d [line], D, a [line]
+command, A, O [opt[=val]] [opt"val"] [opt?].., @code{recallCommand},
+@code{ShellBang}, @code{pager}, @code{tkRunning}, @code{signalLevel}, @code{warnLevel},
+@code{dieLevel}, @code{AutoTrace}, @code{LineInfo}, @code{inhibit_exit}, @code{PrintRet},
+@code{ornaments}, @code{frame}, @code{maxTraceLen}, @code{arrayDepth}, @code{hashDepth},
+@code{compactDump}, @code{veryCompact}, @code{globPrint}, @code{DumpDBFiles},
+@code{DumpPackages}, @code{quote}, @code{HighBit}, @code{undefPrint}, @code{UsageOnly}, @code{TTY},
+@code{noTTY}, @code{ReadLine}, @code{NonStop}, < [ command ], << command,
+> command, >> command, @{ [ command ], @{@{ command, ! number, !
+-number, ! pattern, !! cmd, H -number, q or ^D, R, |dbcmd, ||dbcmd, =
+[alias value], command, m expr, m package
+
+@item Debugger input/output
+Prompt, Multiline commands, Stack backtrace, Listing, Frame listing
+
+@item Debugging compile-time statements
+@itemx Debugger Customization
+@itemx Readline Support
+@itemx Editor Support for Debugging
+@itemx The Perl Profiler
+@itemx Debugger support in perl
+@itemx Debugger Internals
+@itemx Other resources
+@end table
+@table @asis
+@itemx BUGS
+@end table
+@unnumberedsubsec perldiag - various Perl diagnostics
+@table @asis
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec perlsec - Perl security
+@table @asis
+@itemx DESCRIPTION
+@itemx Laundering and Detecting Tainted Data
+@itemx Switches On the "#!" Line
+@itemx Cleaning Up Your Path
+@itemx Security Bugs
+@itemx Protecting Your Programs
+@end table
+@unnumberedsubsec perltrap - Perl traps for the unwary
+@table @asis
+@itemx DESCRIPTION
+@itemx Awk Traps
+@itemx C Traps
+@itemx Sed Traps
+@itemx Shell Traps
+@itemx Perl Traps
+@itemx Perl4 to Perl5 Traps
+Discontinuance, Deprecation, and BugFix traps, Parsing Traps, Numerical
+Traps, General data type traps, Context Traps - scalar, list contexts,
+Precedence Traps, General Regular Expression Traps using s///, etc,
+Subroutine, Signal, Sorting Traps, OS Traps, DBM Traps, Unclassified Traps
+
+@item Discontinuance, Deprecation, and BugFix traps
+Discontinuance, Deprecation, BugFix, Discontinuance, Discontinuance,
+Discontinuance, BugFix, Discontinuance, Discontinuance, BugFix,
+Discontinuance, Discontinuance, Deprecation, Discontinuance
+
+@item Parsing Traps
+Parsing, Parsing, Parsing
+
+@item Numerical Traps
+Numerical, Numerical, Numerical
+
+@item General data type traps
+(Arrays), (Arrays), (Hashes), (Globs), (Scalar String), (Constants),
+(Scalars), (Variable Suicide)
+
+@item Context Traps - scalar, list contexts
+(list context), (scalar context), (scalar context), (list, builtin)
+
+@item Precedence Traps
+Precedence, Precedence, Precedence, Precedence, Precedence, Precedence,
+Precedence
+
+@item General Regular Expression Traps using s///, etc.
+Regular Expression, Regular Expression, Regular Expression, Regular
+Expression, Regular Expression, Regular Expression, Regular Expression,
+Regular Expression, Regular Expression
+
+@item Subroutine, Signal, Sorting Traps
+(Signals), (Sort Subroutine), warn() won@'t let you specify a filehandle
+
+@item OS Traps
+(SysV), (SysV)
+
+@item Interpolation Traps
+Interpolation, Interpolation, Interpolation, Interpolation, Interpolation,
+Interpolation, Interpolation, Interpolation, Interpolation
+
+@item DBM Traps
+DBM, DBM
+
+@item Unclassified Traps
+Unclassified
+
+@end table
+@unnumberedsubsec perlstyle - Perl style guide
+@table @asis
+@item DESCRIPTION
+@end table
+@unnumberedsubsec perlpod - plain old documentation
+@table @asis
+@itemx DESCRIPTION
+@itemx Embedding Pods in Perl Modules
+@itemx Common Pod Pitfalls
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec perlbook - Perl book information
+@table @asis
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec perlembed - how to embed perl in your C program
+@table @asis
+@itemx DESCRIPTION
+@itemx PREAMBLE
+@strong{Use C from Perl?}, @strong{Use a Unix program from Perl?}, @strong{Use Perl from
+Perl?}, @strong{Use C from C?}, @strong{Use Perl from C?}
+
+@item ROADMAP
+@itemx Compiling your C program
+@itemx Adding a Perl interpreter to your C program
+@itemx Calling a Perl subroutine from your C program
+@itemx Evaluating a Perl statement from your C program
+@itemx Performing Perl pattern matches and substitutions from your C program
+@itemx Fiddling with the Perl stack from your C program
+@itemx Maintaining a persistent interpreter
+@itemx Maintaining multiple interpreter instances
+@itemx Using Perl modules, which themselves use C libraries, from your C program
+@end table
+@table @asis
+@itemx MORAL
+@itemx AUTHOR
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec perlapio - perl@'s IO abstraction interface.
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@strong{PerlIO *}, @strong{PerlIO_stdin()}, @strong{PerlIO_stdout()}, @strong{PerlIO_stderr()},
+@strong{PerlIO_open(path, mode)}, @strong{PerlIO_fdopen(fd,mode)},
+@strong{PerlIO_printf(f,fmt,...)}, @strong{PerlIO_vprintf(f,fmt,a)},
+PerlIO_stdoutf(fmt,...), @strong{PerlIO_read(f,buf,count)},
+@strong{PerlIO_write(f,buf,count)}, PerlIO_close(f), @strong{PerlIO_puts(s,f)},
+@strong{PerlIO_putc(c,f)}, PerlIO_ungetc(c,f), PerlIO_getc(f),
+PerlIO_eof(f), PerlIO_error(f), PerlIO_fileno(f),
+PerlIO_clearerr(f), PerlIO_flush(f), PerlIO_tell(f),
+PerlIO_seek(f,o,w), @strong{PerlIO_getpos(f,p)}, @strong{PerlIO_setpos(f,p)},
+PerlIO_rewind(f), PerlIO_tmpfile()
+
+@item Co-existence with stdio
+PerlIO_importFILE(f,flags), PerlIO_exportFILE(f,flags),
+PerlIO_findFILE(f), PerlIO_releaseFILE(p,f), PerlIO_setlinebuf(f),
+PerlIO_has_cntptr(f), PerlIO_get_ptr(f), PerlIO_get_cnt(f),
+PerlIO_canset_cnt(f), PerlIO_fast_gets(f),
+PerlIO_set_ptrcnt(f,p,c), PerlIO_set_cnt(f,c), PerlIO_has_base(f),
+PerlIO_get_base(f), PerlIO_get_bufsiz(f)
+
+@end table
+@unnumberedsubsec perlxs - XS language reference manual
+@table @asis
+@item DESCRIPTION
+@itemx Introduction
+@itemx On The Road
+@itemx The Anatomy of an XSUB
+@itemx The Argument Stack
+@itemx The RETVAL Variable
+@itemx The MODULE Keyword
+@itemx The PACKAGE Keyword
+@itemx The PREFIX Keyword
+@itemx The OUTPUT: Keyword
+@itemx The CODE: Keyword
+@itemx The INIT: Keyword
+@itemx The NO_INIT Keyword
+@itemx Initializing Function Parameters
+@itemx Default Parameter Values
+@itemx The PREINIT: Keyword
+@itemx The SCOPE: Keyword
+@itemx The INPUT: Keyword
+@itemx Variable-length Parameter Lists
+@itemx The PPCODE: Keyword
+@itemx Returning Undef And Empty Lists
+@itemx The REQUIRE: Keyword
+@itemx The CLEANUP: Keyword
+@itemx The BOOT: Keyword
+@itemx The VERSIONCHECK: Keyword
+@itemx The PROTOTYPES: Keyword
+@itemx The PROTOTYPE: Keyword
+@itemx The ALIAS: Keyword
+@itemx The INCLUDE: Keyword
+@itemx The CASE: Keyword
+@itemx The & Unary Operator
+@itemx Inserting Comments and C Preprocessor Directives
+@itemx Using XS With C++
+@itemx Interface Strategy
+@itemx Perl Objects And C Structures
+@itemx The Typemap
+@end table
+@table @asis
+@itemx EXAMPLES
+@itemx XS VERSION
+@itemx AUTHOR
+@end table
+@unnumberedsubsec perlxstut, perlXStut - Tutorial for XSUBs
+@table @asis
+@itemx DESCRIPTION
+@itemx VERSION CAVEAT
+@itemx DYNAMIC VERSUS STATIC
+@itemx EXAMPLE 1
+@itemx EXAMPLE 2
+@itemx WHAT HAS GONE ON?
+@itemx WRITING GOOD TEST SCRIPTS
+@itemx EXAMPLE 3
+@itemx WHAT@'S NEW HERE?
+@itemx INPUT AND OUTPUT PARAMETERS
+@itemx THE XSUBPP COMPILER
+@itemx THE TYPEMAP FILE
+@itemx WARNING
+@itemx EXAMPLE 4
+@itemx WHAT HAS HAPPENED HERE?
+@itemx SPECIFYING ARGUMENTS TO XSUBPP
+@itemx THE ARGUMENT STACK
+@itemx EXTENDING YOUR EXTENSION
+@itemx DOCUMENTING YOUR EXTENSION
+@itemx INSTALLING YOUR EXTENSION
+@itemx SEE ALSO
+@itemx Author
+@itemx Last Changed
+@end table
+@unnumberedsubsec perlguts - Perl@'s Internal Functions
+@table @asis
+@itemx DESCRIPTION
+@itemx Variables
+@itemx Datatypes
+@itemx What is an "IV"?
+@itemx Working with SVs
+@itemx What@'s Really Stored in an SV?
+@itemx Working with AVs
+@itemx Working with HVs
+@itemx Hash API Extensions
+@itemx References
+@itemx Blessed References and Class Objects
+@itemx Creating New Variables
+@itemx Reference Counts and Mortality
+@itemx Stashes and Globs
+@itemx Double-Typed SVs
+@itemx Magic Variables
+@itemx Assigning Magic
+@itemx Magic Virtual Tables
+@itemx Finding Magic
+@end table
+@table @asis
+@itemx Subroutines
+@itemx XSUBs and the Argument Stack
+@itemx Calling Perl Routines from within C Programs
+@itemx Memory Allocation
+@itemx PerlIO
+@itemx Putting a C value on Perl stack
+@itemx Scratchpads
+@itemx Scratchpads and recursion
+@end table
+@table @asis
+@itemx Compiled code
+@itemx Code tree
+@itemx Examining the tree
+@itemx Compile pass 1: check routines
+@itemx Compile pass 1a: constant folding
+@itemx Compile pass 2: context propagation
+@itemx Compile pass 3: peephole optimization
+@end table
+@table @asis
+@itemx API LISTING
+AvFILL, av_clear, av_extend, av_fetch, av_len, av_make, av_pop, av_push,
+av_shift, av_store, av_undef, av_unshift, CLASS, Copy, croak, CvSTASH,
+DBsingle, DBsub, DBtrace, dMARK, dORIGMARK, dowarn, dSP, dXSARGS, dXSI32,
+dXSI32, ENTER, EXTEND, FREETMPS, G_ARRAY, G_DISCARD, G_EVAL, GIMME,
+GIMME_V, G_NOARGS, G_SCALAR, G_VOID, gv_fetchmeth, gv_fetchmethod,
+gv_fetchmethod_autoload, gv_stashpv, gv_stashsv, GvSV, HEf_SVKEY, HeHASH,
+HeKEY, HeKLEN, HePV, HeSVKEY, HeSVKEY_force, HeSVKEY_set, HeVAL, hv_clear,
+hv_delayfree_ent, hv_delete, hv_delete_ent, hv_exists, hv_exists_ent,
+hv_fetch, hv_fetch_ent, hv_free_ent, hv_iterinit, hv_iterkey, hv_iterkeysv,
+hv_iternext, hv_iternextsv, hv_iterval, hv_magic, HvNAME, hv_store,
+hv_store_ent, hv_undef, isALNUM, isALPHA, isDIGIT, isLOWER, isSPACE,
+isUPPER, items, ix, LEAVE, MARK, mg_clear, mg_copy, mg_find, mg_free,
+mg_get, mg_len, mg_magical, mg_set, Move, na, New, Newc, Newz, newAV,
+newHV, newRV_inc, newRV_noinc, newSV, newSViv, newSVnv, newSVpv, newSVrv,
+newSVsv, newXS, newXSproto, Nullav, Nullch, Nullcv, Nullhv, Nullsv,
+ORIGMARK, perl_alloc, perl_call_argv, perl_call_method, perl_call_pv,
+perl_call_sv, perl_construct, perl_destruct, perl_eval_sv, perl_eval_pv,
+perl_free, perl_get_av, perl_get_cv, perl_get_hv, perl_get_sv, perl_parse,
+perl_require_pv, perl_run, POPi, POPl, POPp, POPn, POPs, PUSHMARK, PUSHi,
+PUSHn, PUSHp, PUSHs, PUTBACK, Renew, Renewc, RETVAL, safefree, safemalloc,
+saferealloc, savepv, savepvn, SAVETMPS, SP, SPAGAIN, ST, strEQ, strGE,
+strGT, strLE, strLT, strNE, strnEQ, strnNE, sv_2mortal, sv_bless, sv_catpv,
+sv_catpvn, sv_catpvf, sv_catsv, sv_cmp, sv_cmp, SvCUR, SvCUR_set, sv_dec,
+sv_dec, SvEND, sv_eq, SvGROW, sv_grow, sv_inc, SvIOK, SvIOK_off, SvIOK_on,
+SvIOK_only, SvIOK_only, SvIOKp, sv_isa, SvIV, sv_isobject, SvIVX, SvLEN,
+sv_len, sv_len, sv_magic, sv_mortalcopy, SvOK, sv_newmortal, sv_no, SvNIOK,
+SvNIOK_off, SvNIOKp, SvNOK, SvNOK_off, SvNOK_on, SvNOK_only, SvNOK_only,
+SvNOKp, SvNV, SvNVX, SvPOK, SvPOK_off, SvPOK_on, SvPOK_only, SvPOK_only,
+SvPOKp, SvPV, SvPVX, SvREFCNT, SvREFCNT_dec, SvREFCNT_inc, SvROK,
+SvROK_off, SvROK_on, SvRV, sv_setiv, sv_setnv, sv_setpv, sv_setpvn,
+sv_setpvf, sv_setref_iv, sv_setref_nv, sv_setref_pv, sv_setref_pvn,
+sv_setsv, SvSTASH, SVt_IV, SVt_PV, SVt_PVAV, SVt_PVCV, SVt_PVHV, SVt_PVMG,
+SVt_NV, SvTRUE, SvTYPE, svtype, SvUPGRADE, sv_upgrade, sv_undef, sv_unref,
+sv_usepvn, sv_yes, THIS, toLOWER, toUPPER, warn, XPUSHi, XPUSHn, XPUSHp,
+XPUSHs, XS, XSRETURN, XSRETURN_EMPTY, XSRETURN_IV, XSRETURN_NO,
+XSRETURN_NV, XSRETURN_PV, XSRETURN_UNDEF, XSRETURN_YES, XST_mIV, XST_mNV,
+XST_mNO, XST_mPV, XST_mUNDEF, XST_mYES, XS_VERSION, XS_VERSION_BOOTCHECK,
+Zero
+
+@item EDITOR
+@itemx DATE
+@end table
+@unnumberedsubsec perlcall - Perl calling conventions from C
+@table @asis
+@itemx DESCRIPTION
+An Error Handler, An Event Driven Program
+
+@item THE PERL_CALL FUNCTIONS
+perl_call_sv, perl_call_pv, perl_call_method, perl_call_argv
+
+@item FLAG VALUES
+@itemx G_VOID
+@itemx G_SCALAR
+@itemx G_ARRAY
+@itemx G_DISCARD
+@itemx G_NOARGS
+@itemx G_EVAL
+@itemx G_KEEPERR
+@itemx Determining the Context
+@end table
+@table @asis
+@itemx KNOWN PROBLEMS
+@itemx EXAMPLES
+@itemx No Parameters, Nothing returned
+@itemx Passing Parameters
+@itemx Returning a Scalar
+@itemx Returning a list of values
+@itemx Returning a list in a scalar context
+@itemx Returning Data from Perl via the parameter list
+@itemx Using G_EVAL
+@itemx Using G_KEEPERR
+@itemx Using perl_call_sv
+@itemx Using perl_call_argv
+@itemx Using perl_call_method
+@itemx Using GIMME_V
+@itemx Using Perl to dispose of temporaries
+@itemx Strategies for storing Callback Context Information
+1. Ignore the problem - Allow only 1 callback, 2. Create a sequence of
+callbacks - hard wired limit, 3. Use a parameter to map to the Perl
+callback
+
+@item Alternate Stack Manipulation
+@itemx Creating and calling an anonymous subroutine in C
+@end table
+@table @asis
+@itemx SEE ALSO
+@itemx AUTHOR
+@itemx DATE
+@end table
+@unnumberedsec PRAGMA DOCUMENTATION
+@unnumberedsubsec autouse - postpone load of modules until a function is used
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx WARNING
+@itemx BUGS
+@itemx AUTHOR
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec blib - Use MakeMaker@'s uninstalled version of a package
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx BUGS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec constant - Perl pragma to declare constants
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTES
+@itemx TECHNICAL NOTE
+@itemx BUGS
+@itemx AUTHOR
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec diagnostics - Perl compiler pragma to force verbose warning diagnostics
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx The diagnostics Pragma
+@itemx The @emph{splain} Program
+@end table
+@table @asis
+@itemx EXAMPLES
+@itemx INTERNALS
+@itemx BUGS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec integer - Perl pragma to compute arithmetic in integer instead of double
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec less - perl pragma to request less of something from the compiler
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec lib - manipulate @@INC at compile time
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx ADDING DIRECTORIES TO @@INC
+@itemx DELETING DIRECTORIES FROM @@INC
+@itemx RESTORING ORIGINAL @@INC
+@end table
+@table @asis
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec locale - Perl pragma to use and avoid POSIX locales for built-in operations
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec ops - Perl pragma to restrict unsafe operations when compiling
+@table @asis
+@itemx SYNOPSIS 
+@itemx DESCRIPTION
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec overload - Package for overloading perl operations
+@table @asis
+@itemx SYNOPSIS
+@itemx CAVEAT SCRIPTOR
+@itemx DESCRIPTION
+@itemx Declaration of overloaded functions
+@itemx Calling Conventions for Binary Operations
+FALSE, TRUE, undef
+
+@item Calling Conventions for Unary Operations
+@itemx Overloadable Operations
+@emph{Arithmetic operations}, @emph{Comparison operations}, @emph{Bit operations},
+@emph{Increment and decrement}, @emph{Transcendental functions}, @emph{Boolean, string
+and numeric conversion}, Special
+
+@item Inheritance and overloading
+Strings as values of @code{use overload} directive, Overloading of an operation
+is inherited by derived classes
+
+@end table
+@table @asis
+@item SPECIAL SYMBOLS FOR @code{use overload}
+@itemx Last Resort
+@itemx Fallback 
+undef, TRUE, defined, but FALSE
+
+@item Copy Constructor
+@strong{Example}
+
+@end table
+@table @asis
+@item MAGIC AUTOGENERATION
+@emph{Assignment forms of arithmetic operations}, @emph{Conversion operations},
+@emph{Increment and decrement}, @code{abs($a)}, @emph{Unary minus}, @emph{Negation},
+@emph{Concatenation}, @emph{Comparison operations}, @emph{Copy operator}
+
+@item WARNING
+@itemx Run-time Overloading
+@itemx Public functions
+overload::StrVal(arg), overload::Overloaded(arg), overload::Method(obj,op)
+
+@item IMPLEMENTATION
+@itemx AUTHOR
+@itemx DIAGNOSTICS
+@itemx BUGS
+@end table
+@unnumberedsubsec sigtrap - Perl pragma to enable simple signal handling
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx OPTIONS
+@itemx SIGNAL HANDLERS
+@strong{stack-trace}, die, @strong{handler} @emph{your-handler}
+
+@item SIGNAL LISTS
+@strong{normal-signals}, @strong{error-signals}, @strong{old-interface-signals}
+
+@item OTHER
+@strong{untrapped}, @strong{any}, @emph{signal}, @emph{number}
+
+@end table
+@table @asis
+@item EXAMPLES
+@end table
+@unnumberedsubsec strict - Perl pragma to restrict unsafe constructs
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@code{strict refs}, @code{strict vars}, @code{strict subs}
+
+@end table
+@unnumberedsubsec subs - Perl pragma to predeclare sub names
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec vars - Perl pragma to predeclare global variable names
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+
+@ignore
+@unnumberedsec MODULE DOCUMENTATION
+@unnumberedsubsec AnyDBM_File - provide framework for multiple DBMs
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx DBM Comparisons
+[0], [1], [2], [3]
+
+@end table
+@table @asis
+@item SEE ALSO
+@end table
+@unnumberedsubsec AutoLoader - load subroutines only on demand
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Subroutine Stubs
+@itemx Using AutoLoader@'s AUTOLOAD Subroutine
+@itemx Overriding AutoLoader@'s AUTOLOAD Subroutine
+@itemx Package Lexicals
+@itemx AutoLoader vs. SelfLoader
+@end table
+@table @asis
+@itemx CAVEATS
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec AutoSplit - split a package for autoloading
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CAVEATS
+@itemx DIAGNOSTICS
+@end table
+@unnumberedsubsec Benchmark - benchmark running times of code
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Methods
+new, debug
+
+@item Standard Exports
+timeit(COUNT, CODE), timethis ( COUNT, CODE, [ TITLE, [ STYLE ]] ),
+timethese ( COUNT, CODEHASHREF, [ STYLE ] ), timediff ( T1, T2 ), timestr (
+TIMEDIFF, [ STYLE, [ FORMAT ]] )
+
+@item Optional Exports
+clearcache ( COUNT ), clearallcache ( ), disablecache ( ), enablecache ( )
+
+@end table
+@table @asis
+@item NOTES
+@itemx INHERITANCE
+@itemx CAVEATS
+@itemx AUTHORS
+@itemx MODIFICATION HISTORY
+@end table
+@unnumberedsubsec Bundle::CPAN - A bundle to play with all the other modules on CPAN
+@table @asis
+@itemx SYNOPSIS
+@itemx CONTENTS
+@itemx DESCRIPTION
+@itemx AUTHOR
+@end table
+@unnumberedsubsec CGI - Simple Common Gateway Interface Class
+@table @asis
+@itemx SYNOPSIS
+@itemx ABSTRACT
+@itemx INSTALLATION
+@itemx DESCRIPTION
+@itemx CREATING A NEW QUERY OBJECT:
+@itemx CREATING A NEW QUERY OBJECT FROM AN INPUT FILE
+@itemx FETCHING A LIST OF KEYWORDS FROM THE QUERY:
+@itemx FETCHING THE NAMES OF ALL THE PARAMETERS PASSED TO YOUR SCRIPT:
+@itemx FETCHING THE VALUE OR VALUES OF A SINGLE NAMED PARAMETER:
+@itemx SETTING THE VALUE(S) OF A NAMED PARAMETER:
+@itemx APPENDING ADDITIONAL VALUES TO A NAMED PARAMETER:
+@itemx IMPORTING ALL PARAMETERS INTO A NAMESPACE:
+@itemx DELETING A PARAMETER COMPLETELY:
+@itemx DELETING ALL PARAMETERS:
+@itemx SAVING THE STATE OF THE FORM TO A FILE:
+@itemx CREATING A SELF-REFERENCING URL THAT PRESERVES STATE INFORMATION:
+@itemx COMPATIBILITY WITH CGI-LIB.PL
+@itemx CALLING CGI FUNCTIONS THAT TAKE MULTIPLE ARGUMENTS
+@itemx CREATING THE HTTP HEADER:
+@itemx GENERATING A REDIRECTION INSTRUCTION
+@itemx CREATING THE HTML HEADER:
+@strong{Parameters:}, 4, 5, 6..
+
+@item ENDING THE HTML DOCUMENT:
+@end table
+@table @asis
+@itemx CREATING FORMS
+@itemx CREATING AN ISINDEX TAG
+@itemx STARTING AND ENDING A FORM
+@strong{application/x-www-form-urlencoded}, @strong{multipart/form-data}
+
+@item CREATING A TEXT FIELD
+@strong{Parameters}
+
+@item CREATING A BIG TEXT FIELD
+@itemx CREATING A PASSWORD FIELD
+@itemx CREATING A FILE UPLOAD FIELD
+@strong{Parameters}
+
+@item CREATING A POPUP MENU
+@itemx CREATING A SCROLLING LIST
+@strong{Parameters:}
+
+@item CREATING A GROUP OF RELATED CHECKBOXES
+@strong{Parameters:}
+
+@item CREATING A STANDALONE CHECKBOX
+@strong{Parameters:}
+
+@item CREATING A RADIO BUTTON GROUP
+@strong{Parameters:}
+
+@item CREATING A SUBMIT BUTTON 
+@strong{Parameters:}
+
+@item CREATING A RESET BUTTON
+@itemx CREATING A DEFAULT BUTTON
+@itemx CREATING A HIDDEN FIELD
+@strong{Parameters:}
+
+@item CREATING A CLICKABLE IMAGE BUTTON
+@strong{Parameters:}, 3.The third option (-align, optional) is an alignment type,
+and may be
+TOP, BOTTOM or MIDDLE
+
+@item CREATING A JAVASCRIPT ACTION BUTTON
+@end table
+@table @asis
+@itemx NETSCAPE COOKIES
+1. an expiration time, 2. a domain, 3. a path, 4. a "secure" flag,
+@strong{-name}, @strong{-value}, @strong{-path}, @strong{-domain}, @strong{-expires}, @strong{-secure}
+
+@item WORKING WITH NETSCAPE FRAMES
+1. Create a <Frameset> document, 2. Specify the destination for the
+document in the HTTP header, 3. Specify the destination for the document in
+the <FORM> tag
+
+@item LIMITED SUPPORT FOR CASCADING STYLE SHEETS
+@itemx DEBUGGING
+@itemx DUMPING OUT ALL THE NAME/VALUE PAIRS
+@end table
+@table @asis
+@itemx FETCHING ENVIRONMENT VARIABLES
+accept(), @strong{raw_cookie()}, @strong{user_agent()}, @strong{path_info()},
+@strong{path_translated()}, @strong{remote_host()}, @strong{script_name()}Return the script
+name as a partial URL, for self-refering
+scripts, @strong{referer()}, @strong{auth_type ()}, @strong{server_name ()}, @strong{virtual_host
+()}, @strong{server_software ()}, @strong{remote_user ()}, @strong{user_name ()},
+@strong{request_method()}
+
+@item CREATING HTML ELEMENTS
+@itemx PROVIDING ARGUMENTS TO HTML SHORTCUTS
+@itemx Generating new HTML tags
+@end table
+@table @asis
+@itemx IMPORTING CGI METHOD CALLS INTO YOUR NAME SPACE
+@strong{cgi}, @strong{form}, @strong{html2}, @strong{html3}, @strong{netscape}, @strong{shortcuts},
+@strong{standard}, @strong{all}
+
+@item USING NPH SCRIPTS
+In the use statementSimply add ":nph" to the list of symbols to be
+imported into your script:, By calling the @strong{nph()} method:, By using
+@strong{-nph} parameters in the @strong{header()} and @strong{redirect()}  statements:
+
+@item AUTHOR INFORMATION
+@itemx CREDITS
+Matt Heffron (heffron@@falstaff.css.beckman.com), James Taylor
+(james.taylor@@srs.gov), Scott Anguish <sanguish@@digifix.com>, Mike Jewell
+(mlj3u@@virginia.edu), Timothy Shimmin (tes@@kbs.citri.edu.au), Joergen Haegg
+(jh@@axis.se), Laurent Delfosse (delfosse@@csgrad1.cs.wvu.edu), Richard
+Resnick (applepi1@@aol.com), Craig Bishop (csb@@barwonwater.vic.gov.au), Tony
+Curtis (tc@@vcpc.univie.ac.at), Tim Bunce (Tim.Bunce@@ig.co.uk), Tom
+Christiansen (tchrist@@convex.com), Andreas Koenig
+(k@@franz.ww.TU-Berlin.DE), Tim MacKenzie (Tim.MacKenzie@@fulcrum.com.au),
+Kevin B. Hendricks (kbhend@@dogwood.tyler.wm.edu), Stephen Dahmen
+(joyfire@@inxpress.net), Ed Jordan (ed@@fidalgo.net), David Alan Pisoni
+(david@@cnation.com), ...and many many more..
+
+@item A COMPLETE EXAMPLE OF A SIMPLE FORM-BASED SCRIPT
+@itemx BUGS
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec CGI::Apache - Make things work with CGI.pm against Perl-Apache API
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE 1
+@itemx NOTE 2
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec CGI::Carp, @strong{CGI::Carp} - CGI routines for writing to the HTTPD (or other) error log
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx REDIRECTING ERROR MESSAGES
+@itemx MAKING PERL ERRORS APPEAR IN THE BROWSER WINDOW
+@itemx CHANGE LOG
+@itemx AUTHORS
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec CGI::Fast - CGI Interface for Fast CGI
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx OTHER PIECES OF THE PUZZLE
+@itemx WRITING FASTCGI PERL SCRIPTS
+@itemx INSTALLING FASTCGI SCRIPTS
+@itemx USING FASTCGI SCRIPTS AS CGI SCRIPTS
+@itemx CAVEATS
+@itemx AUTHOR INFORMATION
+@itemx BUGS
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec CGI::Push - Simple Interface to Server Push
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx USING CGI::Push
+-last_page, -type, -delay, -cookie, -target, -expires
+
+@item INSTALLING CGI::Push SCRIPTS
+@itemx CAVEATS
+@itemx AUTHOR INFORMATION
+@itemx BUGS
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec CGI::Switch - Try more than one constructors and return the first object available
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec CPAN - query, download and build perl modules from CPAN sites
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Interactive Mode
+Searching for authors, bundles, distribution files and modules, make, test,
+install, clean  modules or distributions, readme, look module or
+distribution
+
+@item CPAN::Shell
+@itemx autobundle
+@itemx recompile
+@itemx The 4 Classes: Authors, Bundles, Modules, Distributions
+@itemx ProgrammerE<39>s interface
+expand($type,@@things), Programming Examples
+
+@item Cache Manager
+@itemx Bundles
+@itemx Prerequisites
+@itemx Debugging
+@itemx Floppy, Zip, and all that Jazz
+@end table
+@table @asis
+@itemx CONFIGURATION
+o conf <scalar option>, o conf <scalar option>
+<value>, o conf <list option>, o conf <list option>
+[shift|pop], o conf <list option> [unshift|push|splice]
+<list>
+
+@item SECURITY
+@itemx EXPORT
+@itemx BUGS
+@itemx AUTHOR
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec CPAN::FirstTime - Utility for CPAN::Config file Initialization
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec CPANox, CPAN::Nox - Wrapper around CPAN.pm without using any XS module
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec Carp, carp - warn of errors (from perspective of caller)
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec Class::Struct - declare struct-like datatypes as Perl classes
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx The @code{struct()} function
+@itemx Element Types and Accessor Methods
+Scalar (@code{@'$@'} or @code{@'*$@'}), Array (@code{@'@@@'} or @code{@'*@@@'}), Hash (@code{@'%@'} or
+@code{@'*%@'}), Class (@code{@'Class_Name@'} or @code{@'*Class_Name@'})
+
+@end table
+@table @asis
+@item EXAMPLES
+Example 1, Example 2
+
+@item Author and Modification History
+@end table
+@unnumberedsubsec Config - access Perl configuration information
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+myconfig(), config_sh(), config_vars(@@names)
+
+@item EXAMPLE
+@itemx WARNING
+@itemx NOTE
+@end table
+@unnumberedsubsec Cwd, getcwd - get pathname of current working directory
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec DB_File - Perl5 access to Berkeley DB
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+DB_HASH, DB_BTREE, DB_RECNO
+
+@item Interface to Berkeley DB
+@itemx Opening a Berkeley DB Database File
+@itemx Default Parameters
+@itemx In Memory Databases
+@end table
+@table @asis
+@itemx DB_HASH
+@itemx A Simple Example
+@end table
+@table @asis
+@itemx DB_BTREE
+@itemx Changing the BTREE sort order
+@itemx Handling Duplicate Keys 
+@itemx The get_dup() Method
+@itemx Matching Partial Keys 
+@end table
+@table @asis
+@itemx DB_RECNO
+@itemx The @'bval@' Option
+@itemx A Simple Example
+@itemx Extra Methods
+B<$X->push(list) ;>, B<$value = $X->pop ;>, B<$X->shift>,
+B<$X->unshift(list) ;>, B<$X->length>
+
+@item Another Example
+@end table
+@table @asis
+@itemx THE API INTERFACE
+B<$status = $X->get($key, $value [, $flags]) ;>, B<$status =
+$X->put($key, $value [, $flags]) ;>, B<$status = $X->del($key [,
+$flags]) ;>, B<$status = $X->fd ;>, B<$status = $X->seq($key,
+$value, $flags) ;>, B<$status = $X->sync([$flags]) ;>
+
+@item HINTS AND TIPS 
+@itemx Locking Databases
+@itemx Sharing Databases With C Applications
+@itemx The untie() Gotcha
+@end table
+@table @asis
+@itemx COMMON QUESTIONS
+@itemx Why is there Perl source in my database?
+@itemx How do I store complex data structures with DB_File?
+@itemx What does "Invalid Argument" mean?
+@itemx What does "Bareword @'DB_File@' not allowed" mean? 
+@end table
+@table @asis
+@itemx HISTORY
+@itemx BUGS
+@itemx AVAILABILITY
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Devel::SelfStubber - generate stubs for a SelfLoading module
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec DirHandle - supply object methods for directory handles
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec DynaLoader - Dynamically load C libraries into Perl code
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@@dl_library_path, @@dl_resolve_using, @@dl_require_symbols, @@dl_librefs,
+@@dl_modules, dl_error(), $dl_debug, dl_findfile(), dl_expandspec(),
+dl_load_file(), dl_loadflags(), dl_find_symbol(),
+dl_find_symbol_anywhere(), dl_undef_symbols(), dl_install_xsub(),
+bootstrap()
+
+@item AUTHOR
+@end table
+@unnumberedsubsec English - use nice English (or awk) names for ugly punctuation variables
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec Env - perl module that imports environment variables
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Exporter - Implements default import method for modules
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Selecting What To Export
+@itemx Specialised Import Lists
+@itemx Module Version Checking
+@itemx Managing Unknown Symbols
+@itemx Tag Handling Utility Functions
+@end table
+@unnumberedsubsec ExtUtils::Command - utilities to replace common UNIX commands in Makefiles etc.
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+cat, eqtime src dst, rm_f files..., rm_f files..., touch files .., mv
+source... destination, cp source... destination, chmod mode files.., mkpath
+directory.., test_f file
+
+@item BUGS
+@itemx SEE ALSO 
+@itemx AUTHOR
+@end table
+@unnumberedsubsec ExtUtils::Embed - Utilities for embedding Perl in C/C++ applications
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx @@EXPORT
+@itemx FUNCTIONS
+xsinit(), Examples, ldopts(), Examples, perl_inc(), ccflags(), ccdlflags(),
+ccopts(), xsi_header(), xsi_protos(@@modules), xsi_body(@@modules)
+
+@item EXAMPLES
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec ExtUtils::Install - install files from here to there
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec ExtUtils::Liblist - determine libraries to use and how to use them
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+For static extensions, For dynamic extensions, For dynamic extensions
+
+@item EXTRALIBS
+@itemx LDLOADLIBS and LD_RUN_PATH
+@itemx BSLOADLIBS
+@end table
+@table @asis
+@itemx PORTABILITY
+@itemx VMS implementation
+@end table
+@table @asis
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec ExtUtils::MM_OS2 - methods to override UN*X behaviour in ExtUtils::MakeMaker
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec ExtUtils::MM_Unix - methods used by ExtUtils::MakeMaker
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx METHODS
+@itemx Preloaded methods
+canonpath, catdir, catfile, curdir, rootdir, updir
+
+@item SelfLoaded methods
+c_o (o), cflags (o), clean (o), const_cccmd (o), const_config (o),
+const_loadlibs (o), constants (o), depend (o), dir_target (o), dist (o),
+dist_basics (o), dist_ci (o), dist_core (o), dist_dir (o), dist_test (o),
+dlsyms (o), dynamic (o), dynamic_bs (o), dynamic_lib (o), exescan,
+extliblist, file_name_is_absolute, find_perl
+
+@item Methods to actually produce chunks of text for the Makefile
+force (o), guess_name, has_link_code, init_dirscan, init_main, init_others,
+install (o), installbin (o), libscan (o), linkext (o), lsdir, macro (o),
+makeaperl (o), makefile (o), manifypods (o), maybe_command,
+maybe_command_in_dirs, needs_linking (o), nicetext, parse_version, pasthru
+(o), path, perl_script, perldepend (o), pm_to_blib, post_constants (o),
+post_initialize (o), postamble (o), prefixify, processPL (o), realclean
+(o), replace_manpage_separator, static (o), static_lib (o), staticmake (o),
+subdir_x (o), subdirs (o), test (o), test_via_harness (o), test_via_script
+(o), tool_autosplit (o), tools_other (o), tool_xsubpp (o), top_targets (o),
+writedoc, xs_c (o), xs_o (o), perl_archive, export_list
+
+@end table
+@table @asis
+@item SEE ALSO
+@end table
+@unnumberedsubsec ExtUtils::MM_VMS - methods to override UN*X behaviour in ExtUtils::MakeMaker
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Methods always loaded
+eliminate_macros, fixpath, catdir, catfile, wraplist, curdir (override),
+rootdir (override), updir (override)
+
+@item SelfLoaded methods
+guess_name (override), find_perl (override), path (override), maybe_command
+(override), maybe_command_in_dirs (override), perl_script (override),
+file_name_is_absolute (override), replace_manpage_separator, init_others
+(override), constants (override), cflags (override), const_cccmd
+(override), pm_to_blib (override), tool_autosplit (override), tool_sxubpp
+(override), xsubpp_version (override), tools_other (override), dist
+(override), c_o (override), xs_c (override), xs_o (override), top_targets
+(override), dlsyms (override), dynamic_lib (override), dynamic_bs
+(override), static_lib (override), manifypods (override), processPL
+(override), installbin (override), subdir_x (override), clean (override),
+realclean (override), dist_basics (override), dist_core (override),
+dist_dir (override), dist_test (override), install (override), perldepend
+(override), makefile (override), test (override), test_via_harness
+(override), test_via_script (override), makeaperl (override), nicetext
+(override)
+
+@end table
+@unnumberedsubsec ExtUtils::MM_Win32 - methods to override UN*X behaviour in ExtUtils::MakeMaker
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+catfile, static_lib (o), dynamic_lib (o), canonpath, perl_script,
+pm_to_blib, test_via_harness (o), tool_autosplit (override), tools_other
+(o), manifypods (o), dist_ci (o), dist_core (o), pasthru (o)
+
+@end table
+@unnumberedsubsec ExtUtils::MakeMaker - create an extension Makefile
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+@itemx How To Write A Makefile.PL
+@itemx Default Makefile Behaviour
+@itemx make test
+@itemx make testdb
+@itemx make install
+@itemx PREFIX and LIB attribute
+@itemx AFS users
+@itemx Static Linking of a new Perl Binary
+@itemx Determination of Perl Library and Installation Locations
+@itemx Which architecture dependent directory?
+@itemx Using Attributes and Parameters
+C, CONFIG, CONFIGURE, DEFINE, DIR, DISTNAME, DL_FUNCS, DL_VARS,
+EXCLUDE_EXT, EXE_FILES, NO_VC, FIRST_MAKEFILE, FULLPERL, H, INC,
+INCLUDE_EXT, INSTALLARCHLIB, INSTALLBIN, INSTALLDIRS, INSTALLMAN1DIR,
+INSTALLMAN3DIR, INSTALLPRIVLIB, INSTALLSCRIPT, INSTALLSITELIB,
+INSTALLSITEARCH, INST_ARCHLIB, INST_BIN, INST_EXE, INST_LIB, INST_MAN1DIR,
+INST_MAN3DIR, INST_SCRIPT, LDFROM, LIBPERL_A, LIB, LIBS, LINKTYPE,
+MAKEAPERL, MAKEFILE, MAN1PODS, MAN3PODS, MAP_TARGET, MYEXTLIB, NAME,
+NEEDS_LINKING, NOECHO, NORECURS, OBJECT, OPTIMIZE, PERL, PERLMAINCC,
+PERL_ARCHLIB, PERL_LIB, PERL_SRC, PL_FILES, PM, PMLIBDIRS, PREFIX,
+PREREQ_PM, SKIP, TYPEMAPS, VERSION, VERSION_FROM, XS, XSOPT, XSPROTOARG,
+XS_VERSION
+
+@item Additional lowercase attributes
+clean, depend, dist, dynamic_lib, installpm, linkext, macro, realclean,
+tool_autosplit
+
+@item Overriding MakeMaker Methods
+@itemx Hintsfile support
+@itemx Distribution Support
+
+@example
+make distcheck,    make skipcheck,       make distclean,    make manifest, 
+  make distdir,    make tardist,    make dist,    make uutardist,    make
+shdist,    make zipdist,    make ci
+@end example
+
+@end table
+@table @asis
+@itemx SEE ALSO
+@itemx AUTHORS
+@end table
+@unnumberedsubsec ExtUtils::Manifest - utilities to write and check a MANIFEST file
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx MANIFEST.SKIP
+@itemx EXPORT_OK
+@itemx GLOBAL VARIABLES
+@itemx DIAGNOSTICS
+@code{Not in MANIFEST:} @emph{file}, @code{No such file:} @emph{file}, @code{MANIFEST:} $!,
+@code{Added to MANIFEST:} @emph{file}
+
+@item SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec ExtUtils::Miniperl, writemain - write the C code for perlmain.c
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec ExtUtils::Mkbootstrap - make a bootstrap file for use by DynaLoader
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec ExtUtils::Mksymlists - write linker options files for dynamic extension
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+NAME, DL_FUNCS, DL_VARS, FILE, FUNCLIST, DLBASE
+
+@item AUTHOR
+@itemx REVISION
+@end table
+@unnumberedsubsec ExtUtils::testlib - add blib/* directories to @@INC
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec Fcntl - load the C Fcntl.h defines
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx EXPORTED SYMBOLS
+@end table
+@unnumberedsubsec File::Basename, fileparse - split a pathname into pieces
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+fileparse_set_fstype, fileparse
+
+@item EXAMPLES
+@code{basename}, @code{dirname}
+
+@end table
+@unnumberedsubsec File::CheckTree, validate - run many filetest checks on a tree
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec File::Compare - Compare files or filehandles
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx RETURN
+@itemx AUTHOR
+@end table
+@unnumberedsubsec File::Copy - Copy files or filehandles
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Special behavior if @code{syscopy} is defined (VMS and OS/2)
+rmscopy($from,$to[,$date_flag])
+
+@end table
+@table @asis
+@item RETURN
+@itemx AUTHOR
+@end table
+@unnumberedsubsec File::Find, find - traverse a file tree
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec File::Path - create or remove a series of directories
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx AUTHORS
+@itemx REVISION
+@end table
+@unnumberedsubsec File::stat - by-name interface to Perl@'s built-in stat() functions
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsubsec FileCache - keep more files open than the system permits
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx BUGS
+@end table
+@unnumberedsubsec FileHandle - supply object methods for filehandles
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+$fh->print, $fh->printf, $fh->getline, $fh->getlines
+
+@item SEE ALSO
+@end table
+@unnumberedsubsec FindBin - Locate directory of original perl script
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXPORTABLE VARIABLES
+@itemx KNOWN BUGS
+@itemx AUTHORS
+@itemx COPYRIGHT
+@itemx REVISION
+@end table
+@unnumberedsubsec GDBM_File - Perl5 access to the gdbm library.
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx AVAILABILITY
+@itemx BUGS
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec Getopt::Long, GetOptions - extended processing of command line options
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+<none>, !, =s, :s, =i, :i, =f, :f
+
+@item Linkage specification
+@itemx Aliases and abbreviations
+@itemx Non-option call-back routine
+@itemx Option starters
+@itemx Return value
+@end table
+@table @asis
+@itemx COMPATIBILITY
+@itemx EXAMPLES
+@itemx CONFIGURATION OPTIONS
+default, auto_abbrev, getopt_compat, require_order, permute, bundling
+(default: reset), bundling_override (default: reset), ignore_case 
+(default: set), ignore_case_always (default: reset), pass_through (default:
+reset), debug (default: reset)
+
+@item OTHER USEFUL VARIABLES
+$Getopt::Long::VERSION, $Getopt::Long::error
+
+@end table
+@unnumberedsubsec Getopt::Std, getopt - Process single-character switches with switch clustering
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec I18N::Collate - compare 8-bit scalar data according to the current locale
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec IO - load various IO modules
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec IO::File - supply object methods for filehandles
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRUCTOR
+new ([ ARGS ] ), new_tmpfile
+
+@item METHODS
+open( FILENAME [,MODE [,PERMS]] )
+
+@item SEE ALSO
+@itemx HISTORY
+@end table
+@unnumberedsubsec IO::Handle - supply object methods for I/O handles
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRUCTOR
+new (), new_from_fd ( FD, MODE )
+
+@item METHODS
+$fh->fdopen ( FD, MODE ), $fh->opened, $fh->getline, $fh->getlines,
+$fh->ungetc ( ORD ), $fh->write ( BUF, LEN [, OFFSET @}\] ), $fh->flush,
+$fh->error, $fh->clearerr, $fh->untaint
+
+@item NOTE
+@itemx SEE ALSO
+@itemx BUGS
+@itemx HISTORY
+@end table
+@unnumberedsubsec IO::Pipe, IO::pipe - supply object methods for pipes
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRCUTOR
+new ( [READER, WRITER] )
+
+@item METHODS
+reader ([ARGS]), writer ([ARGS]), handles ()
+
+@item SEE ALSO
+@itemx AUTHOR
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec IO::Seekable - supply seek based methods for I/O objects
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx SEE ALSO
+@itemx HISTORY
+@end table
+@unnumberedsubsec IO::Select - OO interface to the select system call
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRUCTOR
+new ( [ HANDLES ] )
+
+@item METHODS
+add ( HANDLES ), remove ( HANDLES ), exists ( HANDLE ), handles, can_read (
+[ TIMEOUT ] ), can_write ( [ TIMEOUT ] ), has_error ( [ TIMEOUT ] ), count
+(), bits(), bits(), select ( READ, WRITE, ERROR [, TIMEOUT ] )
+
+@item EXAMPLE
+@itemx AUTHOR
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec IO::Socket - Object interface to socket communications
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRUCTOR
+new ( [ARGS] )
+
+@item METHODS
+accept([PKG]), timeout([VAL]), sockopt(OPT [, VAL]), sockdomain, socktype,
+protocol
+
+@item SUB-CLASSES
+@itemx IO::Socket::INET
+@itemx METHODS
+sockaddr (), sockport (), sockhost (), peeraddr (), peerport (), peerhost
+()
+
+@item IO::Socket::UNIX
+@itemx METHODS
+hostpath(), peerpath()
+
+@end table
+@table @asis
+@item SEE ALSO
+@itemx AUTHOR
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec IO::lib::IO::File, IO::File - supply object methods for filehandles
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRUCTOR
+new ([ ARGS ] ), new_tmpfile
+
+@item METHODS
+open( FILENAME [,MODE [,PERMS]] )
+
+@item SEE ALSO
+@itemx HISTORY
+@end table
+@unnumberedsubsec IO::lib::IO::Handle, IO::Handle - supply object methods for I/O handles
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRUCTOR
+new (), new_from_fd ( FD, MODE )
+
+@item METHODS
+$fh->fdopen ( FD, MODE ), $fh->opened, $fh->getline, $fh->getlines,
+$fh->ungetc ( ORD ), $fh->write ( BUF, LEN [, OFFSET @}\] ), $fh->flush,
+$fh->error, $fh->clearerr, $fh->untaint
+
+@item NOTE
+@itemx SEE ALSO
+@itemx BUGS
+@itemx HISTORY
+@end table
+@unnumberedsubsec IO::lib::IO::Pipe, IO::pipe - supply object methods for pipes
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRCUTOR
+new ( [READER, WRITER] )
+
+@item METHODS
+reader ([ARGS]), writer ([ARGS]), handles ()
+
+@item SEE ALSO
+@itemx AUTHOR
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec IO::lib::IO::Seekable, IO::Seekable - supply seek based methods for I/O objects
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx SEE ALSO
+@itemx HISTORY
+@end table
+@unnumberedsubsec IO::lib::IO::Select, IO::Select - OO interface to the select system call
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRUCTOR
+new ( [ HANDLES ] )
+
+@item METHODS
+add ( HANDLES ), remove ( HANDLES ), exists ( HANDLE ), handles, can_read (
+[ TIMEOUT ] ), can_write ( [ TIMEOUT ] ), has_error ( [ TIMEOUT ] ), count
+(), bits(), bits(), select ( READ, WRITE, ERROR [, TIMEOUT ] )
+
+@item EXAMPLE
+@itemx AUTHOR
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec IO::lib::IO::Socket, IO::Socket - Object interface to socket communications
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CONSTRUCTOR
+new ( [ARGS] )
+
+@item METHODS
+accept([PKG]), timeout([VAL]), sockopt(OPT [, VAL]), sockdomain, socktype,
+protocol
+
+@item SUB-CLASSES
+@itemx IO::Socket::INET
+@itemx METHODS
+sockaddr (), sockport (), sockhost (), peeraddr (), peerport (), peerhost
+()
+
+@item IO::Socket::UNIX
+@itemx METHODS
+hostpath(), peerpath()
+
+@end table
+@table @asis
+@item SEE ALSO
+@itemx AUTHOR
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec IPC::Open2, open2 - open a process for both reading and writing
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx WARNING 
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec IPC::Open3, open3 - open a process for reading, writing, and error handling
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx WARNING
+@end table
+@unnumberedsubsec Math::BigFloat - Arbitrary length float math package
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+number format, Error returns @'NaN@', Division is computed to
+
+@item BUGS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Math::BigInt - Arbitrary size integer math package
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+Canonical notation, Input, Output
+
+@item EXAMPLES
+@itemx BUGS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Math::Complex - complex numbers and associated mathematical functions
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx OPERATIONS
+@itemx CREATION
+@itemx STRINGIFICATION
+@itemx USAGE
+@itemx ERRORS DUE TO DIVISION BY ZERO
+@itemx BUGS
+@itemx AUTHORS
+@end table
+@unnumberedsubsec Math::Trig - trigonometric functions
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx TRIGONOMETRIC FUNCTIONS
+@itemx ERRORS DUE TO DIVISION BY ZERO
+@itemx SIMPLE (REAL) ARGUMENTS, COMPLEX RESULTS
+@end table
+@table @asis
+@itemx ANGLE CONVERSIONS
+@itemx BUGS
+@itemx AUTHORS
+@end table
+@unnumberedsubsec NDBM_File - Tied access to ndbm files
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec Net::Ping - check a remote host for reachability
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Functions
+Net::Ping->new([$proto [, $def_timeout [, $bytes]]]);, $p->ping($host [,
+$timeout]);, $p->close();, pingecho($host [, $timeout]);
+
+@end table
+@table @asis
+@item WARNING
+@itemx NOTES
+@end table
+@unnumberedsubsec Net::hostent - by-name interface to Perl@'s built-in gethost*() functions
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXAMPLES
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Net::netent - by-name interface to Perl@'s built-in getnet*() functions
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXAMPLES
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Net::protoent - by-name interface to Perl@'s built-in getproto*() functions
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Net::servent - by-name interface to Perl@'s built-in getserv*() functions
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXAMPLES
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsubsec ODBM_File - Tied access to odbm files
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec Opcode - Disable named opcodes when compiling perl code
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx WARNING
+@itemx Operator Names and Operator Lists
+an operator name (opname), an operator tag name (optag), a negated opname
+or optag, an operator set (opset)
+
+@item Opcode Functions
+opcodes, opset (OP, ...), opset_to_ops (OPSET), opset_to_hex (OPSET),
+full_opset, empty_opset, invert_opset (OPSET), verify_opset (OPSET, ...),
+define_optag (OPTAG, OPSET), opmask_add (OPSET), opmask, opdesc (OP, ...),
+opdump (PAT)
+
+@item Manipulating Opsets
+@itemx TO DO (maybe)
+@itemx Predefined Opcode Tags
+:base_core, :base_mem, :base_loop, :base_io, :base_orig, :base_math,
+:default, :filesys_read, :sys_db, :browse, :filesys_open, :filesys_write,
+:subprocess, :ownprocess, :others, :still_to_be_decided, :dangerous
+
+@item SEE ALSO
+@itemx AUTHORS
+@end table
+@unnumberedsubsec Opcode::Safe, Safe - Compile and execute code in restricted compartments
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+a new namespace, an operator mask
+
+@item WARNING
+@itemx RECENT CHANGES
+@itemx Methods in class Safe
+permit (OP, ...), permit_only (OP, ...), deny (OP, ...), deny_only (OP,
+...), trap (OP, ...), untrap (OP, ...), share (NAME, ...), share_from
+(PACKAGE, ARRAYREF), varglob (VARNAME), reval (STRING), rdo (FILENAME),
+root (NAMESPACE), mask (MASK)
+
+@item Some Safety Issues
+Memory, CPU, Snooping, Signals, State Changes
+
+@item AUTHOR
+@end table
+@unnumberedsubsec Opcode::ops, ops - Perl pragma to restrict unsafe operations when compiling
+@table @asis
+@itemx SYNOPSIS 
+@itemx DESCRIPTION
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec POSIX - Perl interface to IEEE Std 1003.1
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx CAVEATS 
+@itemx FUNCTIONS
+_exit, abort, abs, access, acos, alarm, asctime, asin, assert, atan, atan2,
+atexit, atof, atoi, atol, bsearch, calloc, ceil, chdir, chmod, chown,
+clearerr, clock, close, closedir, cos, cosh, creat, ctermid, ctime,
+cuserid, difftime, div, dup, dup2, errno, execl, execle, execlp, execv,
+execve, execvp, exit, exp, fabs, fclose, fcntl, fdopen, feof, ferror,
+fflush, fgetc, fgetpos, fgets, fileno, floor, fmod, fopen, fork, fpathconf,
+fprintf, fputc, fputs, fread, free, freopen, frexp, fscanf, fseek, fsetpos,
+fstat, ftell, fwrite, getc, getchar, getcwd, getegid, getenv, geteuid,
+getgid, getgrgid, getgrnam, getgroups, getlogin, getpgrp, getpid, getppid,
+getpwnam, getpwuid, gets, getuid, gmtime, isalnum, isalpha, isatty,
+iscntrl, isdigit, isgraph, islower, isprint, ispunct, isspace, isupper,
+isxdigit, kill, labs, ldexp, ldiv, link, localeconv, localtime, log, log10,
+longjmp, lseek, malloc, mblen, mbstowcs, mbtowc, memchr, memcmp, memcpy,
+memmove, memset, mkdir, mkfifo, mktime, modf, nice, offsetof, open,
+opendir, pathconf, pause, perror, pipe, pow, printf, putc, putchar, puts,
+qsort, raise, rand, read, readdir, realloc, remove, rename, rewind,
+rewinddir, rmdir, scanf, setgid, setjmp, setlocale, setpgid, setsid,
+setuid, sigaction, siglongjmp, sigpending, sigprocmask, sigsetjmp,
+sigsuspend, sin, sinh, sleep, sprintf, sqrt, srand, sscanf, stat, strcat,
+strchr, strcmp, strcoll, strcpy, strcspn, strerror, strftime, strlen,
+strncat, strncmp, strncpy, stroul, strpbrk, strrchr, strspn, strstr,
+strtod, strtok, strtol, strtoul, strxfrm, sysconf, system, tan, tanh,
+tcdrain, tcflow, tcflush, tcgetpgrp, tcsendbreak, tcsetpgrp, time, times,
+tmpfile, tmpnam, tolower, toupper, ttyname, tzname, tzset, umask, uname,
+ungetc, unlink, utime, vfprintf, vprintf, vsprintf, wait, waitpid,
+wcstombs, wctomb, write
+
+@item CLASSES
+@itemx POSIX::SigAction
+new
+
+@item POSIX::SigSet
+new, addset, delset, emptyset, fillset, ismember
+
+@item POSIX::Termios
+new, getattr, getcc, getcflag, getiflag, getispeed, getlflag, getoflag,
+getospeed, setattr, setcc, setcflag, setiflag, setispeed, setlflag,
+setoflag, setospeed, Baud rate values, Terminal interface values, c_cc
+field values, c_cflag field values, c_iflag field values, c_lflag field
+values, c_oflag field values
+
+@end table
+@table @asis
+@item PATHNAME CONSTANTS
+Constants
+
+@item POSIX CONSTANTS
+Constants
+
+@item SYSTEM CONFIGURATION
+Constants
+
+@item ERRNO
+Constants
+
+@item FCNTL
+Constants
+
+@item FLOAT
+Constants
+
+@item LIMITS
+Constants
+
+@item LOCALE
+Constants
+
+@item MATH
+Constants
+
+@item SIGNAL
+Constants
+
+@item STAT
+Constants, Macros
+
+@item STDLIB
+Constants
+
+@item STDIO
+Constants
+
+@item TIME
+Constants
+
+@item UNISTD
+Constants
+
+@item WAIT
+Constants, Macros
+
+@item CREATION
+@end table
+@unnumberedsubsec Pod::Html, Pod::HTML - module to convert pod files to HTML
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx ARGUMENTS
+help, htmlroot, infile, outfile, podroot, podpath, libpods, netscape,
+nonetscape, index, noindex, recurse, norecurse, title, verbose
+
+@item EXAMPLE
+@itemx AUTHOR
+@itemx BUGS
+@itemx SEE ALSO
+@itemx COPYRIGHT
+@end table
+@unnumberedsubsec Pod::Text - convert POD data to formatted ASCII text
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx AUTHOR
+@itemx TODO
+@end table
+@unnumberedsubsec SDBM_File - Tied access to sdbm files
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec Safe - Compile and execute code in restricted compartments
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+a new namespace, an operator mask
+
+@item WARNING
+@itemx RECENT CHANGES
+@itemx Methods in class Safe
+permit (OP, ...), permit_only (OP, ...), deny (OP, ...), deny_only (OP,
+...), trap (OP, ...), untrap (OP, ...), share (NAME, ...), share_from
+(PACKAGE, ARRAYREF), varglob (VARNAME), reval (STRING), rdo (FILENAME),
+root (NAMESPACE), mask (MASK)
+
+@item Some Safety Issues
+Memory, CPU, Snooping, Signals, State Changes
+
+@item AUTHOR
+@end table
+@unnumberedsubsec Search::Dict, look - search for key in dictionary file
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec SelectSaver - save and restore selected file handle
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec SelfLoader - load functions only on demand
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx The __DATA__ token
+@itemx SelfLoader autoloading
+@itemx Autoloading and package lexicals
+@itemx SelfLoader and AutoLoader
+@itemx __DATA__, __END__, and the FOOBAR::DATA filehandle.
+@itemx Classes and inherited methods.
+@end table
+@table @asis
+@itemx Multiple packages and fully qualified subroutine names
+@end table
+@unnumberedsubsec Shell - run shell commands transparently within perl
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Socket, sockaddr_in, sockaddr_un, inet_aton, inet_ntoa - load the C socket.h defines and structure manipulators 
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+inet_aton HOSTNAME, inet_ntoa IP_ADDRESS, INADDR_ANY, INADDR_BROADCAST,
+INADDR_LOOPBACK, INADDR_NONE, sockaddr_in PORT, ADDRESS, sockaddr_in
+SOCKADDR_IN, pack_sockaddr_in PORT, IP_ADDRESS, unpack_sockaddr_in
+SOCKADDR_IN, sockaddr_un PATHNAME, sockaddr_un SOCKADDR_UN,
+pack_sockaddr_un PATH, unpack_sockaddr_un SOCKADDR_UN
+
+@end table
+@unnumberedsubsec Symbol - manipulate Perl symbols and their names
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec Sys::Hostname - Try every conceivable way to get hostname
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Syslog, Sys::Syslog, openlog, closelog, setlogmask, syslog - Perl interface to the UNIX syslog(3) calls
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+openlog $ident, $logopt, $facility, syslog $priority, $format, @@args,
+setlogmask $mask_priority, closelog
+
+@item EXAMPLES
+@itemx DEPENDENCIES
+@itemx SEE ALSO
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Term::Cap - Perl termcap interface
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXAMPLES
+@end table
+@unnumberedsubsec Term::Complete - Perl word completion module
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+<tab>, ^D, ^U, <del>, <bs>
+
+@item DIAGNOSTICS
+@itemx BUGS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Term::ReadLine - Perl interface to various @code{readline} packages. If no real package is found, substitutes stubs instead of basic functions.
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx Minimal set of supported functions
+@code{ReadLine}, @code{new}, @code{readline}, @code{addhistory}, @code{IN}, $@code{OUT},
+@code{MinLine}, @code{findConsole}, Attribs, @code{Features}
+
+@item Additional supported functions
+@itemx EXPORTS
+@itemx ENVIRONMENT
+@end table
+@unnumberedsubsec Test::Harness - run perl standard test scripts with statistics
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx The test script output
+@end table
+@table @asis
+@itemx EXPORT
+@itemx DIAGNOSTICS
+@code{All tests successful.\nFiles=%d,  Tests=%d, %s}, @code{FAILED tests
+%s\n\tFailed %d/%d tests, %.2f%% okay.}, @code{Test returned status %d (wstat
+%d)}, @code{Failed 1 test, %.2f%% okay. %s}, @code{Failed %d/%d tests, %.2f%% okay.
+%s}
+
+@item SEE ALSO
+@itemx AUTHORS
+@itemx BUGS
+@end table
+@unnumberedsubsec Text::Abbrev, abbrev - create an abbreviation table from a list
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXAMPLE
+@end table
+@unnumberedsubsec Text::ParseWords - parse text into an array of tokens
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx AUTHORS
+@end table
+@unnumberedsubsec Text::Soundex - Implementation of the Soundex Algorithm as Described by Knuth
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXAMPLES
+@itemx LIMITATIONS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Text::Tabs -- expand and unexpand tabs per the unix expand(1) and unexpand(1)
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx BUGS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Text::Wrap - line wrapping to form simple paragraphs
+@table @asis
+@itemx SYNOPSIS 
+@itemx DESCRIPTION
+@itemx EXAMPLE
+@itemx BUGS
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Tie::Hash, Tie::StdHash - base class definitions for tied hashes
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+TIEHASH classname, LIST, STORE this, key, value, FETCH this, key, FIRSTKEY
+this, NEXTKEY this, lastkey, EXISTS this, key, DELETE this, key, CLEAR this
+
+@item CAVEATS
+@itemx MORE INFORMATION
+@end table
+@unnumberedsubsec Tie::RefHash - use references as hash keys
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXAMPLE
+@itemx AUTHOR
+@itemx VERSION
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec Tie::Scalar, Tie::StdScalar - base class definitions for tied scalars
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+TIESCALAR classname, LIST, FETCH this, STORE this, value, DESTROY this
+
+@item MORE INFORMATION
+@end table
+@unnumberedsubsec Tie::SubstrHash - Fixed-table-size, fixed-key-length hashing
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx CAVEATS
+@end table
+@unnumberedsubsec Time::Local - efficiently compute time from local and GMT time
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@end table
+@unnumberedsubsec Time::gmtime - by-name interface to Perl@'s built-in gmtime() function
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Time::localtime - by-name interface to Perl@'s built-in localtime() function
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsubsec Time::tm - internal object used by Time::gmtime and Time::localtime
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx AUTHOR
+@end table
+@unnumberedsubsec UNIVERSAL - base class for ALL classes (blessed references)
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+isa ( TYPE ), can ( METHOD ), VERSION ( [ REQUIRE ] ), isa ( VAL, TYPE ),
+can ( VAL, METHOD )
+
+@end table
+@unnumberedsubsec User::grent - by-name interface to Perl@'s built-in getgr*() functions
+@table @asis
+@item SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsubsec User::pwent - by-name interface to Perl@'s built-in getpw*() functions
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx NOTE
+@itemx AUTHOR
+@end table
+@unnumberedsec AUXILIARY DOCUMENTATION
+Here should be listed all the extra programs@' documentation, but they
+don@'t all have manual pages yet:
+
+@table @asis
+@item a2p
+@itemx s2p
+@itemx find2perl
+@itemx h2ph
+@itemx c2ph
+@itemx h2xs
+@itemx xsubpp
+@itemx pod2man
+@itemx wrapsuid
+@end table
+@end ignore
+
+@unnumberedsec AUTHOR
+Larry Wall <@file{larry@@wall.org}>, with the help of oodles
+of other folks.
+

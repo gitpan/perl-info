@@ -1,0 +1,1077 @@
+@node perldebug, perldiag, perlipc, Top
+@unnumberedsec NAME
+perldebug - Perl debugging
+
+@unnumberedsec DESCRIPTION
+First of all, have you tried using the -w switch?
+
+@unnumberedsec The Perl Debugger
+If you invoke Perl with the -d switch, your script runs under the
+Perl source debugger.  This works like an interactive Perl
+environment, prompting for debugger commands that let you examine
+source code, set breakpoints, get stack backtraces, change the values of
+variables, etc.  This is so convenient that you often fire up
+the debugger all by itself just to test out Perl constructs
+interactively to see what they do.  For example:
+
+
+@example
+perl -d -e 42
+@end example
+
+In Perl, the debugger is not a separate program as it usually is in the
+typical compiled environment.  Instead, the -d flag tells the compiler
+to insert source information into the parse trees it@'s about to hand off
+to the interpreter.  That means your code must first compile correctly
+for the debugger to work on it.  Then when the interpreter starts up, it
+preloads a Perl library file containing the debugger itself.
+
+The program will halt @emph{right before} the first run-time executable
+statement (but see below regarding compile-time statements) and ask you
+to enter a debugger command.  Contrary to popular expectations, whenever
+the debugger halts and shows you a line of code, it always displays the
+line it@'s @emph{about} to execute, rather than the one it has just executed.
+
+Any command not recognized by the debugger is directly executed
+(eval@'d) as Perl code in the current package.  (The debugger uses the
+DB package for its own state information.)
+
+Leading white space before a command would cause the debugger to think
+it@'s @emph{NOT} a debugger command but for Perl, so be careful not to do
+that.
+
+@unnumberedsubsec Debugger Commands
+The debugger understands the following commands:
+
+@table @asis
+@item h [command]
+Prints out a help message.
+
+If you supply another debugger command as an argument to the h command,
+it prints out the description for just that command.  The special
+argument of @code{h h} produces a more compact help listing, designed to fit
+together on one screen.
+
+If the output the h command (or any command, for that matter) scrolls
+past your screen, either precede the command with a leading pipe symbol so
+it@'s run through your pager, as in
+
+
+@example
+DB> |h
+@end example
+
+You may change the pager which is used via @code{O pager=...} command.
+
+@item p expr
+Same as @code{print @{$DB::OUT@} expr} in the current package.  In particular,
+because this is just Perl@'s own print function, this means that nested
+data structures and objects are not dumped, unlike with the x command.
+
+The @code{DB::OUT} filehandle is opened to @file{/dev/tty}, regardless of
+where STDOUT may be redirected to.
+
+@item x expr
+Evaluates its expression in list context and dumps out the result
+in a pretty-printed fashion.  Nested data structures are printed out
+recursively, unlike the print function.
+
+The details of printout are governed by multiple Options.
+
+@item V [pkg [vars]]
+Display all (or some) variables in package (defaulting to the @code{main}
+package) using a data pretty-printer (hashes show their keys and values so
+you see what@'s what, control characters are made printable, etc.).  Make
+sure you don@'t put the type specifier (like @code{$}) there, just the symbol
+names, like this:
+
+
+@example
+V DB filename line
+@end example
+
+Use @code{~pattern} and @code{!pattern} for positive and negative regexps.
+
+Nested data structures are printed out in a legible fashion, unlike
+the print function.
+
+The details of printout are governed by multiple Options.
+
+@item X [vars]
+Same as @code{V currentpackage [vars]}.
+
+@item T
+Produce a stack backtrace.  See below for details on its output.
+
+@item s [expr]
+Single step.  Executes until it reaches the beginning of another
+statement, descending into subroutine calls.  If an expression is
+supplied that includes function calls, it too will be single-stepped.
+
+@item n [expr]
+Next.  Executes over subroutine calls, until it reaches the beginning
+of the next statement.  If an expression is supplied that includes
+function calls, those functions will be executed with stops before
+each statement.
+
+@item <CR>
+Repeat last n or s command.
+
+@item c [line|sub]
+Continue, optionally inserting a one-time-only breakpoint
+at the specified line or subroutine.
+
+@item l
+List next window of lines.
+
+@item l min+incr
+List @code{incr+1} lines starting at @code{min}.
+
+@item l min-max
+List lines @code{min} through @code{max}.  @code{l -} is synonymous to -.
+
+@item l line
+List a single line.
+
+@item l subname
+List first window of lines from subroutine.
+
+@item -
+List previous window of lines.
+
+@item w [line]
+List window (a few lines) around the current line.
+
+@item .
+Return debugger pointer to the last-executed line and
+print it out.
+
+@item f filename
+Switch to viewing a different file or eval statement.  If @code{filename}
+is not a full filename as found in values of %INC, it is considered as
+a regexp.
+
+@item /pattern/
+Search forwards for pattern; final / is optional.
+
+@item ?pattern?
+Search backwards for pattern; final ? is optional.
+
+@item L
+List all breakpoints and actions.
+
+@item S [[!]pattern]
+List subroutine names [not] matching pattern.
+
+@item t
+Toggle trace mode (see also @code{AutoTrace} Option).
+
+@item t expr
+Trace through execution of expr.  For example:
+
+
+@example
+$ perl -de 42
+Stack dump during die enabled outside of evals.
+
+Loading DB routines from perl5db.pl patch level 0.94
+Emacs support available.
+
+Enter h or @`h h@' for help.
+
+main::(-e:1):   0
+  DB<1> sub foo @{ 14 @}
+
+DB<2> sub bar @{ 3 @}
+
+DB<3> t print foo() * bar()
+ main::((eval 172):3):   print foo() + bar();
+ main::foo((eval 168):2):
+ main::bar((eval 170):2):
+ 42
+@end example
+
+or, with the Option @code{frame=2} set,
+
+
+@example
+DB<4> O f=2
+             frame = @'2@'
+DB<5> t print foo() * bar()
+ 3:      foo() * bar()
+ entering main::foo
+  2:     sub foo @{ 14 @};
+ exited main::foo
+ entering main::bar
+  2:     sub bar @{ 3 @};
+ exited main::bar
+ 42
+@end example
+
+@item b [line] [condition]
+Set a breakpoint.  If line is omitted, sets a breakpoint on the line
+that is about to be executed.  If a condition is specified, it@'s
+evaluated each time the statement is reached and a breakpoint is taken
+only if the condition is true.  Breakpoints may be set on only lines
+that begin an executable statement.  Conditions don@'t use @strong{if}:
+
+
+@example
+b 237 $x > 30
+b 237 ++$count237 < 11
+b 33 /pattern/i
+@end example
+
+@item b subname [condition]
+Set a breakpoint at the first line of the named subroutine.
+
+@item b postpone subname [condition]
+Set breakpoint at first line of subroutine after it is compiled.
+
+@item b load filename
+Set breakpoint at the first executed line of the file.  Filename should
+be a full name as found in values of %INC.
+
+@item b compile subname
+Sets breakpoint at the first statement executed after the subroutine
+is compiled.
+
+@item d [line]
+Delete a breakpoint at the specified line.  If line is omitted, deletes
+the breakpoint on the line that is about to be executed.
+
+@item D
+Delete all installed breakpoints.
+
+@item a [line] command
+Set an action to be done before the line is executed.
+The sequence of steps taken by the debugger is
+
+
+@example
+1. check for a breakpoint at this line
+2. print the line if necessary (tracing)
+3. do any actions associated with that line
+4. prompt user if at a breakpoint or in single-step
+5. evaluate line
+@end example
+
+For example, this will print out @code{$foo} every time line
+53 is passed:
+
+
+@example
+a 53 print "DB FOUND $foo\n"
+@end example
+
+@item A
+Delete all installed actions.
+
+@item O [opt[=val]] [opt"val"] [opt?]...
+Set or query values of options.  val defaults to 1.  opt can
+be abbreviated.  Several options can be listed.
+
+@item @code{recallCommand}, @code{ShellBang}
+The characters used to recall command or spawn shell.  By
+default, these are both set to !.
+
+@item @code{pager}
+Program to use for output of pager-piped commands (those
+beginning with a @code{|} character.)  By default,
+@code{$ENV@{PAGER@}} will be used.
+
+@item @code{tkRunning}
+Run Tk while prompting (with ReadLine).
+
+@item @code{signalLevel}, @code{warnLevel}, @code{dieLevel}
+Level of verbosity.  By default the debugger is in a sane verbose mode,
+thus it will print backtraces on all the warnings and die-messages
+which are going to be printed out, and will print a message when
+interesting uncaught signals arrive.
+
+To disable this behaviour, set these values to 0.  If @code{dieLevel} is 2,
+then the messages which will be caught by surrounding eval are also
+printed.
+
+@item @code{AutoTrace}
+Trace mode (similar to t command, but can be put into
+@code{PERLDB_OPTS}).
+
+@item @code{LineInfo}
+File or pipe to print line number info to.  If it is a pipe (say,
+@code{|visual_perl_db}), then a short, "emacs like" message is used.
+
+@item @code{inhibit_exit}
+If 0, allows @emph{stepping off} the end of the script.
+
+@item @code{PrintRet}
+affects printing of return value after @code{r} command.
+
+@item @code{ornaments}
+affects screen appearance of the command line (see @samp{Term::Readline} in this node).
+
+@item @code{frame}
+affects printing messages on entry and exit from subroutines.  If
+@code{frame & 2} is false, messages are printed on entry only. (Printing
+on exit may be useful if inter(di)spersed with other messages.)
+
+If @code{frame & 4}, arguments to functions are printed as well as the
+context and caller info.  If @code{frame & 8}, overloaded @code{stringify} and
+tied FETCH are enabled on the printed arguments. If @code{frame &
+16}, the return value from the subroutine is printed as well.
+
+The length at which the argument list is truncated is governed by the
+next option:
+
+@item @code{maxTraceLen}
+length at which the argument list is truncated when @code{frame} option@'s
+bit 4 is set.
+
+@end table
+The following options affect what happens with V, X, and x
+commands:
+
+@table @asis
+@item @code{arrayDepth}, @code{hashDepth}
+Print only first N elements (@'@' for all).
+
+@item @code{compactDump}, @code{veryCompact}
+Change style of array and hash dump.  If @code{compactDump}, short array
+may be printed on one line.
+
+@item @code{globPrint}
+Whether to print contents of globs.
+
+@item @code{DumpDBFiles}
+Dump arrays holding debugged files.
+
+@item @code{DumpPackages}
+Dump symbol tables of packages.
+
+@item @code{quote}, @code{HighBit}, @code{undefPrint}
+Change style of string dump.  Default value of @code{quote} is @code{auto}, one
+can enable either double-quotish dump, or single-quotish by setting it
+to @code{"} or @code{@'}.  By default, characters with high bit set are printed
+@emph{as is}.
+
+@item @code{UsageOnly}
+@emph{very} rudimentally per-package memory usage dump.  Calculates total
+size of strings in variables in the package.
+
+@end table
+During startup options are initialized from @code{$ENV@{PERLDB_OPTS@}}.
+You can put additional initialization options @code{TTY}, @code{noTTY},
+@code{ReadLine}, and @code{NonStop} there.
+
+Example rc file:
+
+
+@example
+&parse_options("NonStop=1 LineInfo=db.out AutoTrace");
+@end example
+
+The script will run without human intervention, putting trace information
+into the file @emph{db.out}.  (If you interrupt it, you would better reset
+@code{LineInfo} to something "interactive"!)
+
+@table @asis
+@item @code{TTY}
+The TTY to use for debugging I/O.
+
+@item @code{noTTY}
+If set, goes in @code{NonStop} mode, and would not connect to a TTY.  If
+interrupt (or if control goes to debugger via explicit setting of
+$DB::signal or $DB::single from the Perl script), connects to a TTY
+specified by the @code{TTY} option at startup, or to a TTY found at
+runtime using @code{Term::Rendezvous} module of your choice.
+
+This module should implement a method @code{new} which returns an object
+with two methods: @code{IN} and @code{OUT}, returning two filehandles to use
+for debugging input and output correspondingly.  Method @code{new} may
+inspect an argument which is a value of @code{$ENV@{PERLDB_NOTTY@}} at
+startup, or is @code{"/tmp/perldbtty$$"} otherwise.
+
+@item @code{ReadLine}
+If false, readline support in debugger is disabled, so you can debug
+ReadLine applications.
+
+@item @code{NonStop}
+If set, debugger goes into noninteractive mode until interrupted, or
+programmatically by setting $DB::signal or $DB::single.
+
+@end table
+Here@'s an example of using the @code{$ENV@{PERLDB_OPTS@}} variable:
+
+
+@example
+$ PERLDB_OPTS="N f=2" perl -d myprogram
+@end example
+
+will run the script @code{myprogram} without human intervention, printing
+out the call tree with entry and exit points.  Note that @code{N f=2} is
+equivalent to @code{NonStop=1 frame=2}.  Note also that at the moment when
+this documentation was written all the options to the debugger could
+be uniquely abbreviated by the first letter (with exception of
+@code{Dump*} options).
+
+Other examples may include
+
+
+@example
+$ PERLDB_OPTS="N f A L=listing" perl -d myprogram
+@end example
+
+- runs script noninteractively, printing info on each entry into a
+subroutine and each executed line into the file @file{listing}. (If you
+interrupt it, you would better reset @code{LineInfo} to something
+"interactive"!)
+
+
+@example
+$ env "PERLDB_OPTS=R=0 TTY=/dev/ttyc" perl -d myprogram
+@end example
+
+may be useful for debugging a program which uses Term::ReadLine
+itself.  Do not forget detach shell from the TTY in the window which
+corresponds to @file{/dev/ttyc}, say, by issuing a command like
+
+
+@example
+$ sleep 1000000
+@end example
+
+See @samp{"Debugger Internals"} in this node below for more details.
+
+@table @asis
+@item < [ command ]
+Set an action (Perl command) to happen before every debugger prompt.
+A multi-line command may be entered by backslashing the newlines.  If
+command is missing, resets the list of actions.
+
+@item << command
+Add an action (Perl command) to happen before every debugger prompt.
+A multi-line command may be entered by backslashing the newlines.
+
+@item > command
+Set an action (Perl command) to happen after the prompt when you@'ve
+just given a command to return to executing the script.  A multi-line
+command may be entered by backslashing the newlines.  If command is
+missing, resets the list of actions.
+
+@item >> command
+Adds an action (Perl command) to happen after the prompt when you@'ve
+just given a command to return to executing the script.  A multi-line
+command may be entered by backslashing the newlines.
+
+@item @{ [ command ]
+Set an action (debugger command) to happen before every debugger prompt.
+A multi-line command may be entered by backslashing the newlines.  If
+command is missing, resets the list of actions.
+
+@item @{@{ command
+Add an action (debugger command) to happen before every debugger prompt.
+A multi-line command may be entered by backslashing the newlines.
+
+@item ! number
+Redo a previous command (default previous command).
+
+@item ! -number
+Redo number@'th-to-last command.
+
+@item ! pattern
+Redo last command that started with pattern.
+See @code{O recallCommand}, too.
+
+@item !! cmd
+Run cmd in a subprocess (reads from DB::IN, writes to DB::OUT)
+See @code{O shellBang} too.
+
+@item H -number
+Display last n commands.  Only commands longer than one character are
+listed.  If number is omitted, lists them all.
+
+@item q or ^D
+Quit.  ("quit" doesn@'t work for this.)  This is the only supported way
+to exit the debugger, though typing exit twice may do it too.
+
+Set an Option @code{inhibit_exit} to 0 if you want to be able to @emph{step
+off} the end the script.  You may also need to set @code{$finished} to 0 at
+some moment if you want to step through global destruction.
+
+@item R
+Restart the debugger by execing a new session.  It tries to maintain
+your history across this, but internal settings and command line options
+may be lost.
+
+Currently the following setting are preserved: history, breakpoints,
+actions, debugger Options, and the following command line
+options: -w, -I, and -e.
+
+@item |dbcmd
+Run debugger command, piping DB::OUT to current pager.
+
+@item ||dbcmd
+Same as |dbcmd but DB::OUT is temporarily selected as well.
+Often used with commands that would otherwise produce long
+output, such as
+
+
+@example
+|V main
+@end example
+
+@item = [alias value]
+Define a command alias, like
+
+
+@example
+= quit q
+@end example
+
+or list current aliases.
+
+@item command
+Execute command as a Perl statement.  A missing semicolon will be
+supplied.
+
+@item m expr
+The expression is evaluated, and the methods which may be applied to
+the result are listed.
+
+@item m package
+The methods which may be applied to objects in the package are listed.
+
+@end table
+@unnumberedsubsec Debugger input/output
+@table @asis
+@item Prompt
+The debugger prompt is something like
+
+
+@example
+DB<8>
+@end example
+
+or even
+
+
+@example
+DB<<17>>
+@end example
+
+where that number is the command number, which you@'d use to access with
+the builtin @strong{csh}-like history mechanism, e.g., @code{!17} would repeat
+command number 17.  The number of angle brackets indicates the depth of
+the debugger.  You could get more than one set of brackets, for example, if
+you@'d already at a breakpoint and then printed out the result of a
+function call that itself also has a breakpoint, or you step into an
+expression via @code{s/n/t expression} command.
+
+@item Multiline commands
+If you want to enter a multi-line command, such as a subroutine
+definition with several statements, or a format, you may escape the
+newline that would normally end the debugger command with a backslash.
+Here@'s an example:
+
+
+@example
+DB<1> for (1..4) @{         \
+cont:     print "ok\n";   \
+cont: @}
+ok
+ok
+ok
+ok
+@end example
+
+Note that this business of escaping a newline is specific to interactive
+commands typed into the debugger.
+
+@item Stack backtrace
+Here@'s an example of what a stack backtrace via T command might
+look like:
+
+
+@example
+$ = main::infested called from file @`Ambulation.pm@' line 10
+@@ = Ambulation::legs(1, 2, 3, 4) called from file @`camel_flea@' line 7
+$ = main::pests(@'bactrian@', 4) called from file @`camel_flea@' line 4
+@end example
+
+The left-hand character up there tells whether the function was called
+in a scalar or list context (we bet you can tell which is which).  What
+that says is that you were in the function @code{main::infested} when you ran
+the stack dump, and that it was called in a scalar context from line 10
+of the file @emph{Ambulation.pm}, but without any arguments at all, meaning
+it was called as @code{&infested}.  The next stack frame shows that the
+function @code{Ambulation::legs} was called in a list context from the
+@emph{camel_flea} file with four arguments.  The last stack frame shows that
+@code{main::pests} was called in a scalar context, also from @emph{camel_flea},
+but from line 4.
+
+Note that if you execute T command from inside an active use
+statement, the backtrace will contain both @code{@samp{require}, @xref{perlfunc,Perlfunc},}
+frame and an @code{@samp{eval EXPR}, @xref{perlfunc,Perlfunc},}) frame.
+
+@item Listing
+Listing given via different flavors of l command looks like this:
+
+
+@example
+DB<<13>> l
+  101:                @@i@{@@i@} = ();
+  102:b               @@isa@{@@i,$pack@} = ()
+  103                     if(exists $i@{$prevpack@} || exists $isa@{$pack@});
+  104             @}
+  105
+  106             next
+  107==>              if(exists $isa@{$pack@});
+  108
+  109:a           if ($extra-- > 0) @{
+  110:                %isa = ($pack,1);
+@end example
+
+Note that the breakable lines are marked with @code{:}, lines with
+breakpoints are marked by b, with actions by a, and the
+next executed line is marked by C<==>>.
+
+@item Frame listing
+When @code{frame} option is set, debugger would print entered (and
+optionally exited) subroutines in different styles.
+
+What follows is the start of the listing of
+
+
+@example
+env "PERLDB_OPTS=f=n N" perl -d -V
+@end example
+
+for different values of n:
+
+@enumerate
+@item 
+
+@example
+entering main::BEGIN
+ entering Config::BEGIN
+  Package lib/Exporter.pm.
+  Package lib/Carp.pm.
+ Package lib/Config.pm.
+ entering Config::TIEHASH
+ entering Exporter::import
+  entering Exporter::export
+entering Config::myconfig
+ entering Config::FETCH
+ entering Config::FETCH
+ entering Config::FETCH
+ entering Config::FETCH
+@end example
+
+@item 
+
+@example
+entering main::BEGIN
+ entering Config::BEGIN
+  Package lib/Exporter.pm.
+  Package lib/Carp.pm.
+ exited Config::BEGIN
+ Package lib/Config.pm.
+ entering Config::TIEHASH
+ exited Config::TIEHASH
+ entering Exporter::import
+  entering Exporter::export
+  exited Exporter::export
+ exited Exporter::import
+exited main::BEGIN
+entering Config::myconfig
+ entering Config::FETCH
+ exited Config::FETCH
+ entering Config::FETCH
+ exited Config::FETCH
+ entering Config::FETCH
+@end example
+
+@item 
+
+@example
+in  $=main::BEGIN() from /dev/nul:0
+ in  $=Config::BEGIN() from lib/Config.pm:2
+  Package lib/Exporter.pm.
+  Package lib/Carp.pm.
+ Package lib/Config.pm.
+ in  $=Config::TIEHASH(@'Config@') from lib/Config.pm:644
+ in  $=Exporter::import(@'Config@', @'myconfig@', @'config_vars@') from /dev/nul:0
+  in  $=Exporter::export(@'Config@', @'main@', @'myconfig@', @'config_vars@') from li
+in  @@=Config::myconfig() from /dev/nul:0
+ in  $=Config::FETCH(ref(Config), @'package@') from lib/Config.pm:574
+ in  $=Config::FETCH(ref(Config), @'baserev@') from lib/Config.pm:574
+ in  $=Config::FETCH(ref(Config), @'PATCHLEVEL@') from lib/Config.pm:574
+ in  $=Config::FETCH(ref(Config), @'SUBVERSION@') from lib/Config.pm:574
+ in  $=Config::FETCH(ref(Config), @'osname@') from lib/Config.pm:574
+ in  $=Config::FETCH(ref(Config), @'osvers@') from lib/Config.pm:574
+@end example
+
+@item 
+
+@example
+in  $=main::BEGIN() from /dev/nul:0
+ in  $=Config::BEGIN() from lib/Config.pm:2
+  Package lib/Exporter.pm.
+  Package lib/Carp.pm.
+ out $=Config::BEGIN() from lib/Config.pm:0
+ Package lib/Config.pm.
+ in  $=Config::TIEHASH(@'Config@') from lib/Config.pm:644
+ out $=Config::TIEHASH(@'Config@') from lib/Config.pm:644
+ in  $=Exporter::import(@'Config@', @'myconfig@', @'config_vars@') from /dev/nul:0
+  in  $=Exporter::export(@'Config@', @'main@', @'myconfig@', @'config_vars@') from lib/
+  out $=Exporter::export(@'Config@', @'main@', @'myconfig@', @'config_vars@') from lib/
+ out $=Exporter::import(@'Config@', @'myconfig@', @'config_vars@') from /dev/nul:0
+out $=main::BEGIN() from /dev/nul:0
+in  @@=Config::myconfig() from /dev/nul:0
+ in  $=Config::FETCH(ref(Config), @'package@') from lib/Config.pm:574
+ out $=Config::FETCH(ref(Config), @'package@') from lib/Config.pm:574
+ in  $=Config::FETCH(ref(Config), @'baserev@') from lib/Config.pm:574
+ out $=Config::FETCH(ref(Config), @'baserev@') from lib/Config.pm:574
+ in  $=Config::FETCH(ref(Config), @'PATCHLEVEL@') from lib/Config.pm:574
+ out $=Config::FETCH(ref(Config), @'PATCHLEVEL@') from lib/Config.pm:574
+ in  $=Config::FETCH(ref(Config), @'SUBVERSION@') from lib/Config.pm:574
+@end example
+
+@item 
+
+@example
+in  $=main::BEGIN() from /dev/nul:0
+ in  $=Config::BEGIN() from lib/Config.pm:2
+  Package lib/Exporter.pm.
+  Package lib/Carp.pm.
+ out $=Config::BEGIN() from lib/Config.pm:0
+ Package lib/Config.pm.
+ in  $=Config::TIEHASH(@'Config@') from lib/Config.pm:644
+ out $=Config::TIEHASH(@'Config@') from lib/Config.pm:644
+ in  $=Exporter::import(@'Config@', @'myconfig@', @'config_vars@') from /dev/nul:0
+  in  $=Exporter::export(@'Config@', @'main@', @'myconfig@', @'config_vars@') from lib/E
+  out $=Exporter::export(@'Config@', @'main@', @'myconfig@', @'config_vars@') from lib/E
+ out $=Exporter::import(@'Config@', @'myconfig@', @'config_vars@') from /dev/nul:0
+out $=main::BEGIN() from /dev/nul:0
+in  @@=Config::myconfig() from /dev/nul:0
+ in  $=Config::FETCH(@'Config=HASH(0x1aa444)@', @'package@') from lib/Config.pm:574
+ out $=Config::FETCH(@'Config=HASH(0x1aa444)@', @'package@') from lib/Config.pm:574
+ in  $=Config::FETCH(@'Config=HASH(0x1aa444)@', @'baserev@') from lib/Config.pm:574
+ out $=Config::FETCH(@'Config=HASH(0x1aa444)@', @'baserev@') from lib/Config.pm:574
+@end example
+
+@item 
+
+@example
+in  $=CODE(0x15eca4)() from /dev/null:0
+ in  $=CODE(0x182528)() from lib/Config.pm:2
+  Package lib/Exporter.pm.
+ out $=CODE(0x182528)() from lib/Config.pm:0
+ scalar context return from CODE(0x182528): undef
+ Package lib/Config.pm.
+ in  $=Config::TIEHASH(@'Config@') from lib/Config.pm:628
+ out $=Config::TIEHASH(@'Config@') from lib/Config.pm:628
+ scalar context return from Config::TIEHASH:   empty hash
+ in  $=Exporter::import(@'Config@', @'myconfig@', @'config_vars@') from /dev/null:0
+  in  $=Exporter::export(@'Config@', @'main@', @'myconfig@', @'config_vars@') from lib/Exporter.pm:171
+  out $=Exporter::export(@'Config@', @'main@', @'myconfig@', @'config_vars@') from lib/Exporter.pm:171
+  scalar context return from Exporter::export: @'@'
+ out $=Exporter::import(@'Config@', @'myconfig@', @'config_vars@') from /dev/null:0
+ scalar context return from Exporter::import: @'@'
+@end example
+
+@end enumerate
+In all the cases indentation of lines shows the call tree, if bit 2 of
+@code{frame} is set, then a line is printed on exit from a subroutine as
+well, if bit 4 is set, then the arguments are printed as well as the
+caller info, if bit 8 is set, the arguments are printed even if they
+are tied or references, if bit 16 is set, the return value is printed
+as well.
+
+When a package is compiled, a line like this
+
+
+@example
+Package lib/Carp.pm.
+@end example
+
+is printed with proper indentation.
+
+@end table
+@unnumberedsubsec Debugging compile-time statements
+If you have any compile-time executable statements (code within a BEGIN
+block or a use statement), these will @code{NOT} be stopped by debugger,
+although requires will (and compile-time statements can be traced
+with @code{AutoTrace} option set in @code{PERLDB_OPTS}).  From your own Perl
+code, however, you can
+transfer control back to the debugger using the following statement,
+which is harmless if the debugger is not running:
+
+
+@example
+$DB::single = 1;
+@end example
+
+If you set @code{$DB::single} to the value 2, it@'s equivalent to having
+just typed the n command, whereas a value of 1 means the s
+command.  The @code{$DB::trace}  variable should be set to 1 to simulate
+having typed the t command.
+
+Another way to debug compile-time code is to start debugger, set a
+breakpoint on @emph{load} of some module thusly
+
+
+@example
+DB<7> b load f:/perllib/lib/Carp.pm
+  Will stop on load of @`f:/perllib/lib/Carp.pm@'.
+@end example
+
+and restart debugger by R command (if possible).  One can use @code{b
+compile subname} for the same purpose.
+
+@unnumberedsubsec Debugger Customization
+Most probably you not want to modify the debugger, it contains enough
+hooks to satisfy most needs.  You may change the behaviour of debugger
+from the debugger itself, using Options, from the command line via
+@code{PERLDB_OPTS} environment variable, and from @emph{customization files}.
+
+You can do some customization by setting up a @file{.perldb} file which
+contains initialization code.  For instance, you could make aliases
+like these (the last one is one people expect to be there):
+
+
+@example
+$DB::alias@{@'len@'@}  = @'s/^len(.*)/p length($1)/@';
+$DB::alias@{@'stop@'@} = @'s/^stop (at|in)/b/@';
+$DB::alias@{@'ps@'@}   = @'s/^ps\b/p scalar /@';
+$DB::alias@{@'quit@'@} = @'s/^quit(\s*)/exit\$/@';
+@end example
+
+One changes options from @file{.perldb} file via calls like this one;
+
+
+@example
+parse_options("NonStop=1 LineInfo=db.out AutoTrace=1 frame=2");
+@end example
+
+(the code is executed in the package @code{DB}).  Note that @file{.perldb} is
+processed before processing @code{PERLDB_OPTS}.  If @file{.perldb} defines the
+subroutine @code{afterinit}, it is called after all the debugger
+initialization ends.  @file{.perldb} may be contained in the current
+directory, or in the LOGDIR/HOME directory.
+
+If you want to modify the debugger, copy @file{perl5db.pl} from the Perl
+library to another name and modify it as necessary.  You@'ll also want
+to set your PERL5DB environment variable to say something like this:
+
+
+@example
+BEGIN @{ require "myperl5db.pl" @}
+@end example
+
+As the last resort, one can use PERL5DB to customize debugger by
+directly setting internal variables or calling debugger functions.
+
+@unnumberedsubsec Readline Support
+As shipped, the only command line history supplied is a simplistic one
+that checks for leading exclamation points.  However, if you install
+the Term::ReadKey and Term::ReadLine modules from CPAN, you will
+have full editing capabilities much like GNU @emph{readline}(3) provides.
+Look for these in the @file{modules/by-module/Term} directory on CPAN.
+
+A rudimentary command line completion is also available.
+Unfortunately, the names of lexical variables are not available for
+completion.
+
+@unnumberedsubsec Editor Support for Debugging
+If you have GNU @strong{emacs} installed on your system, it can interact with
+the Perl debugger to provide an integrated software development
+environment reminiscent of its interactions with C debuggers.
+
+Perl is also delivered with a start file for making @strong{emacs} act like a
+syntax-directed editor that understands (some of) Perl@'s syntax.  Look in
+the @emph{emacs} directory of the Perl source distribution.
+
+(Historically, a similar setup for interacting with @strong{vi} and the
+X11 window system had also been available, but at the time of this
+writing, no debugger support for @strong{vi} currently exists.)
+
+@unnumberedsubsec The Perl Profiler
+If you wish to supply an alternative debugger for Perl to run, just
+invoke your script with a colon and a package argument given to the -d
+flag.  One of the most popular alternative debuggers for Perl is
+@strong{DProf}, the Perl profiler.   As of this writing, @strong{DProf} is not
+included with the standard Perl distribution, but it is expected to
+be included soon, for certain values of "soon".
+
+Meanwhile, you can fetch the Devel::Dprof module from CPAN.  Assuming
+it@'s properly installed on your system, to profile your Perl program in
+the file @file{mycode.pl}, just type:
+
+
+@example
+perl -d:DProf mycode.pl
+@end example
+
+When the script terminates the profiler will dump the profile information
+to a file called @file{tmon.out}.  A tool like @strong{dprofpp} (also supplied with
+the Devel::DProf package) can be used to interpret the information which is
+in that profile.
+
+@unnumberedsubsec Debugger support in perl
+When you call the caller function (see @samp{caller}, @xref{perlfunc,Perlfunc},) from the
+package DB, Perl sets the array @@DB::args to contain the arguments the
+corresponding stack frame was called with.
+
+If perl is run with -d option, the following additional features
+are enabled:
+
+@itemize @bullet
+@item 
+Perl inserts the contents of @code{$ENV@{PERL5DB@}} (or @code{BEGIN @{require
+@'perl5db.pl@'@}} if not present) before the first line of the
+application.
+
+@item 
+The array C<@@@{"_<$filename"@}> is the line-by-line contents of
+$filename for all the compiled files.  Same for evaled strings which
+contain subroutines, or which are currently executed.  The @code{$filename}
+for evaled strings looks like @code{(eval 34)}.
+
+@item 
+The hash C<%@{"_<$filename"@}> contains breakpoints and action (it is
+keyed by line number), and individual entries are settable (as opposed
+to the whole hash).  Only true/false is important to Perl, though the
+values used by @file{perl5db.pl} have the form
+@code{"$break_condition\0$action"}.  Values are magical in numeric context:
+they are zeros if the line is not breakable.
+
+Same for evaluated strings which contain subroutines, or which are
+currently executed.  The @code{$filename} for evaled strings looks like
+@code{(eval 34)}.
+
+@item 
+The scalar C<$@{"_<$filename"@}> contains C<"_<$filename">.  Same for
+evaluated strings which contain subroutines, or which are currently
+executed.  The @code{$filename} for evaled strings looks like @code{(eval
+34)}.
+
+@item 
+After each required file is compiled, but before it is executed,
+C<DB::postponed(*@{"_<$filename"@})> is called (if subroutine
+@code{DB::postponed} exists).  Here the $filename is the expanded name of
+the required file (as found in values of %INC).
+
+@item 
+After each subroutine @code{subname} is compiled existence of
+@code{$DB::postponed@{subname@}} is checked.  If this key exists,
+@code{DB::postponed(subname)} is called (if subroutine @code{DB::postponed}
+exists).
+
+@item 
+A hash @code{%DB::sub} is maintained, with keys being subroutine names,
+values having the form @code{filename:startline-endline}.  @code{filename} has
+the form @code{(eval 31)} for subroutines defined inside evals.
+
+@item 
+When execution of the application reaches a place that can have
+a breakpoint, a call to @code{DB::DB()} is performed if any one of
+variables $DB::trace, $DB::single, or $DB::signal is true. (Note that
+these variables are not localizable.) This feature is disabled when
+the control is inside @code{DB::DB()} or functions called from it (unless
+C<$^D & (1<<30)>).
+
+@item 
+When execution of the application reaches a subroutine call, a call
+to @code{&DB::sub}(@emph{args}) is performed instead, with @code{$DB::sub} being
+the name of the called subroutine. (Unless the subroutine is compiled
+in the package @code{DB}.)
+
+@end itemize
+Note that no subroutine call is possible until @code{&DB::sub} is defined
+(for subroutines outside of package @code{DB}).  (This restriction is
+recently lifted.)
+
+(In fact, for the standard debugger the same is true if @code{$DB::deep}
+(how many levels of recursion deep into the debugger you can go before
+a mandatory break) is not defined.)
+
+With the recent updates the minimal possible debugger consists of one
+line
+
+
+@example
+sub DB::DB @{@}
+@end example
+
+which is quite handy as contents of PERL5DB environment
+variable:
+
+
+@example
+env "PERL5DB=sub DB::DB @{@}" perl -d your-script
+@end example
+
+Another (a little bit more useful) minimal debugger can be created
+with the only line being
+
+
+@example
+sub DB::DB @{print ++$i; scalar <STDIN>@}
+@end example
+
+This debugger would print the sequential number of encountered
+statement, and would wait for your @code{CR} to continue.
+
+The following debugger is quite functional:
+
+
+@example
+@{
+  package DB;
+  sub DB  @{@}
+  sub sub @{print ++$i, " $sub\n"; &$sub@}
+@}
+@end example
+
+It prints the sequential number of subroutine call and the name of the
+called subroutine.  Note that @code{&DB::sub} should be compiled into the
+package @code{DB}.
+
+@unnumberedsubsec Debugger Internals
+At the start, the debugger reads your rc file (@file{./.perldb} or
+@file{~/.perldb} under Unix), which can set important options.  This file may
+define a subroutine @code{&afterinit} to be executed after the debugger is
+initialized.
+
+After the rc file is read, the debugger reads environment variable
+PERLDB_OPTS and parses it as a rest of @code{O ...} line in debugger prompt.
+
+It also maintains magical internal variables, such as @code{@@DB::dbline},
+@code{%DB::dbline}, which are aliases for C<@@@{"::_<current_file"@}>
+C<%@{"::_<current_file"@}>.  Here @code{current_file} is the currently
+selected (with the debugger@'s f command, or by flow of execution)
+file.
+
+Some functions are provided to simplify customization.  See @samp{"Debugger
+Customization"} in this node for description of @code{DB::parse_options(string)}.  The
+function @code{DB::dump_trace(skip[, count])} skips the specified number
+of frames, and returns an array containing info about the caller
+frames (all if @code{count} is missing).  Each entry is a hash with keys
+@code{context} (@code{$} or @code{@@}), sub (subroutine name, or info about
+eval), @code{args} (undef or a reference to an array), @code{file}, and
+@code{line}.
+
+The function @code{DB::print_trace(FH, skip[, count[, short]])} prints
+formatted info about caller frames.  The last two functions may be
+convenient as arguments to C<<>, @code{<<} commands.
+
+@unnumberedsubsec Other resources
+You did try the -w switch, didn@'t you?
+
+@unnumberedsec BUGS
+You cannot get the stack frame information or otherwise debug functions
+that were not compiled by Perl, such as C or C++ extensions.
+
+If you alter your @@_ arguments in a subroutine (such as with shift
+or pop, the stack backtrace will not show the original values.

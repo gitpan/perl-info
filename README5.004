@@ -1,0 +1,43 @@
+			     README.5.004
+		             ============
+Converting pod documents for perl 5.004 - Michal Jagermann
+(michal@ellpspace.math.ualberta.ca), 1997/05/28.
+
+This conversion follows similar jobs done for earlier versions of Perl
+by Krishna Sethuraman (krishna@mit.edu) and Nick Gianniotis
+(nico@acm.org).  Its main purpose is to provide Perl documentation in
+a format convenient to use from emacs (info).  In particular these
+files are very desirable in a conjunction with 'cperl' emacs mode as
+you can get an immediate help for any documented Perl function.  If
+you want a hard copy you will likely fare much better with pod2latex
+program distributed with Perl sources.
+
+Documents converted are all pods from main pod directory; no module
+docs.  This should be enough as it makes for thirty five info files. :-)
+
+A converter used is modified from an original pod2texinfo.pl without
+trying to untangle its intricacies.  Some parts of it were made a bit
+more careful and some jobs were moved "outside".  If you would like
+to do conversions yourself start with peeking into a provided
+Makefile.
+
+As originally a "cleanup" of resulting texinfo files is required.
+In particular all tabs were expanded, some '@table' requests were
+replaced with '@ftable' and '@vtable' and '@kindex' entries were
+added to perldiag.texi (Texinfo does not supply '@ktable' anymore).
+Pay also attention to a few "false @enumerate" - there are instances
+of '=item' followed by a digit where this is really NOT intended.
+You will also find that a part of 'perltoc' which describe a contents
+of modules pods is commented out with '@ignore'.  Resulting '.texi'
+files were made into '.info' files with a help of 'makeinfo' program.
+Some concerns mentioned in README do not seem to be valid any longer
+but possibly some other are.
+
+If you want to try conversions yourself then you will copies
+(or links) of core pod files from a Perl distribution.  They are
+not supplied here.  Things are big enough as they are. :-)
+
+If somebody feels compelled to do a similar jobs for module pods - be
+my guest!
+
+  --mj

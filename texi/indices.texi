@@ -1,0 +1,11 @@
+@node Function Index, Variable Index, ,Top
+@unnumbered Function Index
+@printindex fn
+
+@node Variable Index, Diagnostic Message Index, Function Index, Top
+@unnumbered Variable Index
+@printindex vr
+
+@node Diagnostic Message Index, ,Variable Index, Top
+@unnumbered Diagnostic Message Index
+@printindex ky

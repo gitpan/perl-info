@@ -1,0 +1,911 @@
+This is Info file perl.info, produced by Makeinfo-1.64 from the input
+file Pmaster.texi.
+
+
+File: perl.info,  Node: Function Index,  Next: Variable Index,  Up: Top
+
+Function Index
+**************
+
+* Menu:
+
+* "STRING":                             perlop.
+* -X:                                   perlfunc.
+* -X EXPR:                              perlfunc.
+* -X FILEHANDLE:                        perlfunc.
+* /PATTERN/gimosx:                      perlop.
+* ?PATTERN?:                            perlop.
+* `STRING`:                             perlop.
+* 'STRING':                             perlop.
+* abs:                                  perlfunc.
+* abs VALUE:                            perlfunc.
+* accept NEWSOCKET,GENERICSOCKET:       perlfunc.
+* alarm:                                perlfunc.
+* alarm SECONDS:                        perlfunc.
+* atan2 Y,X:                            perlfunc.
+* bind SOCKET,NAME:                     perlfunc.
+* binmode FILEHANDLE:                   perlfunc.
+* bless REF:                            perlfunc.
+* bless REF,CLASSNAME:                  perlfunc.
+* caller:                               perlfunc.
+* caller EXPR:                          perlfunc.
+* chdir EXPR:                           perlfunc.
+* chmod LIST:                           perlfunc.
+* chomp:                                perlfunc.
+* chomp LIST:                           perlfunc.
+* chomp VARIABLE:                       perlfunc.
+* chop:                                 perlfunc.
+* chop LIST:                            perlfunc.
+* chop VARIABLE:                        perlfunc.
+* chown LIST:                           perlfunc.
+* chr:                                  perlfunc.
+* chr NUMBER:                           perlfunc.
+* chroot:                               perlfunc.
+* chroot FILENAME:                      perlfunc.
+* close FILEHANDLE:                     perlfunc.
+* closedir DIRHANDLE:                   perlfunc.
+* connect SOCKET,NAME:                  perlfunc.
+* continue BLOCK:                       perlfunc.
+* cos EXPR:                             perlfunc.
+* crypt PLAINTEXT,SALT:                 perlfunc.
+* dbmclose HASH:                        perlfunc.
+* dbmopen HASH,DBNAME,MODE:             perlfunc.
+* defined:                              perlfunc.
+* defined EXPR:                         perlfunc.
+* delete EXPR:                          perlfunc.
+* die LIST:                             perlfunc.
+* do BLOCK:                             perlfunc.
+* do EXPR:                              perlfunc.
+* do SUBROUTINE(LIST):                  perlfunc.
+* dump LABEL:                           perlfunc.
+* each HASH:                            perlfunc.
+* endgrent:                             perlfunc.
+* endhostent:                           perlfunc.
+* endnetent:                            perlfunc.
+* endprotoent:                          perlfunc.
+* endpwent:                             perlfunc.
+* endservent:                           perlfunc.
+* eof:                                  perlfunc.
+* eof ():                               perlfunc.
+* eof FILEHANDLE:                       perlfunc.
+* eval BLOCK:                           perlfunc.
+* eval EXPR:                            perlfunc.
+* exec LIST:                            perlfunc.
+* exists EXPR:                          perlfunc.
+* exit EXPR:                            perlfunc.
+* exp:                                  perlfunc.
+* exp EXPR:                             perlfunc.
+* fcntl FILEHANDLE,FUNCTION,SCALAR:     perlfunc.
+* fileno FILEHANDLE:                    perlfunc.
+* flock FILEHANDLE,OPERATION:           perlfunc.
+* fork:                                 perlfunc.
+* format:                               perlfunc.
+* formline PICTURE,LIST:                perlfunc.
+* getc:                                 perlfunc.
+* getc FILEHANDLE:                      perlfunc.
+* getgrent:                             perlfunc.
+* getgrgid GID:                         perlfunc.
+* getgrnam NAME:                        perlfunc.
+* gethostbyaddr ADDR,ADDRTYPE:          perlfunc.
+* gethostbyname NAME:                   perlfunc.
+* gethostent:                           perlfunc.
+* getlogin:                             perlfunc.
+* getnetbyaddr ADDR,ADDRTYPE:           perlfunc.
+* getnetbyname NAME:                    perlfunc.
+* getnetent:                            perlfunc.
+* getpeername SOCKET:                   perlfunc.
+* getpgrp PID:                          perlfunc.
+* getppid:                              perlfunc.
+* getpriority WHICH,WHO:                perlfunc.
+* getprotobyname NAME:                  perlfunc.
+* getprotobynumber NUMBER:              perlfunc.
+* getprotoent:                          perlfunc.
+* getpwent:                             perlfunc.
+* getpwnam NAME:                        perlfunc.
+* getpwuid UID:                         perlfunc.
+* getservbyname NAME,PROTO:             perlfunc.
+* getservbyport PORT,PROTO:             perlfunc.
+* getservent:                           perlfunc.
+* getsockname SOCKET:                   perlfunc.
+* getsockopt SOCKET,LEVEL,OPTNAME:      perlfunc.
+* glob:                                 perlfunc.
+* glob EXPR:                            perlfunc.
+* gmtime EXPR:                          perlfunc.
+* goto &NAME:                           perlfunc.
+* goto EXPR:                            perlfunc.
+* goto LABEL:                           perlfunc.
+* grep BLOCK LIST:                      perlfunc.
+* grep EXPR,LIST:                       perlfunc.
+* hex:                                  perlfunc.
+* hex EXPR:                             perlfunc.
+* import:                               perlfunc.
+* index STR,SUBSTR:                     perlfunc.
+* index STR,SUBSTR,POSITION:            perlfunc.
+* int:                                  perlfunc.
+* int EXPR:                             perlfunc.
+* ioctl FILEHANDLE,FUNCTION,SCALAR:     perlfunc.
+* join EXPR,LIST:                       perlfunc.
+* keys HASH:                            perlfunc.
+* kill LIST:                            perlfunc.
+* last:                                 perlfunc.
+* last LABEL:                           perlfunc.
+* lc:                                   perlfunc.
+* lc EXPR:                              perlfunc.
+* lcfirst:                              perlfunc.
+* lcfirst EXPR:                         perlfunc.
+* length:                               perlfunc.
+* length EXPR:                          perlfunc.
+* link OLDFILE,NEWFILE:                 perlfunc.
+* listen SOCKET,QUEUESIZE:              perlfunc.
+* local EXPR:                           perlfunc.
+* localtime EXPR:                       perlfunc.
+* log:                                  perlfunc.
+* log EXPR:                             perlfunc.
+* lstat:                                perlfunc.
+* lstat EXPR:                           perlfunc.
+* lstat FILEHANDLE:                     perlfunc.
+* m//:                                  perlfunc.
+* m/PATTERN/gimosx:                     perlop.
+* map BLOCK LIST:                       perlfunc.
+* map EXPR,LIST:                        perlfunc.
+* mkdir FILENAME,MODE:                  perlfunc.
+* msgctl ID,CMD,ARG:                    perlfunc.
+* msgget KEY,FLAGS:                     perlfunc.
+* msgrcv ID,VAR,SIZE,TYPE,FLAGS:        perlfunc.
+* msgsnd ID,MSG,FLAGS:                  perlfunc.
+* my EXPR:                              perlfunc.
+* next:                                 perlfunc.
+* next LABEL:                           perlfunc.
+* no Module LIST:                       perlfunc.
+* oct:                                  perlfunc.
+* oct EXPR:                             perlfunc.
+* open FILEHANDLE:                      perlfunc.
+* open FILEHANDLE,EXPR:                 perlfunc.
+* opendir DIRHANDLE,EXPR:               perlfunc.
+* ord:                                  perlfunc.
+* ord EXPR:                             perlfunc.
+* pack TEMPLATE,LIST:                   perlfunc.
+* package NAMESPACE:                    perlfunc.
+* perl_call_argv:                       perlcall.
+* perl_call_method:                     perlcall.
+* perl_call_pv:                         perlcall.
+* perl_call_sv:                         perlcall.
+* pipe READHANDLE,WRITEHANDLE:          perlfunc.
+* pop:                                  perlfunc.
+* pop ARRAY:                            perlfunc.
+* pos:                                  perlfunc.
+* pos SCALAR:                           perlfunc.
+* print:                                perlfunc.
+* print FILEHANDLE LIST:                perlfunc.
+* print LIST:                           perlfunc.
+* printf FILEHANDLE FORMAT, LIST:       perlfunc.
+* printf FORMAT, LIST:                  perlfunc.
+* prototype FUNCTION:                   perlfunc.
+* push ARRAY,LIST:                      perlfunc.
+* q/STRING/ <1>:                        perlfunc.
+* q/STRING/:                            perlop.
+* qq/STRING/ <1>:                       perlfunc.
+* qq/STRING/:                           perlop.
+* quotemeta:                            perlfunc.
+* quotemeta EXPR:                       perlfunc.
+* qw/STRING/ <1>:                       perlfunc.
+* qw/STRING/:                           perlop.
+* qx/STRING/ <1>:                       perlfunc.
+* qx/STRING/:                           perlop.
+* rand:                                 perlfunc.
+* rand EXPR:                            perlfunc.
+* read FILEHANDLE,SCALAR,LENGTH:        perlfunc.
+* read FILEHANDLE,SCALAR,LENGTH,OFFSET: perlfunc.
+* readdir DIRHANDLE:                    perlfunc.
+* readlink:                             perlfunc.
+* readlink EXPR:                        perlfunc.
+* recv SOCKET,SCALAR,LEN,FLAGS:         perlfunc.
+* redo:                                 perlfunc.
+* redo LABEL:                           perlfunc.
+* ref:                                  perlfunc.
+* ref EXPR:                             perlfunc.
+* rename OLDNAME,NEWNAME:               perlfunc.
+* require:                              perlfunc.
+* require EXPR:                         perlfunc.
+* reset:                                perlfunc.
+* reset EXPR:                           perlfunc.
+* return:                               perlfunc.
+* return EXPR:                          perlfunc.
+* reverse LIST:                         perlfunc.
+* rewinddir DIRHANDLE:                  perlfunc.
+* rindex STR,SUBSTR:                    perlfunc.
+* rindex STR,SUBSTR,POSITION:           perlfunc.
+* rmdir:                                perlfunc.
+* rmdir FILENAME:                       perlfunc.
+* s///:                                 perlfunc.
+* s/PATTERN/REPLACEMENT/egimosx:        perlop.
+* scalar EXPR:                          perlfunc.
+* seek FILEHANDLE,POSITION,WHENCE:      perlfunc.
+* seekdir DIRHANDLE,POS:                perlfunc.
+* select:                               perlfunc.
+* select FILEHANDLE:                    perlfunc.
+* select RBITS,WBITS,EBITS,TIMEOUT:     perlfunc.
+* semctl ID,SEMNUM,CMD,ARG:             perlfunc.
+* semget KEY,NSEMS,FLAGS:               perlfunc.
+* semop KEY,OPSTRING:                   perlfunc.
+* send SOCKET,MSG,FLAGS:                perlfunc.
+* send SOCKET,MSG,FLAGS,TO:             perlfunc.
+* setgrent:                             perlfunc.
+* sethostent STAYOPEN:                  perlfunc.
+* setnetent STAYOPEN:                   perlfunc.
+* setpgrp PID,PGRP:                     perlfunc.
+* setpriority WHICH,WHO,PRIORITY:       perlfunc.
+* setprotoent STAYOPEN:                 perlfunc.
+* setpwent:                             perlfunc.
+* setservent STAYOPEN:                  perlfunc.
+* setsockopt SOCKET,LEVEL,OPTNAME,OPTVAL: perlfunc.
+* shift:                                perlfunc.
+* shift ARRAY:                          perlfunc.
+* shmctl ID,CMD,ARG:                    perlfunc.
+* shmget KEY,SIZE,FLAGS:                perlfunc.
+* shmread ID,VAR,POS,SIZE:              perlfunc.
+* shmwrite ID,STRING,POS,SIZE:          perlfunc.
+* shutdown SOCKET,HOW:                  perlfunc.
+* sin:                                  perlfunc.
+* sin EXPR:                             perlfunc.
+* sleep:                                perlfunc.
+* sleep EXPR:                           perlfunc.
+* socket SOCKET,DOMAIN,TYPE,PROTOCOL:   perlfunc.
+* socketpair SOCKET1,SOCKET2,DOMAIN,TYPE,PROTOCOL: perlfunc.
+* sort BLOCK LIST:                      perlfunc.
+* sort LIST:                            perlfunc.
+* sort SUBNAME LIST:                    perlfunc.
+* splice ARRAY,OFFSET:                  perlfunc.
+* splice ARRAY,OFFSET,LENGTH:           perlfunc.
+* splice ARRAY,OFFSET,LENGTH,LIST:      perlfunc.
+* split:                                perlfunc.
+* split /PATTERN/:                      perlfunc.
+* split /PATTERN/,EXPR:                 perlfunc.
+* split /PATTERN/,EXPR,LIMIT:           perlfunc.
+* sprintf FORMAT, LIST:                 perlfunc.
+* sqrt:                                 perlfunc.
+* sqrt EXPR:                            perlfunc.
+* srand:                                perlfunc.
+* srand EXPR:                           perlfunc.
+* stat:                                 perlfunc.
+* stat EXPR:                            perlfunc.
+* stat FILEHANDLE:                      perlfunc.
+* study:                                perlfunc.
+* study SCALAR:                         perlfunc.
+* sub BLOCK:                            perlfunc.
+* sub NAME:                             perlfunc.
+* sub NAME BLOCK:                       perlfunc.
+* substr EXPR,OFFSET:                   perlfunc.
+* substr EXPR,OFFSET,LEN:               perlfunc.
+* symlink OLDFILE,NEWFILE:              perlfunc.
+* syscall LIST:                         perlfunc.
+* sysopen FILEHANDLE,FILENAME,MODE:     perlfunc.
+* sysopen FILEHANDLE,FILENAME,MODE,PERMS: perlfunc.
+* sysread FILEHANDLE,SCALAR,LENGTH:     perlfunc.
+* sysread FILEHANDLE,SCALAR,LENGTH,OFFSET: perlfunc.
+* sysseek FILEHANDLE,POSITION,WHENCE:   perlfunc.
+* system LIST:                          perlfunc.
+* syswrite FILEHANDLE,SCALAR,LENGTH:    perlfunc.
+* syswrite FILEHANDLE,SCALAR,LENGTH,OFFSET: perlfunc.
+* tell:                                 perlfunc.
+* tell FILEHANDLE:                      perlfunc.
+* telldir DIRHANDLE:                    perlfunc.
+* tie VARIABLE,CLASSNAME,LIST:          perlfunc.
+* tied VARIABLE:                        perlfunc.
+* time:                                 perlfunc.
+* times:                                perlfunc.
+* tr///:                                perlfunc.
+* tr/SEARCHLIST/REPLACEMENTLIST/cds:    perlop.
+* truncate EXPR,LENGTH:                 perlfunc.
+* truncate FILEHANDLE,LENGTH:           perlfunc.
+* uc:                                   perlfunc.
+* uc EXPR:                              perlfunc.
+* ucfirst:                              perlfunc.
+* ucfirst EXPR:                         perlfunc.
+* umask:                                perlfunc.
+* umask EXPR:                           perlfunc.
+* undef:                                perlfunc.
+* undef EXPR:                           perlfunc.
+* unlink:                               perlfunc.
+* unlink LIST:                          perlfunc.
+* unpack TEMPLATE,EXPR:                 perlfunc.
+* unshift ARRAY,LIST:                   perlfunc.
+* untie VARIABLE:                       perlfunc.
+* use Module:                           perlfunc.
+* use Module LIST:                      perlfunc.
+* use Module VERSION LIST:              perlfunc.
+* use VERSION:                          perlfunc.
+* utime LIST:                           perlfunc.
+* values HASH:                          perlfunc.
+* vec EXPR,OFFSET,BITS:                 perlfunc.
+* wait:                                 perlfunc.
+* waitpid PID,FLAGS:                    perlfunc.
+* wantarray:                            perlfunc.
+* warn LIST:                            perlfunc.
+* write:                                perlfunc.
+* write EXPR:                           perlfunc.
+* write FILEHANDLE:                     perlfunc.
+* y///:                                 perlfunc.
+* y/SEARCHLIST/REPLACEMENTLIST/cds:     perlop.
+
+
+File: perl.info,  Node: Variable Index,  Next: Diagnostic Message Index,  Prev: Function Index,  Up: Top
+
+Variable Index
+**************
+
+* Menu:
+
+* $!:                                   perlvar.
+* $":                                   perlvar.
+* $#:                                   perlvar.
+* $$:                                   perlvar.
+* $%:                                   perlvar.
+* $&:                                   perlvar.
+* $(:                                   perlvar.
+* $):                                   perlvar.
+* $*:                                   perlvar.
+* $+:                                   perlvar.
+* $,:                                   perlvar.
+* $-:                                   perlvar.
+* $.:                                   perlvar.
+* $/:                                   perlvar.
+* $0:                                   perlvar.
+* $::                                   perlvar.
+* $;:                                   perlvar.
+* $<:                                   perlvar.
+* $<*digit*>:                           perlvar.
+* $=:                                   perlvar.
+* $>:                                   perlvar.
+* $?:                                   perlvar.
+* $':                                   perlvar.
+* $@:                                   perlvar.
+* $`:                                   perlvar.
+* $[:                                   perlvar.
+* $\:                                   perlvar.
+* $]:                                   perlvar.
+* $^:                                   perlvar.
+* $^A:                                  perlvar.
+* $^D:                                  perlvar.
+* $^E:                                  perlvar.
+* $^F:                                  perlvar.
+* $^H:                                  perlvar.
+* $^I:                                  perlvar.
+* $^L:                                  perlvar.
+* $^M:                                  perlvar.
+* $^O:                                  perlvar.
+* $^P:                                  perlvar.
+* $^T:                                  perlvar.
+* $^W:                                  perlvar.
+* $^X:                                  perlvar.
+* $_:                                   perlvar.
+* $ACCUMULATOR:                         perlvar.
+* $ARG:                                 perlvar.
+* $ARGV:                                perlvar.
+* $BASETIME:                            perlvar.
+* $CHILD_ERROR:                         perlvar.
+* $DEBUGGING:                           perlvar.
+* $EFFECTIVE_GROUP_ID:                  perlvar.
+* $EFFECTIVE_USER_ID:                   perlvar.
+* $EGID:                                perlvar.
+* $ENV{expr}:                           perlvar.
+* $ERRNO:                               perlvar.
+* $EUID:                                perlvar.
+* $EVAL_ERROR:                          perlvar.
+* $EXECUTABLE_NAME:                     perlvar.
+* $EXTENDED_OS_ERROR:                   perlvar.
+* $FORMAT_FORMFEED:                     perlvar.
+* $FORMAT_LINE_BREAK_CHARACTERS:        perlvar.
+* $FORMAT_LINES_LEFT:                   perlvar.
+* $FORMAT_LINES_PER_PAGE:               perlvar.
+* $FORMAT_NAME:                         perlvar.
+* $FORMAT_PAGE_NUMBER:                  perlvar.
+* $FORMAT_TOP_NAME:                     perlvar.
+* $GID:                                 perlvar.
+* $INPLACE_EDIT:                        perlvar.
+* $INPUT_LINE_NUMBER:                   perlvar.
+* $INPUT_RECORD_SEPARATOR:              perlvar.
+* $LAST_PAREN_MATCH:                    perlvar.
+* $LIST_SEPARATOR:                      perlvar.
+* $MATCH:                               perlvar.
+* $MULTILINE_MATCHING:                  perlvar.
+* $NR:                                  perlvar.
+* $OFMT:                                perlvar.
+* $OFS:                                 perlvar.
+* $ORS:                                 perlvar.
+* $OS_ERROR:                            perlvar.
+* $OSNAME:                              perlvar.
+* $OUTPUT_AUTOFLUSH:                    perlvar.
+* $OUTPUT_FIELD_SEPARATOR:              perlvar.
+* $OUTPUT_RECORD_SEPARATOR:             perlvar.
+* $PERL_VERSION:                        perlvar.
+* $PERLDB:                              perlvar.
+* $PID:                                 perlvar.
+* $POSTMATCH:                           perlvar.
+* $PREMATCH:                            perlvar.
+* $PROCESS_ID:                          perlvar.
+* $PROGRAM_NAME:                        perlvar.
+* $REAL_GROUP_ID:                       perlvar.
+* $REAL_USER_ID:                        perlvar.
+* $RS:                                  perlvar.
+* $SIG{expr}:                           perlvar.
+* $SUBSCRIPT_SEPARATOR:                 perlvar.
+* $SUBSEP:                              perlvar.
+* $SYSTEM_FD_MAX:                       perlvar.
+* $UID:                                 perlvar.
+* $WARNING:                             perlvar.
+* $|:                                   perlvar.
+* $~:                                   perlvar.
+* %INC:                                 perlvar.
+* @ARGV:                                perlvar.
+* @INC:                                 perlvar.
+* autoflush HANDLE EXPR:                perlvar.
+* format_formfeed HANDLE EXPR:          perlvar.
+* format_line_break_characters HANDLE EXPR: perlvar.
+* format_lines_left HANDLE EXPR:        perlvar.
+* format_lines_per_page HANDLE EXPR:    perlvar.
+* format_name HANDLE EXPR:              perlvar.
+* format_page_number HANDLE EXPR:       perlvar.
+* format_top_name HANDLE EXPR:          perlvar.
+* input_line_number HANDLE EXPR:        perlvar.
+* input_record_separator HANDLE EXPR:   perlvar.
+* output_field_separator HANDLE EXPR:   perlvar.
+* output_record_separator HANDLE EXPR:  perlvar.
+
+
+File: perl.info,  Node: Diagnostic Message Index,  Prev: Variable Index,  Up: Top
+
+Diagnostic Message Index
+************************
+
+* Menu:
+
+* "my" variable %s can't be in a package: perldiag.
+* "my" variable %s masks earlier declaration in same scope: perldiag.
+* "no" not allowed in expression:       perldiag.
+* "use" not allowed in expression:      perldiag.
+* % may only be used in unpack:         perldiag.
+* %s (...) interpreted as function:     perldiag.
+* %s argument is not a HASH element:    perldiag.
+* %s argument is not a HASH element or slice: perldiag.
+* %s did not return a true value:       perldiag.
+* %s found where operator expected:     perldiag.
+* %s had compilation errors:            perldiag.
+* %s has too many errors:               perldiag.
+* %s matches null string many times:    perldiag.
+* %s never introduced:                  perldiag.
+* %s syntax OK:                         perldiag.
+* %s: Command not found:                perldiag.
+* %s: Expression syntax:                perldiag.
+* %s: not found:                        perldiag.
+* %s: Undefined variable:               perldiag.
+* %sseek() on unopened file:            perldiag.
+* -P not allowed for setuid/setgid script: perldiag.
+* -T and -B not implemented on filehandles: perldiag.
+* '|' and '<' may not both be specified on command line: perldiag.
+* '|' and '>' may not both be specified on command line: perldiag.
+* @ outside of string:                  perldiag.
+* [gs]etsockopt() on closed fd:         perldiag.
+* \1 better written as $1:              perldiag.
+* accept() on closed fd:                perldiag.
+* Allocation too large:                 perldiag.
+* Allocation too large: %lx:            perldiag.
+* Ambiguous use of %s resolved as %s:   perldiag.
+* Applying %s to %s will act on scalar(%s): perldiag.
+* Arg too short for msgsnd:             perldiag.
+* Args must match #! line:              perldiag.
+* Argument "%s" isn't numeric%s:        perldiag.
+* Array @%s missing the @ in argument %d of %s(): perldiag.
+* assertion botched: %s:                perldiag.
+* Assertion failed: file "%s":          perldiag.
+* Assignment to both a list and a scalar: perldiag.
+* Attempt to free non-arena SV: 0x%lx:  perldiag.
+* Attempt to free nonexistent shared string: perldiag.
+* Attempt to free temp prematurely:     perldiag.
+* Attempt to free unreferenced glob pointers: perldiag.
+* Attempt to free unreferenced scalar:  perldiag.
+* Attempt to use reference as lvalue in substr: perldiag.
+* Bad arg length for %s, is %d, should be %d: perldiag.
+* Bad filehandle: %s:                   perldiag.
+* Bad free() ignored:                   perldiag.
+* Bad hash:                             perldiag.
+* Bad name after %s:::                  perldiag.
+* Bad symbol for array:                 perldiag.
+* Bad symbol for filehandle:            perldiag.
+* Bad symbol for hash:                  perldiag.
+* Badly placed ()'s:                    perldiag.
+* Bareword "%s" not allowed while "strict subs" in use: perldiag.
+* BEGIN failed-compilation aborted:     perldiag.
+* BEGIN not safe after errors-compilation aborted: perldiag.
+* bind() on closed fd:                  perldiag.
+* Bizarre copy of %s in %s:             perldiag.
+* Callback called exit:                 perldiag.
+* Can't "goto" outside a block:         perldiag.
+* Can't "last" outside a block:         perldiag.
+* Can't "next" outside a block:         perldiag.
+* Can't "redo" outside a block:         perldiag.
+* Can't bless non-reference value:      perldiag.
+* Can't break at that line:             perldiag.
+* Can't call method "%s" in empty package "%s": perldiag.
+* Can't call method "%s" on unblessed reference: perldiag.
+* Can't call method "%s" without a package or object reference: perldiag.
+* Can't chdir to %s:                    perldiag.
+* Can't coerce %s to integer in %s:     perldiag.
+* Can't coerce %s to number in %s:      perldiag.
+* Can't coerce %s to string in %s:      perldiag.
+* Can't create pipe mailbox:            perldiag.
+* Can't declare %s in my:               perldiag.
+* Can't do {n,m} with n > m:            perldiag.
+* Can't do inplace edit on %s: %s:      perldiag.
+* Can't do inplace edit without backup: perldiag.
+* Can't do inplace edit: %s > 14 characters: perldiag.
+* Can't do inplace edit: %s is not a regular file: perldiag.
+* Can't do setegid!:                    perldiag.
+* Can't do seteuid!:                    perldiag.
+* Can't do setuid:                      perldiag.
+* Can't do waitpid with flags:          perldiag.
+* Can't emulate -%s on #! line:         perldiag.
+* Can't exec "%s": %s:                  perldiag.
+* Can't exec %s:                        perldiag.
+* Can't execute %s:                     perldiag.
+* Can't find label %s:                  perldiag.
+* Can't find string terminator %s anywhere before EOF: perldiag.
+* Can't fork:                           perldiag.
+* Can't get filespec - stale stat buffer?: perldiag.
+* Can't get pipe mailbox device name:   perldiag.
+* Can't get SYSGEN parameter value for MAXBUF: perldiag.
+* Can't goto subroutine outside a subroutine: perldiag.
+* Can't localize a reference:           perldiag.
+* Can't localize lexical variable %s:   perldiag.
+* Can't locate %s in @INC:              perldiag.
+* Can't locate object method "%s" via package "%s": perldiag.
+* Can't locate package %s for @%s::ISA: perldiag.
+* Can't mktemp():                       perldiag.
+* Can't modify %s in %s:                perldiag.
+* Can't modify nonexistent substring:   perldiag.
+* Can't msgrcv to read-only var:        perldiag.
+* Can't open %s: %s:                    perldiag.
+* Can't open bidirectional pipe:        perldiag.
+* Can't open error file %s as stderr:   perldiag.
+* Can't open input file %s as stdin:    perldiag.
+* Can't open output file %s as stdout:  perldiag.
+* Can't open output pipe (name: %s):    perldiag.
+* Can't open perl script "%s": %s:      perldiag.
+* Can't redefine active sort subroutine %s: perldiag.
+* Can't rename %s to %s: %s, skipping file: perldiag.
+* Can't reopen input pipe (name: %s) in binary mode: perldiag.
+* Can't reswap uid and euid:            perldiag.
+* Can't return outside a subroutine:    perldiag.
+* Can't stat script "%s":               perldiag.
+* Can't swap uid and euid:              perldiag.
+* Can't take log of %g:                 perldiag.
+* Can't take sqrt of %g:                perldiag.
+* Can't undef active subroutine:        perldiag.
+* Can't unshift:                        perldiag.
+* Can't upgrade that kind of scalar:    perldiag.
+* Can't upgrade to undef:               perldiag.
+* Can't use "my %s" in sort comparison: perldiag.
+* Can't use %s for loop variable:       perldiag.
+* Can't use %s ref as %s ref:           perldiag.
+* Can't use \1 to mean $1 in expression: perldiag.
+* Can't use an undefined value as %s reference: perldiag.
+* Can't use bareword ("%s") as %s ref while \"strict refs\" in use: perldiag.
+* Can't use global %s in "my":          perldiag.
+* Can't use string ("%s") as %s ref while "strict refs" in use: perldiag.
+* Can't use subscript on %s:            perldiag.
+* Can't write to temp file for -e: %s:  perldiag.
+* Can't x= to read-only value:          perldiag.
+* Cannot open temporary file:           perldiag.
+* Cannot resolve method `%s' overloading `%s' in package `%s': perldiag.
+* chmod: mode argument is missing initial 0: perldiag.
+* Close on unopened file <%s>:          perldiag.
+* Compilation failed in require:        perldiag.
+* connect() on closed fd:               perldiag.
+* Constant subroutine %s redefined:     perldiag.
+* Constant subroutine %s undefined:     perldiag.
+* Copy method did not return a reference: perldiag.
+* Corrupt malloc ptr 0x%lx at 0x%lx:    perldiag.
+* corrupted regexp pointers:            perldiag.
+* corrupted regexp program:             perldiag.
+* Deep recursion on subroutine "%s":    perldiag.
+* Delimiter for here document is too long: perldiag.
+* Did you mean $ or @ instead of %?:    perldiag.
+* Did you mean &%s instead?:            perldiag.
+* Died:                                 perldiag.
+* Do you need to predeclare %s?:        perldiag.
+* do_study: out of memory:              perldiag.
+* Don't know how to handle magic of type '%s': perldiag.
+* Duplicate free() ignored:             perldiag.
+* elseif should be elsif:               perldiag.
+* END failed-cleanup aborted:           perldiag.
+* Error converting file specification %s: perldiag.
+* Excessively long <> operator:         perldiag.
+* Execution of %s aborted due to compilation errors: perldiag.
+* Exiting eval via %s:                  perldiag.
+* Exiting pseudo-block via %s:          perldiag.
+* Exiting subroutine via %s:            perldiag.
+* Exiting substitution via %s:          perldiag.
+* Fatal VMS error at %s, line %d:       perldiag.
+* fcntl is not implemented:             perldiag.
+* Filehandle %s never opened:           perldiag.
+* Filehandle %s opened for only input:  perldiag.
+* Filehandle opened for only input:     perldiag.
+* Final $ should be \$ or $name:        perldiag.
+* Final @ should be \@ or @name:        perldiag.
+* follows nothing in regexp:            perldiag.
+* Format %s redefined:                  perldiag.
+* Format not terminated:                perldiag.
+* Found = in conditional, should be ==: perldiag.
+* gdbm store returned %d, errno %d, key "%s": perldiag.
+* get{sock,peer}name() on closed fd:    perldiag.
+* gethostent not implemented:           perldiag.
+* getpwnam returned invalid UIC %#o for user "%s": perldiag.
+* Glob not terminated:                  perldiag.
+* Global symbol "%s" requires explicit package name: perldiag.
+* Got an error from DosAllocMem:        perldiag.
+* goto must have label:                 perldiag.
+* Had to create %s unexpectedly:        perldiag.
+* Hash %%s missing the % in argument %d of %s(): perldiag.
+* Identifier too long:                  perldiag.
+* Ill-formed logical name |%s| in prime_env_iter: perldiag.
+* Illegal character %s (carriage return): perldiag.
+* Illegal division by zero:             perldiag.
+* Illegal modulus zero:                 perldiag.
+* Illegal octal digit:                  perldiag.
+* Illegal octal digit ignored:          perldiag.
+* Illegal switch in PERL5OPT: %s:       perldiag.
+* In string, @%s now must be written as \@%s: perldiag.
+* Insecure dependency in %s:            perldiag.
+* Insecure directory in %s:             perldiag.
+* Insecure PATH:                        perldiag.
+* Integer overflow in hex number:       perldiag.
+* Integer overflow in octal number:     perldiag.
+* internal disaster in regexp:          perldiag.
+* internal error: glob failed:          perldiag.
+* Internal inconsistency in tracking vforks: perldiag.
+* internal urp in regexp at /%s/:       perldiag.
+* invalid [] range in regexp:           perldiag.
+* Invalid conversion in %s: "%s":       perldiag.
+* Invalid type in pack: '%s':           perldiag.
+* Invalid type in unpack: '%s':         perldiag.
+* ioctl is not implemented:             perldiag.
+* junk on end of regexp:                perldiag.
+* Label not found for "last %s":        perldiag.
+* Label not found for "next %s":        perldiag.
+* Label not found for "redo %s":        perldiag.
+* listen() on closed fd:                perldiag.
+* Malformed PERLLIB_PREFIX:             perldiag.
+* Method for operation %s not found in package %s during blessing: perldiag.
+* Might be a runaway multi-line %s string starting on line %d: perldiag.
+* Misplaced _ in number:                perldiag.
+* Missing $ on loop variable:           perldiag.
+* Missing comma after first argument to %s function: perldiag.
+* Missing operator before %s?:          perldiag.
+* Missing right bracket:                perldiag.
+* Missing semicolon on previous line?:  perldiag.
+* Modification of a read-only value attempted: perldiag.
+* Modification of noncreatable array value attempted, subscript %d: perldiag.
+* Modification of noncreatable hash value attempted, subscript "%s": perldiag.
+* Module name must be constant:         perldiag.
+* msg%s not implemented:                perldiag.
+* Multidimensional syntax %s not supported: perldiag.
+* Name "%s::%s" used only once: possible typo: perldiag.
+* Negative length:                      perldiag.
+* nested *?+ in regexp:                 perldiag.
+* No #! line:                           perldiag.
+* No %s allowed while running setuid:   perldiag.
+* No -e allowed in setuid scripts:      perldiag.
+* No comma allowed after %s:            perldiag.
+* No command into which to pipe on command line: perldiag.
+* No DB::DB routine defined:            perldiag.
+* No dbm on this machine:               perldiag.
+* No DBsub routine:                     perldiag.
+* No error file after 2> or 2>> on command line: perldiag.
+* No input file after < on command line: perldiag.
+* No output file after > on command line: perldiag.
+* No output file after > or >> on command line: perldiag.
+* No Perl script found in input:        perldiag.
+* No setregid available:                perldiag.
+* No setreuid available:                perldiag.
+* No space allowed after -I:            perldiag.
+* No such pipe open:                    perldiag.
+* No such signal: SIG%s:                perldiag.
+* Not a CODE reference:                 perldiag.
+* Not a format reference:               perldiag.
+* Not a GLOB reference:                 perldiag.
+* Not a HASH reference:                 perldiag.
+* Not a perl script:                    perldiag.
+* Not a SCALAR reference:               perldiag.
+* Not a subroutine reference:           perldiag.
+* Not a subroutine reference in overload table: perldiag.
+* Not an ARRAY reference:               perldiag.
+* Not enough arguments for %s:          perldiag.
+* Not enough format arguments:          perldiag.
+* Null filename used:                   perldiag.
+* NULL OP IN RUN:                       perldiag.
+* Null picture in formline:             perldiag.
+* Null realloc:                         perldiag.
+* NULL regexp argument:                 perldiag.
+* NULL regexp parameter:                perldiag.
+* Number too long:                      perldiag.
+* Odd number of elements in hash list:  perldiag.
+* Offset outside string:                perldiag.
+* oops: oopsAV:                         perldiag.
+* oops: oopsHV:                         perldiag.
+* Operation `%s': no method found,%s:   perldiag.
+* Operator or semicolon missing before %s: perldiag.
+* Out of memory during request for %s:  perldiag.
+* Out of memory for yacc stack:         perldiag.
+* Out of memory!:                       perldiag.
+* page overflow:                        perldiag.
+* panic: ck_grep:                       perldiag.
+* panic: ck_split:                      perldiag.
+* panic: corrupt saved stack index:     perldiag.
+* panic: die %s:                        perldiag.
+* panic: do_match:                      perldiag.
+* panic: do_split:                      perldiag.
+* panic: do_subst:                      perldiag.
+* panic: do_trans:                      perldiag.
+* panic: frexp:                         perldiag.
+* panic: goto:                          perldiag.
+* panic: INTERPCASEMOD:                 perldiag.
+* panic: INTERPCONCAT:                  perldiag.
+* panic: last:                          perldiag.
+* panic: leave_scope clearsv:           perldiag.
+* panic: leave_scope inconsistency:     perldiag.
+* panic: malloc:                        perldiag.
+* panic: mapstart:                      perldiag.
+* panic: null array:                    perldiag.
+* panic: pad_alloc:                     perldiag.
+* panic: pad_free curpad:               perldiag.
+* panic: pad_free po:                   perldiag.
+* panic: pad_reset curpad:              perldiag.
+* panic: pad_sv po:                     perldiag.
+* panic: pad_swipe curpad:              perldiag.
+* panic: pad_swipe po:                  perldiag.
+* panic: pp_iter:                       perldiag.
+* panic: realloc:                       perldiag.
+* panic: restartop:                     perldiag.
+* panic: return:                        perldiag.
+* panic: scan_num:                      perldiag.
+* panic: sv_insert:                     perldiag.
+* panic: top_env:                       perldiag.
+* panic: yylex:                         perldiag.
+* Pareneses missing around "%s" list:   perldiag.
+* Perl %3.3f required-this is only version %s, stopped: perldiag.
+* PERL_SH_DIR too long:                 perldiag.
+* Permission denied:                    perldiag.
+* pid %d not a child:                   perldiag.
+* POSIX getpgrp can't take an argument: perldiag.
+* Possible attempt to put comments in qw() list: perldiag.
+* Possible attempt to separate words with commas: perldiag.
+* Possible memory corruption: %s overflowed 3rd argument: perldiag.
+* Precedence problem: open %s should be open(%s): perldiag.
+* print on closed filehandle %s:        perldiag.
+* printf on closed filehandle %s:       perldiag.
+* Probable precedence problem on %s:    perldiag.
+* Process terminated by SIG%s:          perldiag.
+* Prototype mismatch: %s vs %s:         perldiag.
+* Read on closed filehandle <%s>:       perldiag.
+* Reallocation too large: %lx:          perldiag.
+* Recompile perl with -DDEBUGGING to use -D switch: perldiag.
+* Recursive inheritance detected:       perldiag.
+* Reference miscount in sv_replace():   perldiag.
+* regexp memory corruption:             perldiag.
+* regexp out of space:                  perldiag.
+* regexp too big:                       perldiag.
+* Reversed %s= operator:                perldiag.
+* Runaway format:                       perldiag.
+* Scalar value @%s{%s} better written as $%s{%s}: perldiag.
+* Scalar value @%s[%s] better written as $%s[%s]: perldiag.
+* Script is not setuid/setgid in suidperl: perldiag.
+* Search pattern not terminated:        perldiag.
+* select not implemented:               perldiag.
+* sem%s not implemented:                perldiag.
+* semi-panic: attempt to dup freed string: perldiag.
+* Semicolon seems to be missing:        perldiag.
+* Send on closed socket:                perldiag.
+* Sequence (?#... not terminated:       perldiag.
+* Sequence (?%s...) not implemented:    perldiag.
+* Sequence (?%s...) not recognized:     perldiag.
+* Server error:                         perldiag.
+* setegid() not implemented:            perldiag.
+* seteuid() not implemented:            perldiag.
+* setrgid() not implemented:            perldiag.
+* setruid() not implemented:            perldiag.
+* Setuid/gid script is writable by world: perldiag.
+* shm%s not implemented:                perldiag.
+* shutdown() on closed fd:              perldiag.
+* SIG%s handler "%s" not defined:       perldiag.
+* sort is now a reserved word:          perldiag.
+* Sort subroutine didn't return a numeric value: perldiag.
+* Sort subroutine didn't return single value: perldiag.
+* Split loop:                           perldiag.
+* Stat on unopened file <%s>:           perldiag.
+* Statement unlikely to be reached:     perldiag.
+* Stub found while resolving method `%s' overloading `%s' in package `%s': perldiag.
+* Subroutine %s redefined:              perldiag.
+* Substitution loop:                    perldiag.
+* Substitution pattern not terminated:  perldiag.
+* Substitution replacement not terminated: perldiag.
+* substr outside of string:             perldiag.
+* suidperl is no longer needed since %s: perldiag.
+* syntax error:                         perldiag.
+* syntax error at line %d: `%s' unexpected: perldiag.
+* System V IPC is not implemented on this machine: perldiag.
+* Syswrite on closed filehandle:        perldiag.
+* Target of goto is too deeply nested:  perldiag.
+* tell() on unopened file:              perldiag.
+* Test on unopened file <%s>:           perldiag.
+* That use of $[ is unsupported:        perldiag.
+* The %s function is unimplemented:     perldiag.
+* The crypt() function is unimplemented due to excessive paranoia: perldiag.
+* The stat preceding -l _ wasn't an lstat: perldiag.
+* times not implemented:                perldiag.
+* Too few args to syscall:              perldiag.
+* Too late for "-%s" option:            perldiag.
+* Too late for "-T" option:             perldiag.
+* Too many ('s:                         perldiag.
+* Too many )'s:                         perldiag.
+* Too many args to syscall:             perldiag.
+* Too many arguments for %s:            perldiag.
+* trailing \ in regexp:                 perldiag.
+* Translation pattern not terminated:   perldiag.
+* Translation replacement not terminated: perldiag.
+* truncate not implemented:             perldiag.
+* Type of arg %d to %s must be %s (not %s): perldiag.
+* umask: argument is missing initial 0: perldiag.
+* Unable to create sub named "%s":      perldiag.
+* Unbalanced context: %d more PUSHes than POPs: perldiag.
+* Unbalanced saves: %d more saves than restores: perldiag.
+* Unbalanced scopes: %d more ENTERs than LEAVEs: perldiag.
+* Unbalanced tmps: %d more allocs than frees: perldiag.
+* Undefined format "%s" called:         perldiag.
+* Undefined sort subroutine "%s" called: perldiag.
+* Undefined subroutine &%s called:      perldiag.
+* Undefined subroutine called:          perldiag.
+* Undefined subroutine in sort:         perldiag.
+* Undefined top format "%s" called:     perldiag.
+* unexec of %s into %s failed!:         perldiag.
+* Unknown BYTEORDER:                    perldiag.
+* unmatched () in regexp:               perldiag.
+* unmatched [] in regexp:               perldiag.
+* Unmatched right bracket:              perldiag.
+* Unquoted string "%s" may clash with future reserved word: perldiag.
+* Unrecognized character %s:            perldiag.
+* Unrecognized signal name "%s":        perldiag.
+* Unrecognized switch: -%s:             perldiag.
+* Unsuccessful %s on filename containing newline: perldiag.
+* Unsupported directory function "%s" called: perldiag.
+* Unsupported function %s:              perldiag.
+* Unsupported function fork:            perldiag.
+* Unsupported socket function "%s" called: perldiag.
+* Unterminated <> operator:             perldiag.
+* untie attempted while %d inner references still exist: perldiag.
+* Use of "$$<digit>" to mean "${$}<digit>" is deprecated: perldiag.
+* Use of $# is deprecated:              perldiag.
+* Use of $* is deprecated:              perldiag.
+* Use of %s in printf format not supported: perldiag.
+* Use of %s is deprecated:              perldiag.
+* Use of bare << to mean <<"" is deprecated: perldiag.
+* Use of implicit split to @_ is deprecated: perldiag.
+* Use of inherited AUTOLOAD for non-method %s() is deprecated: perldiag.
+* Use of uninitialized value:           perldiag.
+* Useless use of %s in void context:    perldiag.
+* Value of %s can be "0"; test with defined(): perldiag.
+* Variable "%s" is not imported%s:      perldiag.
+* Variable "%s" may be unavailable:     perldiag.
+* Variable "%s" will not stay shared:   perldiag.
+* Variable syntax:                      perldiag.
+* Warning: something's wrong:           perldiag.
+* Warning: unable to close filehandle %s properly: perldiag.
+* Warning: Use of "%s" without parentheses is ambiguous: perldiag.
+* Write on closed filehandle:           perldiag.
+* X outside of string:                  perldiag.
+* Xsub "%s" called in sort:             perldiag.
+* Xsub called in sort:                  perldiag.
+* You can't use -l on a filehandle:     perldiag.
+* YOU HAVEN'T DISABLED SET-ID SCRIPTS IN THE KERNEL YET!: perldiag.
+* You need to quote "%s":               perldiag.
+
+

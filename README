@@ -1,0 +1,190 @@
+pod2texinfo.pl and perl5 (and modules) GNUEmacs Info documentation files.
+Courtesy Krishna Sethuraman (krishna@mit.edu).
+
+README:
+This tar file includes:
+
+This README File
+Texinfo source
+perl5.info files
+pod2texinfo.pl
+modpod2texinfo.pl
+
+- To use the perl5 info files:
+
+Simply move perl5.info* to your emacs info directory, and add an entry in your
+info directory file to point to it.
+
+- To make the perl5 info files from TeXinfo source:
+
+I've generated another table-command, @ktable for keys (in this case, I use it
+for the diagnostic messages).
+
+Enter emacs (v19 only, sorry) and execute the following commands:
+
+(defun texinfo-ktable () (texinfo-indextable 'ktable))
+(defun texinfo-ktable-item () (texinfo-indextable-item 'texinfo-kindex))
+(defun texinfo-end-ktable () (texinfo-end-indextable 'ktable))
+
+(eval-after-load "texinfmt" '(progn 
+(put 'ktable 'texinfo-format 'texinfo-ktable)
+(put 'ktable 'texinfo-item 'texinfo-ktable-item)
+(put 'ktable 'texinfo-end 'texinfo-end-ktable)
+))
+
+Then find-file perl.texi, and make sure you're in texinfo-mode.  Type 
+C-c C-e C-b (texinfo-format-buffer) to format it, and save it.  It takes a few
+minutes to format the file.
+
+- To make the TeXinfo source from pod source:
+
+pod2texinfo.pl and modpod2texinfo.pl have a directory dependency -- 
+modpod2texinfo.pl has the following line in it:
+
+	# We also need podnames for the primary perl pods.
+
+	opendir(DIR,"..");
+
+Currently, modpod2texinfo.pl expects that the module pods will be in a
+subdirectory of the directory containing the perl pods (i.e., ~/pod for perl
+pods, ~/pod/modpods for module pods).  You can replace the ".." with a
+hardcoded path to the directory containing the perl pods if you like.
+
+So, in this example,
+
+~/perl/pod2texinfo.pl 
+cd modpods (should contain all the modpods)
+~/perl/modpod2texinfo.pl 
+
+This would probably work better if modpod2texinfo.pl were to search the Perl
+build tree for \*.pod, eliminate everything beginning with `perl', and perhaps
+copy or link those to its directory of interest.
+
+Anyway, after that's run, there's where the real work begins -- cleaning up the
+.texi files.  You have to do the following:
+
+* Since =item entries in pod format don't tell you if it's an itemization,
+enumeration, or a table of sorts, you have to go through all the .texi files
+and at the beginning of each list of items, put an 
+
+@enumerate
+or
+@itemize [@bullet]
+or
+@[kvf]table @asis|@samp
+
+depending on the type of list it is (and at the end of each list, put a
+corresponding @end itemize|enumerate|[kvf]table -- C-c C-c e is very handy
+here).  I used ftable for functions, vtable for variables, and ktable for the
+diagnostic messages, so indices would be automatically generated.  I selected
+@ftable @asis so you can type `s^functionname\b' in emacs to search for a
+function's definition, as in the perl4 info file.  You may choose differently.
+
+* Verify that all the next, previous, and up nodes are meaningful.
+
+* Don't forget to make the module listing in perlmod into a menu.
+
+* Go through the BUGS list below to see if any of those cropped up.
+
+TeXinfo can't as yet xref to a position within a node.  mod/pod2texinfo.pl have
+the code to tag locations, remember them, and indicate them when they're next
+referenced -- if someone wants to extend TeXinfo and/or info to allow for
+xref'ing to positions?
+
+BUGS:
+
+* Getting `` or '' as literal `` or '' instead of turning it into a single
+doublequote (") ?  TeXinfo allows for this by using
+	
+	@'@'
+
+which will turn into 
+
+	''
+
+in the info file (I discovered this after I was done).  I modified (but did not
+test) the code that prepends a texinfo @ to @-signs, { and } to do the same for
+` and ', so it should work, but like I said, I didn't test it ...
+
+* Some I<foo>'s get replaced by html references ... there's some leftover code
+in pod2texinfo that's doing that (should be easy to remove).
+
+* ?+* follows nothing in regexp in perldiag - the ?+* vanished.
+
+* C<foo> where foo contains a < or > will confuse pod2texinfo.pl.  After
+running the perl scripts to generate the texinfo files, you should
+grep 'C<' *.texi and fix those manually (turn them into @code{} constructs).
+
+* C<$x> where x is some builtin variable character (e.g., underscore, comma,
+question mark) - doesn't put it in @code{}, just leaves it as-is.  I haven't
+investigated why.
+
+* In perlref, the following @example:
+
+@example
+$$hashref@{"KEY"@}   = "VALUE";         # CASE 0
+$@{$hashref@}@{"KEY"@} = "VALUE";       # CASE 1
+$@{$hashref@{"KEY"@}@} = "VALUE";       # CASE 2
+$@{$hashref->@{"KEY"@}@} = "VALUE";     # CASE 3
+@end example
+
+Turns into:
+
+$$hashref{"KEY"} = "VALUE"; # CASE 0 ${$hashref}{"KEY"} = "VALUE"; # CASE 1  
+${$hashref{"KEY"}} = "VALUE"; # CASE 2 ${$hashref->{"KEY"}} = "VALUE"; # CASE 3
+
+i.e., it's filled.  I had to do:
+
+@example
+ $$hashref@{"KEY"@}   = "VALUE";         # CASE 0
+ $@{$hashref@}@{"KEY"@} = "VALUE";       # CASE 1
+ $@{$hashref@{"KEY"@}@} = "VALUE";       # CASE 2
+ $@{$hashref->@{"KEY"@}@} = "VALUE";     # CASE 3
+@end example
+
+in order to get it to display
+
+           $$hashref{"KEY"} = "VALUE"; # CASE 0
+           ${$hashref}{"KEY"} = "VALUE";       # CASE 1
+           ${$hashref{"KEY"}} = "VALUE";       # CASE 2
+           ${$hashref->{"KEY"}} = "VALUE";     # CASE 3
+
+correctly.  This looks like a texinfo bug.
+
+* The function indices contain entries of the form:
+
+		 chop:                         perlfunc.             
+		 chop LIST:                    perlfunc.             
+		 chop VARIABLE:                perlfunc.             
+
+when really all you need is the first entry.
+
+TODO: 
+If an item comes *immediately* after another item with the same first name, we
+want to have a single such entry in the index.  But we can't hack this if we
+use the @[x]table thing, so we can postprocess instead.  Generate the texinfo
+file, texinfo it to produce the index files, then perform the following
+operations on the .info files:
+
+killinfoidxdups.pl
+
+fileline: while (<>) {
+if (/Node: (Function|Variable) Index,/ .. /\c_/) {
+        get the current keyword
+        print the current line
+                while (next keyword and node is the same) {
+        don't print that line
+        }
+        redo;
+}
+}
+
+* There's no elegant way to create a .texi file for a new module pod.
+I end up copying a new module pod to the directory with all the module pods,
+rerunning modpod2texinfo.pl on all the module pods (to pick up any
+cross-references), and copying the resulting .texi file into a safe directory
+(along with all the other .texi files I've cleaned up).  modpod2texinfo.pl will
+overwrite .texi files in the current directory, so if you clean up the .texi
+files, copy them someplace safe first to work on them.
+
+* Except for one or two, I haven't fixed errors in the original documentation.
