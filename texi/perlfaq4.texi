@@ -432,7 +432,7 @@ push(@@new, undef) if substr($text,-1,1) eq @',@';
 
 If you want to represent quotation marks inside a
 quotation-mark-delimited field, escape them with backslashes (eg,
-C<"like \"this\"").  Unescaping them is a task addressed earlier in
+@code{"like \"this\""}.  Unescaping them is a task addressed earlier in
 this section.
 
 Alternatively, the Text::ParseWords module (part of the standard perl
@@ -1199,7 +1199,7 @@ awk@'s behavior.
 
 @unnumberedsubsec How can I make the Perl equivalent of a C structure/C++ class/hash or array of hashes or arrays?
 Use references (documented in @xref{perlref,Perlref},).  Examples of complex data
-structures are given in @xref{perldsc,Perldsc}, and @xref{perllol,Perllol},.  Examples of
+structures are given in @xref{perldsc,Perldsc}, and @xref{perllol,Perllol}.  Examples of
 structures and object-oriented classes are in @xref{perltoot,Perltoot}.
 
 @unnumberedsubsec How can I use a reference as a hash key?

@@ -2,345 +2,1555 @@ This is Info file perl.info, produced by Makeinfo-1.64 from the input
 file Pmaster.texi.
 
 
-File: perl.info,  Node: perlsec,  Next: perltrap,  Prev: perldiag,  Up: Top
+File: perl.info,  Node: perltrap,  Next: perlstyle,  Prev: perlsec,  Up: Top
 
 NAME
 ====
 
-perlsec - Perl security
+perltrap - Perl traps for the unwary
 
 DESCRIPTION
 ===========
 
-Perl is designed to make it easy to program securely even when running
-with extra privileges, like setuid or setgid programs.  Unlike most
-command line shells, which are based on multiple substitution passes on
-each line of the script, Perl uses a more conventional evaluation scheme
-with fewer hidden snags.  Additionally, because the language has more
-builtin functionality, it can rely less upon external (and possibly
-untrustworthy) programs to accomplish its purposes.
+The biggest trap of all is forgetting to use the -w switch; see *Note
+Perlrun: perlrun.  The second biggest trap is not making your entire
+program runnable under `use strict'.  The third biggest trap is not
+reading the list of changes in this version of Perl; see *Note
+Perldelta: perldelta.
 
-Perl automatically enables a set of special security checks, called
-*taint mode*, when it detects its program running with differing real
-and effective user or group IDs.  The setuid bit in Unix permissions is
-mode 04000, the setgid bit mode 02000; either or both may be set.  You
-can also enable taint mode explicitly by using the -T command line
-flag. This flag is *strongly* suggested for server programs and any
-program run on behalf of someone else, such as a CGI script.
+Awk Traps
+---------
 
-While in this mode, Perl takes special precautions called *taint
-checks* to prevent both obvious and subtle traps.  Some of these checks
-are reasonably simple, such as verifying that path directories aren't
-writable by others; careful programmers have always used checks like
-these.  Other checks, however, are best supported by the language
-itself, and it is these checks especially that contribute to making a
-setuid Perl program more secure than the corresponding C program.
+Accustomed *awk* users should take special note of the following:
 
-You may not use data derived from outside your program to affect
-something else outside your program-at least, not by accident.  All
-command line arguments, environment variables, locale information (see
-*Note Perllocale: perllocale,), and file input are marked as "tainted".
-Tainted data may not be used directly or indirectly in any command
-that invokes a sub-shell, nor in any command that modifies files,
-directories, or processes.  Any variable set within an expression that
-has previously referenced a tainted value itself becomes tainted, even
-if it is logically impossible for the tainted value to influence the
-variable.  Because taintedness is associated with each scalar value,
-some elements of an array can be tainted and others not.
+   * The English module, loaded via
 
-For example:
+          use English;
 
-     $arg = shift;           # $arg is tainted
-     $hid = $arg, 'bar';           # $hid is also tainted
-     $line = <>;                     # Tainted
-     $line = <STDIN>;                # Also tainted
-     open FOO, "/home/me/bar" or die $!;
-     $line = <FOO>;          # Still tainted
-     $path = $ENV{'PATH'};       # Tainted, but see below
-     $data = 'abc';                # Not tainted
-     
-     system "echo $arg";             # Insecure
-     system "/bin/echo", $arg;       # Secure (doesn't use sh)
-     system "echo $hid";             # Insecure
-     system "echo $data";    # Insecure until PATH set
-     
-     $path = $ENV{'PATH'};       # $path now tainted
-     
-     $ENV{'PATH'} = '/bin:/usr/bin';
-     delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
-     
-     $path = $ENV{'PATH'};       # $path now NOT tainted
-     system "echo $data";    # Is secure now!
-     
-     open(FOO, "< $arg");    # OK - read-only file
-     open(FOO, "> $arg");    # Not OK - trying to write
-     
-     open(FOO,"echo $arg|"); # Not OK, but...
-     open(FOO,"-|")
-             or exec 'echo', $arg; # OK
-     
-     $shout = `echo $arg`; # Insecure, $shout now tainted
-     
-     unlink $data, $arg;             # Insecure
-     umask $arg;                     # Insecure
-     
-     exec "echo $arg";               # Insecure
-     exec "echo", $arg;              # Secure (doesn't use the shell)
-     exec "sh", '-c', $arg;        # Considered secure, alas!
-     
-     @files = <*.c>;                # Always insecure (uses csh)
-     @files = glob('*.c');        # Always insecure (uses csh)
+     allows you to refer to special variables (like $/) with names (like
+     $RS), as though they were in *awk*; see *Note Perlvar: perlvar,
+     for details.
 
-If you try to do something insecure, you will get a fatal error saying
-something like "Insecure dependency" or "Insecure PATH".  Note that you
-can still write an insecure system or exec, but only by explicitly
-doing something like the last example above.
+   * Semicolons are required after all simple statements in Perl (except
+     at the end of a block).  Newline is not a statement delimiter.
 
-Laundering and Detecting Tainted Data
--------------------------------------
+   * Curly brackets are required on `if's and `while's.
 
-To test whether a variable contains tainted data, and whose use would
-thus trigger an "Insecure dependency" message, you can use the following
-*is_tainted()* function.
+   * Variables begin with "$" or "@" in Perl.
 
-     sub is_tainted {
-             return ! eval {
-                 join('',@_), kill 0;
-                 1;
-             };
-     }
+   * Arrays index from 0.  Likewise string positions in substr() and
+     index().
 
-This function makes use of the fact that the presence of tainted data
-anywhere within an expression renders the entire expression tainted.  It
-would be inefficient for every operator to test every argument for
-taintedness.  Instead, the slightly more efficient and conservative
-approach is used that if any tainted value has been accessed within the
-same expression, the whole expression is considered tainted.
+   * You have to decide whether your array has numeric or string
+     indices.
 
-But testing for taintedness gets you only so far.  Sometimes you have
-just to clear your data's taintedness.  The only way to bypass the
-tainting mechanism is by referencing subpatterns from a regular
-expression match.  Perl presumes that if you reference a substring
-using $1, $2, etc., that you knew what you were doing when you wrote
-the pattern.  That means using a bit of thought-don't just blindly
-untaint anything, or you defeat the entire mechanism.  It's better to
-verify that the variable has only good characters (for certain values
-of "good") rather than checking whether it has any bad characters.
-That's because it's far too easy to miss bad characters that you never
-thought of.
+   * Hash values do not spring into existence upon mere reference.
 
-Here's a test to make sure that the data contains nothing but "word"
-characters (alphabetics, numerics, and underscores), a hyphen, an at
-sign, or a dot.
+   * You have to decide whether you want to use string or numeric
+     comparisons.
 
-     if ($data =~ /^([-\@\w.]+)$/) {
-             $data = $1;                     # $data now untainted
-     } else {
-             die "Bad data in $data";        # log this somewhere
-     }
+   * Reading an input line does not split it for you.  You get to split
+     it to an array yourself.  And the split() operator has different
+     arguments than *awk*'s.
 
-This is fairly secure because `/\w+/' doesn't normally match shell
-metacharacters, nor are dot, dash, or at going to mean something special
-to the shell.  Use of `/.+/' would have been insecure in theory because
-it lets everything through, but Perl doesn't check for that.  The lesson
-is that when untainting, you must be exceedingly careful with your
-patterns.  Laundering data using regular expression is the *ONLY*
-mechanism for untainting dirty data, unless you use the strategy
-detailed below to fork a child of lesser privilege.
+   * The current input line is normally in $_, not $0.  It generally
+     does not have the newline stripped.  ($0 is the name of the program
+     executed.)  See *Note Perlvar: perlvar.
 
-The example does not untaint $data if `use locale' is in effect,
-because the characters matched by `\w' are determined by the locale.
-Perl considers that locale definitions are untrustworthy because they
-contain data from outside the program.  If you are writing a
-locale-aware program, and want to launder data with a regular expression
-containing `\w', put `no locale' ahead of the expression in the same
-block.  See `SECURITY', *Note Perllocale: perllocale, for further
-discussion and examples.
+   * $<*digit*> does not refer to fields-it refers to substrings matched
+     by the last match pattern.
 
-Switches On the "#!" Line
--------------------------
+   * The print() statement does not add field and record separators
+     unless you set $, and $\.  You can set $OFS and $ORS if you're
+     using the English module.
 
-When you make a script executable, in order to make it usable as a
-command, the system will pass switches to perl from the script's #!
-line.  Perl checks that any command line switches given to a setuid (or
-setgid) script actually match the ones set on the #! line.  Some Unix
-and Unix-like environments impose a one-switch limit on the #!  line,
-so you may need to use something like `-wU' instead of `-w -U' under
-such systems.  (This issue should arise only in Unix or Unix-like
-environments that support #! and setuid or setgid scripts.)
+   * You must open your files before you print to them.
 
-Cleaning Up Your Path
----------------------
+   * The range operator is "..", not comma.  The comma operator works
+     as in C.
 
-For "Insecure `$ENV{PATH}'" messages, you need to set `$ENV{'PATH'}' to
-a known value, and each directory in the path must be non-writable by
-others than its owner and group.  You may be surprised to get this
-message even if the pathname to your executable is fully qualified.
-This is *not* generated because you didn't supply a full path to the
-program; instead, it's generated because you never set your PATH
-environment variable, or you didn't set it to something that was safe.
-Because Perl can't guarantee that the executable in question isn't
-itself going to turn around and execute some other program that is
-dependent on your PATH, it makes sure you set the PATH.
+   * The match operator is "=~", not "~".  ("~" is the one's complement
+     operator, as in C.)
 
-It's also possible to get into trouble with other operations that don't
-care whether they use tainted values.  Make judicious use of the file
-tests in dealing with any user-supplied filenames.  When possible, do
-opens and such after setting C<$> = $<>.  (Remember group IDs, too!)
-Perl doesn't prevent you from opening tainted filenames for reading, so
-be careful what you print out.  The tainting mechanism is intended to
-prevent stupid mistakes, not to remove the need for thought.
+   * The exponentiation operator is "**", not "^".  "^" is the XOR
+     operator, as in C.  (You know, one could get the feeling that
+     *awk* is basically incompatible with C.)
 
-Perl does not call the shell to expand wild cards when you pass system
-and exec explicit parameter lists instead of strings with possible shell
-wildcards in them.  Unfortunately, the open, glob, and backtick
-functions provide no such alternate calling convention, so more
-subterfuge will be required.
+   * The concatenation operator is ".", not the null string.  (Using the
+     null string would render `/pat/ /pat/' unparsable, because the
+     third slash would be interpreted as a division operator-the
+     tokenizer is in fact slightly context sensitive for operators like
+     "/", "?", and ">".  And in fact, "." itself can be the beginning
+     of a number.)
 
-Perl provides a reasonably safe way to open a file or pipe from a setuid
-or setgid program: just create a child process with reduced privilege
-who does the dirty work for you.  First, fork a child using the special
-open syntax that connects the parent and child by a pipe.  Now the
-child resets its ID set and any other per-process attributes, like
-environment variables, umasks, current working directories, back to the
-originals or known safe values.  Then the child process, which no longer
-has any special permissions, does the open or other system call.
-Finally, the child passes the data it managed to access back to the
-parent.  Because the file or pipe was opened in the child while running
-under less privilege than the parent, it's not apt to be tricked into
-doing something it shouldn't.
+   * The next, exit, and continue keywords work differently.
 
-Here's a way to do backticks reasonably safely.  Notice how the exec is
-not called with a string that the shell could expand.  This is by far
-the best way to call something that might be subjected to shell
-escapes: just never call the shell at all.  By the time we get to the
-exec, tainting is turned off, however, so be careful what you call and
-what you pass it.
+   * The following variables work differently:
 
-     use English;
-     die unless defined $pid = open(KID, "-|");
-     if ($pid) {              # parent
-             while (<KID>) {
-                 # do something
-             }
-             close KID;
-     } else {
-             $EUID = $UID;
-             $EGID = $GID;    # XXX: initgroups() not called
-             $ENV{PATH} = "/bin:/usr/bin";
-             exec 'myprog', 'arg1', 'arg2';
-             die "can't exec myprog: $!";
-     }
+          Awk     Perl
+          ARGC    $#ARGV or scalar @ARGV
+          ARGV[0] $0
+          FILENAME        $ARGV
+          FNR     $. - something
+          FS      (whatever you like)
+          NF      $#Fld, or some such
+          NR      $.
+          OFMT    $#
+          OFS     $,
+          ORS     $\
+          RLENGTH length($&)
+          RS      $/
+          RSTART  length($`)
+          SUBSEP  $;
 
-A similar strategy would work for wildcard expansion via glob.
+   * You cannot set $RS to a pattern, only a string.
 
-Taint checking is most useful when although you trust yourself not to
-have written a program to give away the farm, you don't necessarily
-trust those who end up using it not to try to trick it into doing
-something bad.  This is the kind of security checking that's useful for
-setuid programs and programs launched on someone else's behalf, like
-CGI programs.
+   * When in doubt, run the *awk* construct through a2p and see what it
+     gives you.
 
-This is quite different, however, from not even trusting the writer of
-the code not to try to do something evil.  That's the kind of trust
-needed when someone hands you a program you've never seen before and
-says, "Here, run this."  For that kind of safety, check out the Safe
-module, included standard in the Perl distribution.  This module allows
-the programmer to set up special compartments in which all system
-operations are trapped and namespace access is carefully controlled.
+C Traps
+-------
 
-Security Bugs
+Cerebral C programmers should take note of the following:
+
+   * Curly brackets are required on `if''s and `while''s.
+
+   * You must use `elsif' rather than `else if'.
+
+   * The `break' and continue keywords from C become in Perl last and
+     next, respectively.  Unlike in C, these do *NOT* work within a `do
+     { } while' construct.
+
+   * There's no switch statement.  (But it's easy to build one on the
+     fly.)
+
+   * Variables begin with "$" or "@" in Perl.
+
+   * `printf()' does not implement the "*" format for interpolating
+     field widths, but it's trivial to use interpolation of
+     double-quoted strings to achieve the same effect.
+
+   * Comments begin with "#", not "/*".
+
+   * You can't take the address of anything, although a similar operator
+     in Perl is the backslash, which creates a reference.
+
+   * `ARGV' must be capitalized.  `$ARGV[0]' is C's `argv[1]', and
+     `argv[0]' ends up in $0.
+
+   * System calls such as link(), unlink(), rename(), etc. return
+     nonzero for success, not 0.
+
+   * Signal handlers deal with signal names, not numbers.  Use `kill -l'
+     to find their names on your system.
+
+Sed Traps
+---------
+
+Seasoned *sed* programmers should take note of the following:
+
+   * Backreferences in substitutions use "$" rather than "\".
+
+   * The pattern matching metacharacters "(", ")", and "|" do not have
+     backslashes in front.
+
+   * The range operator is `...', rather than comma.
+
+Shell Traps
+-----------
+
+Sharp shell programmers should take note of the following:
+
+   * The backtick operator does variable interpolation without regard to
+     the presence of single quotes in the command.
+
+   * The backtick operator does no translation of the return value,
+     unlike *csh*.
+
+   * Shells (especially *csh*) do several levels of substitution on each
+     command line.  Perl does substitution in only certain constructs
+     such as double quotes, backticks, angle brackets, and search
+     patterns.
+
+   * Shells interpret scripts a little bit at a time.  Perl compiles the
+     entire program before executing it (except for BEGIN blocks, which
+     execute at compile time).
+
+   * The arguments are available via @ARGV, not $1, $2, etc.
+
+   * The environment is not automatically made available as separate
+     scalar variables.
+
+Perl Traps
+----------
+
+Practicing Perl Programmers should take note of the following:
+
+   * Remember that many operations behave differently in a list context
+     than they do in a scalar one.  See *Note Perldata: perldata, for
+     details.
+
+   * Avoid barewords if you can, especially all lowercase ones.  You
+     can't tell by just looking at it whether a bareword is a function
+     or a string.  By using quotes on strings and parentheses on
+     function calls, you won't ever get them confused.
+
+   * You cannot discern from mere inspection which builtins are unary
+     operators (like chop() and chdir()) and which are list operators
+     (like print() and unlink()).  (User-defined subroutines can be
+     *only* list operators, never unary ones.)  See *Note Perlop:
+     perlop.
+
+   * People have a hard time remembering that some functions default to
+     $_, or @ARGV, or whatever, but that others which you might expect
+     to do not.
+
+   * The <FH> construct is not the name of the filehandle, it is a
+     readline operation on that handle.  The data read is assigned to
+     $_ only if the file read is the sole condition in a while loop:
+
+          while (<FH>)      { }
+          while (defined($_ = <FH>)) { }..
+          <FH>;  # data discarded!
+
+   * Remember not to use "=" when you need "`=~'"; these two constructs
+     are quite different:
+
+          $x =  /foo/;
+          $x =~ /foo/;
+
+   * The `do {}' construct isn't a real loop that you can use loop
+     control on.
+
+   * Use my() for local variables whenever you can get away with it
+     (but see *Note Perlform: perlform, for where you can't).  Using
+     `local()' actually gives a local value to a global variable, which
+     leaves you open to unforeseen side-effects of dynamic scoping.
+
+   * If you localize an exported variable in a module, its exported
+     value will not change.  The local name becomes an alias to a new
+     value but the external name is still an alias for the original.
+
+Perl4 to Perl5 Traps
+--------------------
+
+Practicing Perl4 Programmers should take note of the following
+Perl4-to-Perl5 specific traps.
+
+They're crudely ordered according to the following list:
+
+Discontinuance, Deprecation, and BugFix traps
+     Anything that's been fixed as a perl4 bug, removed as a perl4
+     feature or deprecated as a perl4 feature with the intent to
+     encourage usage of some other perl5 feature.
+
+Parsing Traps
+     Traps that appear to stem from the new parser.
+
+Numerical Traps
+     Traps having to do with numerical or mathematical operators.
+
+General data type traps
+     Traps involving perl standard data types.
+
+Context Traps - scalar, list contexts
+     Traps related to context within lists, scalar
+     statements/declarations.
+
+Precedence Traps
+     Traps related to the precedence of parsing, evaluation, and
+     execution of code.
+
+General Regular Expression Traps using s///, etc.
+     Traps related to the use of pattern matching.
+
+Subroutine, Signal, Sorting Traps
+     Traps related to the use of signals and signal handlers, general
+     subroutines, and sorting, along with sorting subroutines.
+
+OS Traps
+     OS-specific traps.
+
+DBM Traps
+     Traps specific to the use of `dbmopen()', and specific dbm
+     implementations.
+
+Unclassified Traps
+     Everything else.
+
+If you find an example of a conversion trap that is not listed here,
+please submit it to Bill Middleton <`wjm@best.com'> for inclusion.
+Also note that at least some of these can be caught with -w.
+
+Discontinuance, Deprecation, and BugFix traps
+---------------------------------------------
+
+Anything that has been discontinued, deprecated, or fixed as a bug from
+perl4.
+
+   * Discontinuance
+
+     Symbols starting with "_" are no longer forced into package main,
+     except for $_ itself (and `@_', etc.).
+
+          package test;
+          $_legacy = 1;
+          
+          package main;
+          print "\$_legacy is ",$_legacy,"\n";
+          
+          # perl4 prints: $_legacy is 1
+          # perl5 prints: $_legacy is
+
+   * Deprecation
+
+     Double-colon is now a valid package separator in a variable name.
+     Thus these behave differently in perl4 vs. perl5, because the
+     packages don't exist.
+
+          $a=1;$b=2;$c=3;$var=4;
+          print "$a::$b::$c ";
+          print "$var::abc::xyz\n";
+          
+          # perl4 prints: 1::2::3 4::abc::xyz
+          # perl5 prints: 3
+
+     Given that `::' is now the preferred package delimiter, it is
+     debatable whether this should be classed as a bug or not.  (The
+     older package delimiter, ' ,is used here)
+
+          $x = 10 ;
+          print "x=${'x}\n" ;
+          
+          # perl4 prints: x=10
+          # perl5 prints: Can't find string terminator "'" anywhere before EOF
+
+     Also see precedence traps, for parsing $:.
+
+   * BugFix
+
+     The second and third arguments of `splice()' are now evaluated in
+     scalar context (as the Camel says) rather than list context.
+
+          sub sub1{return(0,2) }          # return a 2-elem array
+          sub sub2{ return(1,2,3)}        # return a 3-elem array
+          @a1 = ("a","b","c","d","e");
+          @a2 = splice(@a1,&sub1,&sub2);
+          print join(' ',@a2),"\n";
+          
+          # perl4 prints: a b
+          # perl5 prints: c d e
+
+   * Discontinuance
+
+     You can't do a goto into a block that is optimized away.  Darn.
+
+          goto marker1;
+          
+          for(1){
+          marker1:
+              print "Here I is!\n";
+          }
+          
+          # perl4 prints: Here I is!
+          # perl5 dumps core (SEGV)
+
+   * Discontinuance
+
+     It is no longer syntactically legal to use whitespace as the name
+     of a variable, or as a delimiter for any kind of quote construct.
+     Double darn.
+
+          $a = ("foo bar");
+          $b = q baz ;
+          print "a is $a, b is $b\n";
+          
+          # perl4 prints: a is foo bar, b is baz
+          # perl5 errors: Bareword found where operator expected
+
+   * Discontinuance
+
+     The archaic while/if BLOCK BLOCK syntax is no longer supported.
+
+          if { 1 } {
+              print "True!";
+          }
+          else {
+              print "False!";
+          }
+          
+          # perl4 prints: True!
+          # perl5 errors: syntax error at test.pl line 1, near "if {"
+
+   * BugFix
+
+     The `**' operator now binds more tightly than unary minus.  It was
+     documented to work this way before, but didn't.
+
+          print -4**2,"\n";
+          
+          # perl4 prints: 16
+          # perl5 prints: -16
+
+   * Discontinuance
+
+     The meaning of `foreach{}' has changed slightly when it is
+     iterating over a list which is not an array.  This used to assign
+     the list to a temporary array, but no longer does so (for
+     efficiency).  This means that you'll now be iterating over the
+     actual values, not over copies of the values.  Modifications to
+     the loop variable can change the original values.
+
+          @list = ('ab','abc','bcd','def');
+          foreach $var (grep(/ab/,@list)){
+              $var = 1;
+          }
+          print (join(':',@list));
+          
+          # perl4 prints: ab:abc:bcd:def
+          # perl5 prints: 1:1:bcd:def
+
+     To retain Perl4 semantics you need to assign your list explicitly
+     to a temporary array and then iterate over that.  For example, you
+     might need to change
+
+          foreach $var (grep(/ab/,@list)){
+
+     to
+
+          foreach $var (@tmp = grep(/ab/,@list)){
+
+     Otherwise changing $var will clobber the values of @list.  (This
+     most often happens when you use $_ for the loop variable, and call
+     subroutines in the loop that don't properly localize $_.)
+
+   * Discontinuance
+
+     split with no arguments now behaves like `split ' '' (which doesn't
+     return an initial null field if $_ starts with whitespace), it
+     used to behave like `split /\s+/' (which does).
+
+          $_ = ' hi mom';
+          print join(':', split);
+          
+          # perl4 prints: :hi:mom
+          # perl5 prints: hi:mom
+
+   * BugFix
+
+     Perl 4 would ignore any text which was attached to an -e switch,
+     always taking the code snippet from the following arg.
+     Additionally, it would silently accept an -e switch without a
+     following arg.  Both of these behaviors have been fixed.
+
+          perl -e'print "attached to -e"' 'print "separate arg"'
+          
+          # perl4 prints: separate arg
+          # perl5 prints: attached to -e
+          
+          perl -e
+          
+          # perl4 prints:
+          # perl5 dies: No code specified for -e.
+
+   * Discontinuance
+
+     In Perl 4 the return value of push was undocumented, but it was
+     actually the last value being pushed onto the target list.  In
+     Perl 5 the return value of push is documented, but has changed, it
+     is the number of elements in the resulting list.
+
+          @x = ('existing');
+          print push(@x, 'first new', 'second new');
+          
+          # perl4 prints: second new
+          # perl5 prints: 3
+
+   * Discontinuance
+
+     In Perl 4 (and versions of Perl 5 before 5.004), `'\r'' characters
+     in Perl code were silently allowed, although they could cause
+     (mysterious!) failures in certain constructs, particularly here
+     documents.  Now, `'\r'' characters cause an immediate fatal error.
+     (Note: In this example, the notation *\015* represents the
+     incorrect line ending. Depending upon your text viewer, it will
+     look different.)
+
+          print "foo";\015
+          print "bar";
+          
+          # perl4     prints: foobar
+          # perl5.003 prints: foobar
+          # perl5.004 dies: Illegal character \015 (carriage return)
+
+     See *Note Perldiag: perldiag, for full details.
+
+   * Deprecation
+
+     Some error messages will be different.
+
+   * Discontinuance
+
+     Some bugs may have been inadvertently removed.  :-)
+
+Parsing Traps
 -------------
 
-Beyond the obvious problems that stem from giving special privileges to
-systems as flexible as scripts, on many versions of Unix, setuid scripts
-are inherently insecure right from the start.  The problem is a race
-condition in the kernel.  Between the time the kernel opens the file to
-see which interpreter to run and when the (now-setuid) interpreter turns
-around and reopens the file to interpret it, the file in question may
-have changed, especially if you have symbolic links on your system.
+Perl4-to-Perl5 traps from having to do with parsing.
 
-Fortunately, sometimes this kernel "feature" can be disabled.
-Unfortunately, there are two ways to disable it.  The system can simply
-outlaw scripts with the setuid bit set, which doesn't help much.
-Alternately, it can simply ignore the setuid bit on scripts.  If the
-latter is true, Perl can emulate the setuid and setgid mechanism when it
-notices the otherwise useless setuid/gid bits on Perl scripts.  It does
-this via a special executable called suidperl that is automatically
-invoked for you if it's needed.
+   * Parsing
 
-However, if the kernel setuid script feature isn't disabled, Perl will
-complain loudly that your setuid script is insecure.  You'll need to
-either disable the kernel setuid script feature, or put a C wrapper
-around the script.  A C wrapper is just a compiled program that does
-nothing except call your Perl program.   Compiled programs are not
-subject to the kernel bug that plagues setuid scripts.  Here's a simple
-wrapper, written in C:
+     Note the space between . and =
 
-     #define REAL_PATH "/path/to/script"
-     main(ac, av)
-             char **av;
-     {
-             execv(REAL_PATH, av);
-     }
+          $string . = "more string";
+          print $string;
+          
+          # perl4 prints: more string
+          # perl5 prints: syntax error at - line 1, near ". ="
 
-Compile this wrapper into a binary executable and then make *it* rather
-than your script setuid or setgid.
+   * Parsing
 
-See the program wrapsuid in the `eg' directory of your Perl
-distribution for a convenient way to do this automatically for all your
-setuid Perl programs.  It moves setuid scripts into files with the same
-name plus a leading dot, and then compiles a wrapper like the one above
-for each of them.
+     Better parsing in perl 5
 
-In recent years, vendors have begun to supply systems free of this
-inherent security bug.  On such systems, when the kernel passes the name
-of the setuid script to open to the interpreter, rather than using a
-pathname subject to meddling, it instead passes */dev/fd/3*.  This is a
-special file already opened on the script, so that there can be no race
-condition for evil scripts to exploit.  On these systems, Perl should be
-compiled with `-DSETUID_SCRIPTS_ARE_SECURE_NOW'.  The *Configure*
-program that builds Perl tries to figure this out for itself, so you
-should never have to specify this yourself.  Most modern releases of
-SysVr4 and BSD 4.4 use this approach to avoid the kernel race condition.
+          sub foo {}
+          &foo
+          print("hello, world\n");
+          
+          # perl4 prints: hello, world
+          # perl5 prints: syntax error
 
-Prior to release 5.003 of Perl, a bug in the code of suidperl could
-introduce a security hole in systems compiled with strict POSIX
-compliance.
+   * Parsing
 
-Protecting Your Programs
-------------------------
+     "if it looks like a function, it is a function" rule.
 
-There are a number of ways to hide the source to your Perl programs,
-with varying levels of "security".
+          print
+            ($foo == 1) ? "is one\n" : "is zero\n";
+          
+          # perl4 prints: is zero
+          # perl5 warns: "Useless use of a constant in void context" if using -w
 
-First of all, however, you *can't* take away read permission, because
-the source code has to be readable in order to be compiled and
-interpreted.  (That doesn't mean that a CGI script's source is readable
-by people on the web, though.)  So you have to leave the permissions at
-the socially friendly 0755 level.
+Numerical Traps
+---------------
 
-Some people regard this as a security problem.  If your program does
-insecure things, and relies on people not knowing how to exploit those
-insecurities, it is not secure.  It is often possible for someone to
-determine the insecure things and exploit them without viewing the
-source.  Security through obscurity, the name for hiding your bugs
-instead of fixing them, is little security indeed.
+Perl4-to-Perl5 traps having to do with numerical operators, operands,
+or output from same.
 
-You can try using encryption via source filters (Filter::* from CPAN).
-But crackers might be able to decrypt it.  You can try using the byte
-code compiler and interpreter described below, but crackers might be
-able to de-compile it.  You can try using the native-code compiler
-described below, but crackers might be able to disassemble it.  These
-pose varying degrees of difficulty to people wanting to get at your
-code, but none can definitively conceal it (this is true of every
-language, not just Perl).
+   * Numerical
 
-If you're concerned about people profiting from your code, then the
-bottom line is that nothing but a restrictive licence will give you
-legal security.  License your software and pepper it with threatening
-statements like "This is unpublished proprietary software of XYZ Corp.
-Your access to it does not give you permission to use it blah blah
-blah."  You should see a lawyer to be sure your licence's wording will
-stand up in court.
+     Formatted output and significant digits
+
+          print 7.373504 - 0, "\n";
+          printf "%20.18f\n", 7.373504 - 0;
+          
+          # Perl4 prints:
+          7.375039999999996141
+          7.37503999999999614
+          
+          # Perl5 prints:
+          7.373504
+          7.37503999999999614
+
+   * Numerical
+
+     This specific item has been deleted.  It demonstrated how the
+     auto-increment operator would not catch when a number went over
+     the signed int limit.  Fixed in version 5.003_04.  But always be
+     wary when using large integers.  If in doubt:
+
+          use Math::BigInt;
+
+   * Numerical
+
+     Assignment of return values from numeric equality tests does not
+     work in perl5 when the test evaluates to false (0).  Logical tests
+     now return an null, instead of 0
+
+          $p = ($test == 1);
+          print $p,"\n";
+          
+          # perl4 prints: 0
+          # perl5 prints:
+
+     Also see `"General Regular Expression Traps using s' in this node
+     for another example of this new feature...
+
+General data type traps
+-----------------------
+
+Perl4-to-Perl5 traps involving most data-types, and their usage within
+certain expressions and/or context.
+
+   * (Arrays)
+
+     Negative array subscripts now count from the end of the array.
+
+          @a = (1, 2, 3, 4, 5);
+          print "The third element of the array is $a[3] also expressed as $a[-2] \n";
+          
+          # perl4 prints: The third element of the array is 4 also expressed as
+          # perl5 prints: The third element of the array is 4 also expressed as 4
+
+   * (Arrays)
+
+     Setting `$#array' lower now discards array elements, and makes them
+     impossible to recover.
+
+          @a = (a,b,c,d,e);
+          print "Before: ",join('',@a);
+          $#a =1;
+          print ", After: ",join('',@a);
+          $#a =3;
+          print ", Recovered: ",join('',@a),"\n";
+          
+          # perl4 prints: Before: abcde, After: ab, Recovered: abcd
+          # perl5 prints: Before: abcde, After: ab, Recovered: ab
+
+   * (Hashes)
+
+     Hashes get defined before use
+
+          local($s,@a,%h);
+          die "scalar \$s defined" if defined($s);
+          die "array \@a defined" if defined(@a);
+          die "hash \%h defined" if defined(%h);
+          
+          # perl4 prints:
+          # perl5 dies: hash %h defined
+
+   * (Globs)
+
+     glob assignment from variable to variable will fail if the assigned
+     variable is localized subsequent to the assignment
+
+          @a = ("This is Perl 4");
+          *b = *a;
+          local(@a);
+          print @b,"\n";
+          
+          # perl4 prints: This is Perl 4
+          # perl5 prints:
+          
+          # Another example
+          
+          *fred = *barney; # fred is aliased to barney
+          @barney = (1, 2, 4);
+          # @fred;
+          print "@fred";  # should print "1, 2, 4"
+          
+          # perl4 prints: 1 2 4
+          # perl5 prints: In string, @fred now must be written as \@fred
+
+   * (Scalar String)
+
+     Changes in unary negation (of strings) This change effects both
+     the return value and what it does to auto(magic)increment.
+
+          $x = "aaa";
+          print ++$x," : ";
+          print -$x," : ";
+          print ++$x,"\n";
+          
+          # perl4 prints: aab : -0 : 1
+          # perl5 prints: aab : -aab : aac
+
+   * (Constants)
+
+     perl 4 lets you modify constants:
+
+          $foo = "x";
+          &mod($foo);
+          for ($x = 0; $x < 3; $x++) {
+              &mod("a");
+          }
+          sub mod {
+              print "before: $_[0]";
+              $_[0] = "m";
+              print "  after: $_[0]\n";
+          }
+          
+          # perl4:
+          # before: x  after: m
+          # before: a  after: m
+          # before: m  after: m
+          # before: m  after: m
+          
+          # Perl5:
+          # before: x  after: m
+          # Modification of a read-only value attempted at foo.pl line 12.
+          # before: a
+
+   * (Scalars)
+
+     The behavior is slightly different for:
+
+          print "$x", defined $x
+          
+          # perl 4: 1
+          # perl 5: <no output, $x is not called into existence>
+
+   * (Variable Suicide)
+
+     Variable suicide behavior is more consistent under Perl 5.  Perl5
+     exhibits the same behavior for hashes and scalars, that perl4
+     exhibits for only scalars.
+
+          $aGlobal{ "aKey" } = "global value";
+          print "MAIN:", $aGlobal{"aKey"}, "\n";
+          $GlobalLevel = 0;
+          &test( *aGlobal );
+          
+          sub test {
+              local( *theArgument ) = @_;
+              local( %aNewLocal ); # perl 4 != 5.001l,m
+              $aNewLocal{"aKey"} = "this should never appear";
+              print "SUB: ", $theArgument{"aKey"}, "\n";
+              $aNewLocal{"aKey"} = "level $GlobalLevel";   # what should print
+              $GlobalLevel++;
+              if( $GlobalLevel<4 ) {
+                  &test( *aNewLocal );
+              }
+          }
+          
+          # Perl4:
+          # MAIN:global value
+          # SUB: global value
+          # SUB: level 0
+          # SUB: level 1
+          # SUB: level 2
+          
+          # Perl5:
+          # MAIN:global value
+          # SUB: global value
+          # SUB: this should never appear
+          # SUB: this should never appear
+          # SUB: this should never appear
+
+Context Traps - scalar, list contexts
+-------------------------------------
+
+   * (list context)
+
+     The elements of argument lists for formats are now evaluated in
+     list context.  This means you can interpolate list values now.
+
+          @fmt = ("foo","bar","baz");
+          format STDOUT=
+          @<<<<< @||||| @>>>>>
+          @fmt;
+          .
+          write;
+          
+          # perl4 errors:  Please use commas to separate fields in file
+          # perl5 prints: foo     bar      baz
+
+   * (scalar context)
+
+     The `caller()' function now returns a false value in a scalar
+     context if there is no caller.  This lets library files determine
+     if they're being required.
+
+          caller() ? (print "You rang?\n") : (print "Got a 0\n");
+          
+          # perl4 errors: There is no caller
+          # perl5 prints: Got a 0
+
+   * (scalar context)
+
+     The comma operator in a scalar context is now guaranteed to give a
+     scalar context to its arguments.
+
+          @y= ('a','b','c');
+          $x = (1, 2, @y);
+          print "x = $x\n";
+          
+          # Perl4 prints:  x = c   # Thinks list context interpolates list
+          # Perl5 prints:  x = 3   # Knows scalar uses length of list
+
+   * (list, builtin)
+
+     `sprintf()' funkiness (array argument converted to scalar array
+     count) This test could be added to t/op/sprintf.t
+
+          @z = ('%s%s', 'foo', 'bar');
+          $x = sprintf(@z);
+          if ($x eq 'foobar') {print "ok 2\n";} else {print "not ok 2 '$x'\n";}
+          
+          # perl4 prints: ok 2
+          # perl5 prints: not ok 2
+
+     `printf()' works fine, though:
+
+          printf STDOUT (@z);
+          print "\n";
+          
+          # perl4 prints: foobar
+          # perl5 prints: foobar
+
+     Probably a bug.
+
+Precedence Traps
+----------------
+
+Perl4-to-Perl5 traps involving precedence order.
+
+   * Precedence
+
+     LHS vs. RHS when both sides are getting an op.
+
+          @arr = ( 'left', 'right' );
+          $a{shift @arr} = shift @arr;
+          print join( ' ', keys %a );
+          
+          # perl4 prints: left
+          # perl5 prints: right
+
+   * Precedence
+
+     These are now semantic errors because of precedence:
+
+          @list = (1,2,3,4,5);
+          %map = ("a",1,"b",2,"c",3,"d",4);
+          $n = shift @list + 2;   # first item in list plus 2
+          print "n is $n, ";
+          $m = keys %map + 2;     # number of items in hash plus 2
+          print "m is $m\n";
+          
+          # perl4 prints: n is 3, m is 6
+          # perl5 errors and fails to compile
+
+   * Precedence
+
+     The precedence of assignment operators is now the same as the
+     precedence of assignment.  Perl 4 mistakenly gave them the
+     precedence of the associated operator.  So you now must
+     parenthesize them in expressions like
+
+          /foo/ ? ($a += 2) : ($a -= 2);
+
+     Otherwise
+
+          /foo/ ? $a += 2 : $a -= 2
+
+     would be erroneously parsed as
+
+          (/foo/ ? $a += 2 : $a) -= 2;
+
+     On the other hand,
+
+          $a += /foo/ ? 1 : 2;
+
+     now works as a C programmer would expect.
+
+   * Precedence
+
+          open FOO || die;
+
+     is now incorrect.  You need parentheses around the filehandle.
+     Otherwise, perl5 leaves the statement as its default precedence:
+
+          open(FOO || die);
+          
+          # perl4 opens or dies
+          # perl5 errors: Precedence problem: open FOO should be open(FOO)
+
+   * Precedence
+
+     perl4 gives the special variable, $: precedence, where perl5
+     treats `$::' as main package
+
+          $a = "x"; print "$::a";
+          
+          # perl 4 prints: -:a
+          # perl 5 prints: x
+
+   * Precedence
+
+     concatenation precedence over filetest operator?
+
+          -e $foo .= "q"
+          
+          # perl4 prints: no output
+          # perl5 prints: Can't modify -e in concatenation
+
+   * Precedence
+
+     Assignment to value takes precedence over assignment to key in
+     perl5 when using the shift operator on both sides.
+
+          @arr = ( 'left', 'right' );
+          $a{shift @arr} = shift @arr;
+          print join( ' ', keys %a );
+          
+          # perl4 prints: left
+          # perl5 prints: right
+
+General Regular Expression Traps using s///, etc.
+-------------------------------------------------
+
+All types of RE traps.
+
+   * Regular Expression
+
+     `s'$lhs'$rhs'' now does no interpolation on either side.  It used
+     to interpolate `$lhs' but not `$rhs'.  (And still does not match a
+     literal '$' in string)
+
+          $a=1;$b=2;
+          $string = '1 2 $a $b';
+          $string =~ s'$a'$b';
+          print $string,"\n";
+          
+          # perl4 prints: $b 2 $a $b
+          # perl5 prints: 1 2 $a $b
+
+   * Regular Expression
+
+     `m//g' now attaches its state to the searched string rather than
+     the regular expression.  (Once the scope of a block is left for
+     the sub, the state of the searched string is lost)
+
+          $_ = "ababab";
+          while(m/ab/g){
+              &doit("blah");
+          }
+          sub doit{local($_) = shift; print "Got $_ "}
+          
+          # perl4 prints: blah blah blah
+          # perl5 prints: infinite loop blah...
+
+   * Regular Expression
+
+     Currently, if you use the `m//o' qualifier on a regular expression
+     within an anonymous sub, *all* closures generated from that
+     anonymous sub will use the regular expression as it was compiled
+     when it was used the very first time in any such closure.  For
+     instance, if you say
+
+          sub build_match {
+              my($left,$right) = @_;
+              return sub { $_[0] =~ /$left stuff $right/o; };
+          }
+
+     build_match() will always return a sub which matches the contents
+     of `$left' and `$right' as they were the *first* time that
+     build_match() was called, not as they are in the current call.
+
+     This is probably a bug, and may change in future versions of Perl.
+
+   * Regular Expression
+
+     If no parentheses are used in a match, Perl4 sets $+ to the whole
+     match, just like $&. Perl5 does not.
+
+          "abcdef" =~ /b.*e/;
+          print "\$+ = $+\n";
+          
+          # perl4 prints: bcde
+          # perl5 prints:
+
+   * Regular Expression
+
+     substitution now returns the null string if it fails
+
+          $string = "test";
+          $value = ($string =~ s/foo//);
+          print $value, "\n";
+          
+          # perl4 prints: 0
+          # perl5 prints:
+
+     Also see `Numerical Traps' in this node for another example of
+     this new feature.
+
+   * Regular Expression
+
+     `s`lhs`rhs`' (using backticks) is now a normal substitution, with
+     no backtick expansion
+
+          $string = "";
+          $string =~ s`^`hostname`;
+          print $string, "\n";
+          
+          # perl4 prints: <the local hostname>
+          # perl5 prints: hostname
+
+   * Regular Expression
+
+     Stricter parsing of variables used in regular expressions
+
+          s/^([^$grpc]*$grpc[$opt$plus$rep]?)//o;
+          
+          # perl4: compiles w/o error
+          # perl5: with Scalar found where operator expected ..., near "$opt$plus"
+
+     an added component of this example, apparently from the same
+     script, is the actual value of the s'd string after the
+     substitution.  `[$opt]' is a character class in perl4 and an array
+     subscript in perl5
+
+          $grpc = 'a';
+          $opt  = 'r';
+          $_ = 'bar';
+          s/^([^$grpc]*$grpc[$opt]?)/foo/;
+          print ;
+          
+          # perl4 prints: foo
+          # perl5 prints: foobar
+
+   * Regular Expression
+
+     Under perl5, `m?x?' matches only once, like `?x?'. Under perl4, it
+     matched repeatedly, like `/x/' or `m!x!'.
+
+          $test = "once";
+          sub match { $test =~ m?once?; }
+          &match();
+          if( &match() ) {
+              # m?x? matches more then once
+              print "perl4\n";
+          } else {
+              # m?x? matches only once
+              print "perl5\n";
+          }
+          
+          # perl4 prints: perl4
+          # perl5 prints: perl5
+
+   * Regular Expression
+
+     Under perl4 and upto version 5.003, a failed `m//g' match used to
+     reset the internal iterator, so that subsequent `m//g' match
+     attempts began from the beginning of the string.  In perl version
+     5.004 and later, failed `m//g' matches do not reset the iterator
+     position (which can be found using the `pos()' function-see `pos',
+     *Note Perlfunc: perlfunc,).
+
+          $test = "foop";
+          for (1..3) {
+              print $1 while ($test =~ /(o)/g);
+              # pos $test = 0;     # to get old behavior
+          }
+          
+          # perl4     prints: oooooo
+          # perl5.004 prints: oo
+
+     You may always reset the iterator yourself as shown in the
+     commented line to get the old behavior.
+
+Subroutine, Signal, Sorting Traps
+---------------------------------
+
+The general group of Perl4-to-Perl5 traps having to do with Signals,
+Sorting, and their related subroutines, as well as general subroutine
+traps.  Includes some OS-Specific traps.
+
+   * (Signals)
+
+     Barewords that used to look like strings to Perl will now look
+     like subroutine calls if a subroutine by that name is defined
+     before the compiler sees them.
+
+          sub SeeYa { warn"Hasta la vista, baby!" }
+          $SIG{'TERM'} = SeeYa;
+          print "SIGTERM is now $SIG{'TERM'}\n";
+          
+          # perl4 prints: SIGTERM is main'SeeYa
+          # perl5 prints: SIGTERM is now main::1
+
+     Use -w to catch this one
+
+   * (Sort Subroutine)
+
+     reverse is no longer allowed as the name of a sort subroutine.
+
+          sub reverse{ print "yup "; $a <=> $b }
+          print sort reverse a,b,c;
+          
+          # perl4 prints: yup yup yup yup abc
+          # perl5 prints: abc
+
+   * warn() won't let you specify a filehandle.
+
+     Although it _always_ printed to STDERR, warn() would let you
+     specify a filehandle in perl4.  With perl5 it does not.
+
+          warn STDERR "Foo!";
+          
+          # perl4 prints: Foo!
+          # perl5 prints: String found where operator expected
+
+OS Traps
+--------
+
+   * (SysV)
+
+     Under HPUX, and some other SysV OSes, one had to reset any signal
+     handler, within  the signal handler function, each time a signal
+     was handled with perl4.  With perl5, the reset is now done
+     correctly.  Any code relying on the handler _not_ being reset will
+     have to be reworked.
+
+     Since version 5.002, Perl uses sigaction() under SysV.
+
+          sub gotit {
+              print "Got @_... ";
+          }
+          $SIG{'INT'} = 'gotit';
+          
+          $| = 1;
+          $pid = fork;
+          if ($pid) {
+              kill('INT', $pid);
+              sleep(1);
+              kill('INT', $pid);
+          } else {
+              while (1) {sleep(10);}
+          }
+          
+          # perl4 (HPUX) prints: Got INT...
+          # perl5 (HPUX) prints: Got INT... Got INT...
+
+   * (SysV)
+
+     Under SysV OSes, `seek()' on a file opened to append C<>>> now does
+     the right thing w.r.t. the fopen() manpage. e.g., - When a file is
+     opened for append,  it  is  impossible to overwrite information
+     already in the file.
+
+          open(TEST,">>seek.test");
+          $start = tell TEST ;
+          foreach(1 .. 9){
+              print TEST "$_ ";
+          }
+          $end = tell TEST ;
+          seek(TEST,$start,0);
+          print TEST "18 characters here";
+          
+          # perl4 (solaris) seek.test has: 18 characters here
+          # perl5 (solaris) seek.test has: 1 2 3 4 5 6 7 8 9 18 characters here
+
+Interpolation Traps
+-------------------
+
+Perl4-to-Perl5 traps having to do with how things get interpolated
+within certain expressions, statements, contexts, or whatever.
+
+   * Interpolation
+
+     @ now always interpolates an array in double-quotish strings.
+
+          print "To: someone@somewhere.com\n";
+          
+          # perl4 prints: To:someone@somewhere.com
+          # perl5 errors : In string, @somewhere now must be written as \@somewhere
+
+   * Interpolation
+
+     Double-quoted strings may no longer end with an unescaped $ or @.
+
+          $foo = "foo$";
+          $bar = "bar@";
+          print "foo is $foo, bar is $bar\n";
+          
+          # perl4 prints: foo is foo$, bar is bar@
+          # perl5 errors: Final $ should be \$ or $name
+
+     Note: perl5 DOES NOT error on the terminating @ in $bar
+
+   * Interpolation
+
+     Perl now sometimes evaluates arbitrary expressions inside braces
+     that occur within double quotes (usually when the opening brace is
+     preceded by `$' or `@').
+
+          @www = "buz";
+          $foo = "foo";
+          $bar = "bar";
+          sub foo { return "bar" };
+          print "|@{w.w.w}|${main'foo}|";
+          
+          # perl4 prints: |@{w.w.w}|foo|
+          # perl5 prints: |buz|bar|
+
+     Note that you can `use strict;' to ward off such trappiness under
+     perl5.
+
+   * Interpolation
+
+     The construct "this is $$x" used to interpolate the pid at that
+     point, but now apparently tries to dereference `$x'.  $$ by itself
+     still works fine, however.
+
+          print "this is $$x\n";
+          
+          # perl4 prints: this is XXXx   (XXX is the current pid)
+          # perl5 prints: this is
+
+   * Interpolation
+
+     Creation of hashes on the fly with `eval "EXPR"' now requires
+     either both `$''s to be protected in the specification of the hash
+     name, or both curlies to be protected.  If both curlies are
+     protected, the result will be compatible with perl4 and perl5.
+     This is a very common practice, and should be changed to use the
+     block form of `eval{}'  if possible.
+
+          $hashname = "foobar";
+          $key = "baz";
+          $value = 1234;
+          eval "\$$hashname{'$key'} = q|$value|";
+          (defined($foobar{'baz'})) ?  (print "Yup") : (print "Nope");
+          
+          # perl4 prints: Yup
+          # perl5 prints: Nope
+
+     Changing
+
+          eval "\$$hashname{'$key'} = q|$value|";
+
+     to
+
+          eval "\$\$hashname{'$key'} = q|$value|";
+
+     causes the following result:
+
+          # perl4 prints: Nope
+          # perl5 prints: Yup
+
+     or, changing to
+
+          eval "\$$hashname\{'$key'\} = q|$value|";
+
+     causes the following result:
+
+          # perl4 prints: Yup
+          # perl5 prints: Yup
+          # and is compatible for both versions
+
+   * Interpolation
+
+     perl4 programs which unconsciously rely on the bugs in earlier
+     perl versions.
+
+          perl -e '$bar=q/not/; print "This is $foo{$bar} perl5"'
+          
+          # perl4 prints: This is not perl5
+          # perl5 prints: This is perl5
+
+   * Interpolation
+
+     You also have to be careful about array references.
+
+          print "$foo{"
+          
+          perl 4 prints: {
+          perl 5 prints: syntax error
+
+   * Interpolation
+
+     Similarly, watch out for:
+
+          $foo = "array";
+          print "\$$foo{bar}\n";
+          
+          # perl4 prints: $array{bar}
+          # perl5 prints: $
+
+     Perl 5 is looking for `$array{bar}' which doesn't exist, but perl
+     4 is happy just to expand $foo to "array" by itself.  Watch out
+     for this especially in eval's.
+
+   * Interpolation
+
+     `qq()' string passed to eval
+
+          eval qq(
+              foreach \$y (keys %\$x\) {
+                  \$count++;
+              }
+          );
+          
+          # perl4 runs this ok
+          # perl5 prints: Can't find string terminator ")"
+
+DBM Traps
+---------
+
+General DBM traps.
+
+   * DBM
+
+     Existing dbm databases created under perl4 (or any other dbm/ndbm
+     tool) may cause the same script, run under perl5, to fail.  The
+     build of perl5 must have been linked with the same dbm/ndbm as the
+     default for `dbmopen()' to function properly without tie'ing to an
+     extension dbm implementation.
+
+          dbmopen (%dbm, "file", undef);
+          print "ok\n";
+          
+          # perl4 prints: ok
+          # perl5 prints: ok (IFF linked with -ldbm or -lndbm)
+
+   * DBM
+
+     Existing dbm databases created under perl4 (or any other dbm/ndbm
+     tool) may cause the same script, run under perl5, to fail.  The
+     error generated when exceeding the limit on the key/value size
+     will cause perl5 to exit immediately.
+
+          dbmopen(DB, "testdb",0600) || die "couldn't open db! $!";
+          $DB{'trap'} = "x" x 1024;  # value too large for most dbm/ndbm
+          print "YUP\n";
+          
+          # perl4 prints:
+          dbm store returned -1, errno 28, key "trap" at - line 3.
+          YUP
+          
+          # perl5 prints:
+          dbm store returned -1, errno 28, key "trap" at - line 3.
+
+Unclassified Traps
+------------------
+
+Everything else.
+
+   * Unclassified
+
+     require/do trap using returned value
+
+     If the file doit.pl has:
+
+          sub foo {
+              $rc = do "./do.pl";
+              return 8;
+          }
+          print &foo, "\n";
+
+     And the do.pl file has the following single line:
+
+          return 3;
+
+     Running doit.pl gives the following:
+
+          # perl 4 prints: 3 (aborts the subroutine early)
+          # perl 5 prints: 8
+
+     Same behavior if you replace do with require.
+
+As always, if any of these are ever officially declared as bugs,
+they'll be fixed and removed.
+
+
+File: perl.info,  Node: perlstyle,  Next: perlpod,  Prev: perltrap,  Up: Top
+
+NAME
+====
+
+perlstyle - Perl style guide
+
+DESCRIPTION
+===========
+
+Each programmer will, of course, have his or her own preferences in
+regards to formatting, but there are some general guidelines that will
+make your programs easier to read, understand, and maintain.
+
+The most important thing is to run your programs under the -w flag at
+all times.  You may turn it off explicitly for particular portions of
+code via the $^W variable if you must.  You should also always run
+under `use strict' or know the reason why not.  The `use sigtrap' and
+even `use diagnostics' pragmas may also prove useful.
+
+Regarding aesthetics of code lay out, about the only thing Larry cares
+strongly about is that the closing curly brace of a multi-line BLOCK
+should line up with the keyword that started the construct.  Beyond
+that, he has other preferences that aren't so strong:
+
+   * 4-column indent.
+
+   * Opening curly on same line as keyword, if possible, otherwise line
+     up.
+
+   * Space before the opening curly of a multi-line BLOCK.
+
+   * One-line BLOCK may be put on one line, including curlies.
+
+   * No space before the semicolon.
+
+   * Semicolon omitted in "short" one-line BLOCK.
+
+   * Space around most operators.
+
+   * Space around a "complex" subscript (inside brackets).
+
+   * Blank lines between chunks that do different things.
+
+   * Uncuddled elses.
+
+   * No space between function name and its opening parenthesis.
+
+   * Space after each comma.
+
+   * Long lines broken after an operator (except "and" and "or").
+
+   * Space after last parenthesis matching on current line.
+
+   * Line up corresponding items vertically.
+
+   * Omit redundant punctuation as long as clarity doesn't suffer.
+
+Larry has his reasons for each of these things, but he doesn't claim
+that everyone else's mind works the same as his does.
+
+Here are some other more substantive style issues to think about:
+
+   * Just because you *CAN* do something a particular way doesn't mean
+     that you *SHOULD* do it that way.  Perl is designed to give you
+     several ways to do anything, so consider picking the most readable
+     one.  For instance
+
+          open(FOO,$foo) || die "Can't open $foo: $!";
+
+     is better than
+
+          die "Can't open $foo: $!" unless open(FOO,$foo);
+
+     because the second way hides the main point of the statement in a
+     modifier.  On the other hand
+
+          print "Starting analysis\n" if $verbose;
+
+     is better than
+
+          $verbose && print "Starting analysis\n";
+
+     because the main point isn't whether the user typed -v or not.
+
+     Similarly, just because an operator lets you assume default
+     arguments doesn't mean that you have to make use of the defaults.
+     The defaults are there for lazy systems programmers writing
+     one-shot programs.  If you want your program to be readable,
+     consider supplying the argument.
+
+     Along the same lines, just because you *CAN* omit parentheses in
+     many places doesn't mean that you ought to:
+
+          return print reverse sort num values %array;
+          return print(reverse(sort num (values(%array))));
+
+     When in doubt, parenthesize.  At the very least it will let some
+     poor schmuck bounce on the % key in *vi*.
+
+     Even if you aren't in doubt, consider the mental welfare of the
+     person who has to maintain the code after you, and who will
+     probably put parentheses in the wrong place.
+
+   * Don't go through silly contortions to exit a loop at the top or the
+     bottom, when Perl provides the last operator so you can exit in
+     the middle.  Just "outdent" it a little to make it more visible:
+
+          LINE:
+                  for (;;) {
+                      statements;
+                    last LINE if $foo;
+                      next LINE if /^#/;
+                      statements;
+                  }
+
+   * Don't be afraid to use loop labels-they're there to enhance
+     readability as well as to allow multilevel loop breaks.  See the
+     previous example.
+
+   * Avoid using grep() (or map()) or `backticks` in a void context,
+     that is, when you just throw away their return values.  Those
+     functions all have return values, so use them.  Otherwise use a
+     foreach() loop or the system() function instead.
+
+   * For portability, when using features that may not be implemented on
+     every machine, test the construct in an eval to see if it fails.
+     If you know what version or patchlevel a particular feature was
+     implemented, you can test $] ($PERL_VERSION in English) to see if
+     it will be there.  The Config module will also let you interrogate
+     values determined by the *Configure* program when Perl was
+     installed.
+
+   * Choose mnemonic identifiers.  If you can't remember what mnemonic
+     means, you've got a problem.
+
+   * While short identifiers like $gotit are probably ok, use
+     underscores to separate words.  It is generally easier to read
+     $var_names_like_this than $VarNamesLikeThis, especially for
+     non-native speakers of English. It's also a simple rule that works
+     consistently with VAR_NAMES_LIKE_THIS.
+
+     Package names are sometimes an exception to this rule.  Perl
+     informally reserves lowercase module names for "pragma" modules
+     like integer and strict.  Other modules should begin with a
+     capital letter and use mixed case, but probably without
+     underscores due to limitations in primitive file systems'
+     representations of module names as files that must fit into a few
+     sparse bytes.
+
+   * You may find it helpful to use letter case to indicate the scope
+     or nature of a variable. For example:
+
+          $ALL_CAPS_HERE   constants only (beware clashes with perl vars!)
+          $Some_Caps_Here  package-wide global/static
+          $no_caps_here    function scope my() or local() variables
+
+     Function and method names seem to work best as all lowercase.
+     E.g., $obj->as_string().
+
+     You can use a leading underscore to indicate that a variable or
+     function should not be used outside the package that defined it.
+
+   * If you have a really hairy regular expression, use the `/x'
+     modifier and put in some whitespace to make it look a little less
+     like line noise.  Don't use slash as a delimiter when your regexp
+     has slashes or backslashes.
+
+   * Use the new "and" and "or" operators to avoid having to
+     parenthesize list operators so much, and to reduce the incidence
+     of punctuation operators like `&&' and `||'.  Call your
+     subroutines as if they were functions or list operators to avoid
+     excessive ampersands and parentheses.
+
+   * Use here documents instead of repeated print() statements.
+
+   * Line up corresponding things vertically, especially if it'd be too
+     long to fit on one line anyway.
+
+          $IDX = $ST_MTIME;
+          $IDX = $ST_ATIME           if $opt_u;
+          $IDX = $ST_CTIME           if $opt_c;
+          $IDX = $ST_SIZE            if $opt_s;
+          
+          mkdir $tmpdir, 0700     or die "can't mkdir $tmpdir: $!";
+          chdir($tmpdir)      or die "can't chdir $tmpdir: $!";
+          mkdir 'tmp',   0777   or die "can't mkdir $tmpdir/tmp: $!";
+
+   * Always check the return codes of system calls.  Good error
+     messages should go to STDERR, include which program caused the
+     problem, what the failed system call and arguments were, and VERY
+     IMPORTANT) should contain the standard system error message for
+     what went wrong.  Here's a simple but sufficient example:
+
+          opendir(D, $dir)         or die "can't opendir $dir: $!";
+
+   * Line up your translations when it makes sense:
+
+          tr [abc]
+             [xyz];
+
+   * Think about reusability.  Why waste brainpower on a one-shot when
+     you might want to do something like it again?  Consider
+     generalizing your code.  Consider writing a module or object
+     class.  Consider making your code run cleanly with `use strict'
+     and -w in effect.  Consider giving away your code.  Consider
+     changing your whole world view.  Consider... oh, never mind.
+
+   * Be consistent.
+
+   * Be nice.
 

@@ -2,971 +2,2559 @@ This is Info file perl.info, produced by Makeinfo-1.64 from the input
 file Pmaster.texi.
 
 
-File: perl.info,  Node: perldebug,  Next: perldiag,  Prev: perlipc,  Up: Top
+File: perl.info,  Node: perldiag,  Next: perlsec,  Prev: perldebug,  Up: Top
 
 NAME
 ====
 
-perldebug - Perl debugging
+perldiag - various Perl diagnostics
 
 DESCRIPTION
 ===========
 
-First of all, have you tried using the -w switch?
-
-The Perl Debugger
-=================
-
-If you invoke Perl with the -d switch, your script runs under the Perl
-source debugger.  This works like an interactive Perl environment,
-prompting for debugger commands that let you examine source code, set
-breakpoints, get stack backtraces, change the values of variables, etc.
-This is so convenient that you often fire up the debugger all by
-itself just to test out Perl constructs interactively to see what they
-do.  For example:
-
-     perl -d -e 42
-
-In Perl, the debugger is not a separate program as it usually is in the
-typical compiled environment.  Instead, the -d flag tells the compiler
-to insert source information into the parse trees it's about to hand off
-to the interpreter.  That means your code must first compile correctly
-for the debugger to work on it.  Then when the interpreter starts up, it
-preloads a Perl library file containing the debugger itself.
-
-The program will halt *right before* the first run-time executable
-statement (but see below regarding compile-time statements) and ask you
-to enter a debugger command.  Contrary to popular expectations, whenever
-the debugger halts and shows you a line of code, it always displays the
-line it's *about* to execute, rather than the one it has just executed.
-
-Any command not recognized by the debugger is directly executed
-(eval'd) as Perl code in the current package.  (The debugger uses the
-DB package for its own state information.)
-
-Leading white space before a command would cause the debugger to think
-it's *NOT* a debugger command but for Perl, so be careful not to do
-that.
-
-Debugger Commands
------------------
-
-The debugger understands the following commands:
-
-h [command]
-     Prints out a help message.
-
-     If you supply another debugger command as an argument to the h
-     command, it prints out the description for just that command.  The
-     special argument of `h h' produces a more compact help listing,
-     designed to fit together on one screen.
-
-     If the output the h command (or any command, for that matter)
-     scrolls past your screen, either precede the command with a
-     leading pipe symbol so it's run through your pager, as in
-
-          DB> |h
-
-     You may change the pager which is used via `O pager=...' command.
-
-p expr
-     Same as `print {$DB::OUT} expr' in the current package.  In
-     particular, because this is just Perl's own print function, this
-     means that nested data structures and objects are not dumped,
-     unlike with the x command.
-
-     The `DB::OUT' filehandle is opened to `/dev/tty', regardless of
-     where STDOUT may be redirected to.
-
-x expr
-     Evaluates its expression in list context and dumps out the result
-     in a pretty-printed fashion.  Nested data structures are printed
-     out recursively, unlike the print function.
-
-     The details of printout are governed by multiple Options.
-
-V [pkg [vars]]
-     Display all (or some) variables in package (defaulting to the
-     `main' package) using a data pretty-printer (hashes show their
-     keys and values so you see what's what, control characters are
-     made printable, etc.).  Make sure you don't put the type specifier
-     (like `$') there, just the symbol names, like this:
-
-          V DB filename line
-
-     Use `~pattern' and `!pattern' for positive and negative regexps.
-
-     Nested data structures are printed out in a legible fashion, unlike
-     the print function.
-
-     The details of printout are governed by multiple Options.
-
-X [vars]
-     Same as `V currentpackage [vars]'.
-
-T
-     Produce a stack backtrace.  See below for details on its output.
-
-s [expr]
-     Single step.  Executes until it reaches the beginning of another
-     statement, descending into subroutine calls.  If an expression is
-     supplied that includes function calls, it too will be
-     single-stepped.
-
-n [expr]
-     Next.  Executes over subroutine calls, until it reaches the
-     beginning of the next statement.  If an expression is supplied
-     that includes function calls, those functions will be executed
-     with stops before each statement.
-
-<CR>
-     Repeat last n or s command.
-
-c [line|sub]
-     Continue, optionally inserting a one-time-only breakpoint at the
-     specified line or subroutine.
-
-l
-     List next window of lines.
-
-l min+incr
-     List `incr+1' lines starting at `min'.
-
-l min-max
-     List lines `min' through `max'.  `l -' is synonymous to -.
-
-l line
-     List a single line.
-
-l subname
-     List first window of lines from subroutine.
-
--
-     List previous window of lines.
-
-w [line]
-     List window (a few lines) around the current line.
-
-.
-     Return debugger pointer to the last-executed line and print it out.
-
-f filename
-     Switch to viewing a different file or eval statement.  If
-     `filename' is not a full filename as found in values of %INC, it
-     is considered as a regexp.
-
-/pattern/
-     Search forwards for pattern; final / is optional.
-
-?pattern?
-     Search backwards for pattern; final ? is optional.
-
-L
-     List all breakpoints and actions.
-
-S [[!]pattern]
-     List subroutine names [not] matching pattern.
-
-t
-     Toggle trace mode (see also `AutoTrace' Option).
-
-t expr
-     Trace through execution of expr.  For example:
-
-          $ perl -de 42
-          Stack dump during die enabled outside of evals.
-          
-          Loading DB routines from perl5db.pl patch level 0.94
-          Emacs support available.
-          
-          Enter h or `h h' for help.
-          
-          main::(-e:1):   0
-            DB<1> sub foo { 14 }
-          
-          DB<2> sub bar { 3 }
-          
-          DB<3> t print foo() * bar()
-           main::((eval 172):3):   print foo() + bar();
-           main::foo((eval 168):2):
-           main::bar((eval 170):2):
-           42
-
-     or, with the Option `frame=2' set,
-
-          DB<4> O f=2
-                       frame = '2'
-          DB<5> t print foo() * bar()
-           3:      foo() * bar()
-           entering main::foo
-            2:     sub foo { 14 };
-           exited main::foo
-           entering main::bar
-            2:     sub bar { 3 };
-           exited main::bar
-           42
-
-b [line] [condition]
-     Set a breakpoint.  If line is omitted, sets a breakpoint on the
-     line that is about to be executed.  If a condition is specified,
-     it's evaluated each time the statement is reached and a breakpoint
-     is taken only if the condition is true.  Breakpoints may be set on
-     only lines that begin an executable statement.  Conditions don't
-     use *if*:
-
-          b 237 $x > 30
-          b 237 ++$count237 < 11
-          b 33 /pattern/i
-
-b subname [condition]
-     Set a breakpoint at the first line of the named subroutine.
-
-b postpone subname [condition]
-     Set breakpoint at first line of subroutine after it is compiled.
-
-b load filename
-     Set breakpoint at the first executed line of the file.  Filename
-     should be a full name as found in values of %INC.
-
-b compile subname
-     Sets breakpoint at the first statement executed after the
-     subroutine is compiled.
-
-d [line]
-     Delete a breakpoint at the specified line.  If line is omitted,
-     deletes the breakpoint on the line that is about to be executed.
-
-D
-     Delete all installed breakpoints.
-
-a [line] command
-     Set an action to be done before the line is executed.  The
-     sequence of steps taken by the debugger is
-
-          1. check for a breakpoint at this line
-          2. print the line if necessary (tracing)
-          3. do any actions associated with that line
-          4. prompt user if at a breakpoint or in single-step
-          5. evaluate line
-
-     For example, this will print out `$foo' every time line 53 is
-     passed:
-
-          a 53 print "DB FOUND $foo\n"
-
-A
-     Delete all installed actions.
-
-O [opt[=val]] [opt"val"] [opt?]...
-     Set or query values of options.  val defaults to 1.  opt can be
-     abbreviated.  Several options can be listed.
-
-`recallCommand', `ShellBang'
-     The characters used to recall command or spawn shell.  By default,
-     these are both set to !.
-
-`pager'
-     Program to use for output of pager-piped commands (those beginning
-     with a `|' character.)  By default, `$ENV{PAGER}' will be used.
-
-`tkRunning'
-     Run Tk while prompting (with ReadLine).
-
-`signalLevel', `warnLevel', `dieLevel'
-     Level of verbosity.  By default the debugger is in a sane verbose
-     mode, thus it will print backtraces on all the warnings and
-     die-messages which are going to be printed out, and will print a
-     message when interesting uncaught signals arrive.
-
-     To disable this behaviour, set these values to 0.  If `dieLevel'
-     is 2, then the messages which will be caught by surrounding eval
-     are also printed.
-
-`AutoTrace'
-     Trace mode (similar to t command, but can be put into
-     `PERLDB_OPTS').
-
-`LineInfo'
-     File or pipe to print line number info to.  If it is a pipe (say,
-     `|visual_perl_db'), then a short, "emacs like" message is used.
-
-`inhibit_exit'
-     If 0, allows *stepping off* the end of the script.
-
-`PrintRet'
-     affects printing of return value after `r' command.
-
-`ornaments'
-     affects screen appearance of the command line (see
-     `Term::Readline' in this node).
-
-`frame'
-     affects printing messages on entry and exit from subroutines.  If
-     `frame & 2' is false, messages are printed on entry only. (Printing
-     on exit may be useful if inter(di)spersed with other messages.)
-
-     If `frame & 4', arguments to functions are printed as well as the
-     context and caller info.  If `frame & 8', overloaded `stringify'
-     and tied FETCH are enabled on the printed arguments. If `frame &
-     16', the return value from the subroutine is printed as well.
-
-     The length at which the argument list is truncated is governed by
-     the next option:
-
-`maxTraceLen'
-     length at which the argument list is truncated when `frame'
-     option's bit 4 is set.
-
-The following options affect what happens with V, X, and x commands:
-
-`arrayDepth', `hashDepth'
-     Print only first N elements ('' for all).
-
-`compactDump', `veryCompact'
-     Change style of array and hash dump.  If `compactDump', short array
-     may be printed on one line.
-
-`globPrint'
-     Whether to print contents of globs.
-
-`DumpDBFiles'
-     Dump arrays holding debugged files.
-
-`DumpPackages'
-     Dump symbol tables of packages.
-
-`quote', `HighBit', `undefPrint'
-     Change style of string dump.  Default value of `quote' is `auto',
-     one can enable either double-quotish dump, or single-quotish by
-     setting it to `"' or `''.  By default, characters with high bit
-     set are printed *as is*.
-
-`UsageOnly'
-     *very* rudimentally per-package memory usage dump.  Calculates
-     total size of strings in variables in the package.
-
-During startup options are initialized from `$ENV{PERLDB_OPTS}'.  You
-can put additional initialization options `TTY', `noTTY', `ReadLine',
-and `NonStop' there.
-
-Example rc file:
-
-     &parse_options("NonStop=1 LineInfo=db.out AutoTrace");
-
-The script will run without human intervention, putting trace
-information into the file *db.out*.  (If you interrupt it, you would
-better reset `LineInfo' to something "interactive"!)
-
-`TTY'
-     The TTY to use for debugging I/O.
-
-`noTTY'
-     If set, goes in `NonStop' mode, and would not connect to a TTY.  If
-     interrupt (or if control goes to debugger via explicit setting of
-     $DB::signal or $DB::single from the Perl script), connects to a TTY
-     specified by the `TTY' option at startup, or to a TTY found at
-     runtime using `Term::Rendezvous' module of your choice.
-
-     This module should implement a method `new' which returns an object
-     with two methods: `IN' and `OUT', returning two filehandles to use
-     for debugging input and output correspondingly.  Method `new' may
-     inspect an argument which is a value of `$ENV{PERLDB_NOTTY}' at
-     startup, or is `"/tmp/perldbtty$$"' otherwise.
-
-`ReadLine'
-     If false, readline support in debugger is disabled, so you can
-     debug ReadLine applications.
-
-`NonStop'
-     If set, debugger goes into noninteractive mode until interrupted,
-     or programmatically by setting $DB::signal or $DB::single.
-
-Here's an example of using the `$ENV{PERLDB_OPTS}' variable:
-
-     $ PERLDB_OPTS="N f=2" perl -d myprogram
-
-will run the script `myprogram' without human intervention, printing
-out the call tree with entry and exit points.  Note that `N f=2' is
-equivalent to `NonStop=1 frame=2'.  Note also that at the moment when
-this documentation was written all the options to the debugger could be
-uniquely abbreviated by the first letter (with exception of `Dump*'
-options).
-
-Other examples may include
-
-     $ PERLDB_OPTS="N f A L=listing" perl -d myprogram
-
-- runs script noninteractively, printing info on each entry into a
-subroutine and each executed line into the file `listing'. (If you
-interrupt it, you would better reset `LineInfo' to something
-"interactive"!)
-
-     $ env "PERLDB_OPTS=R=0 TTY=/dev/ttyc" perl -d myprogram
-
-may be useful for debugging a program which uses Term::ReadLine itself.
-Do not forget detach shell from the TTY in the window which
-corresponds to `/dev/ttyc', say, by issuing a command like
-
-     $ sleep 1000000
-
-See `"Debugger Internals"' in this node below for more details.
-
-< [ command ]
-     Set an action (Perl command) to happen before every debugger
-     prompt.  A multi-line command may be entered by backslashing the
-     newlines.  If command is missing, resets the list of actions.
-
-<< command
-     Add an action (Perl command) to happen before every debugger
-     prompt.  A multi-line command may be entered by backslashing the
-     newlines.
-
-> command
-     Set an action (Perl command) to happen after the prompt when you've
-     just given a command to return to executing the script.  A
-     multi-line command may be entered by backslashing the newlines.
-     If command is missing, resets the list of actions.
-
->> command
-     Adds an action (Perl command) to happen after the prompt when
-     you've just given a command to return to executing the script.  A
-     multi-line command may be entered by backslashing the newlines.
-
-{ [ command ]
-     Set an action (debugger command) to happen before every debugger
-     prompt.  A multi-line command may be entered by backslashing the
-     newlines.  If command is missing, resets the list of actions.
-
-{{ command
-     Add an action (debugger command) to happen before every debugger
-     prompt.  A multi-line command may be entered by backslashing the
-     newlines.
-
-! number
-     Redo a previous command (default previous command).
-
-! -number
-     Redo number'th-to-last command.
-
-! pattern
-     Redo last command that started with pattern.  See `O
-     recallCommand', too.
-
-!! cmd
-     Run cmd in a subprocess (reads from DB::IN, writes to DB::OUT) See
-     `O shellBang' too.
-
-H -number
-     Display last n commands.  Only commands longer than one character
-     are listed.  If number is omitted, lists them all.
-
-q or ^D
-     Quit.  ("quit" doesn't work for this.)  This is the only supported
-     way to exit the debugger, though typing exit twice may do it too.
-
-     Set an Option `inhibit_exit' to 0 if you want to be able to *step
-     off* the end the script.  You may also need to set `$finished' to
-     0 at some moment if you want to step through global destruction.
-
-R
-     Restart the debugger by execing a new session.  It tries to
-     maintain your history across this, but internal settings and
-     command line options may be lost.
-
-     Currently the following setting are preserved: history,
-     breakpoints, actions, debugger Options, and the following command
-     line options: -w, -I, and -e.
-
-|dbcmd
-     Run debugger command, piping DB::OUT to current pager.
-
-||dbcmd
-     Same as |dbcmd but DB::OUT is temporarily selected as well.  Often
-     used with commands that would otherwise produce long output, such
-     as
-
-          |V main
-
-= [alias value]
-     Define a command alias, like
-
-          = quit q
-
-     or list current aliases.
-
-command
-     Execute command as a Perl statement.  A missing semicolon will be
-     supplied.
-
-m expr
-     The expression is evaluated, and the methods which may be applied
-     to the result are listed.
-
-m package
-     The methods which may be applied to objects in the package are
-     listed.
-
-Debugger input/output
----------------------
-
-Prompt
-     The debugger prompt is something like
-
-          DB<8>
-
-     or even
-
-          DB<<17>>
-
-     where that number is the command number, which you'd use to access
-     with the builtin *csh*-like history mechanism, e.g., `!17' would
-     repeat command number 17.  The number of angle brackets indicates
-     the depth of the debugger.  You could get more than one set of
-     brackets, for example, if you'd already at a breakpoint and then
-     printed out the result of a function call that itself also has a
-     breakpoint, or you step into an expression via `s/n/t expression'
-     command.
-
-Multiline commands
-     If you want to enter a multi-line command, such as a subroutine
-     definition with several statements, or a format, you may escape the
-     newline that would normally end the debugger command with a
-     backslash.  Here's an example:
-
-          DB<1> for (1..4) {         \
-          cont:     print "ok\n";   \
-          cont: }
-          ok
-          ok
-          ok
-          ok
-
-     Note that this business of escaping a newline is specific to
-     interactive commands typed into the debugger.
-
-Stack backtrace
-     Here's an example of what a stack backtrace via T command might
-     look like:
-
-          $ = main::infested called from file `Ambulation.pm' line 10
-          @ = Ambulation::legs(1, 2, 3, 4) called from file `camel_flea' line 7
-          $ = main::pests('bactrian', 4) called from file `camel_flea' line 4
-
-     The left-hand character up there tells whether the function was
-     called in a scalar or list context (we bet you can tell which is
-     which).  What that says is that you were in the function
-     `main::infested' when you ran the stack dump, and that it was
-     called in a scalar context from line 10 of the file
-     *Ambulation.pm*, but without any arguments at all, meaning it was
-     called as `&infested'.  The next stack frame shows that the
-     function `Ambulation::legs' was called in a list context from the
-     *camel_flea* file with four arguments.  The last stack frame shows
-     that `main::pests' was called in a scalar context, also from
-     *camel_flea*, but from line 4.
-
-     Note that if you execute T command from inside an active use
-     statement, the backtrace will contain both ``require', *Note
-     Perlfunc: perlfunc,' frame and an ``eval EXPR', *Note Perlfunc:
-     perlfunc,') frame.
-
-Listing
-     Listing given via different flavors of l command looks like this:
-
-          DB<<13>> l
-            101:                @i{@i} = ();
-            102:b               @isa{@i,$pack} = ()
-            103                     if(exists $i{$prevpack} || exists $isa{$pack});
-            104             }
-            105
-            106             next
-            107==>              if(exists $isa{$pack});
-            108
-            109:a           if ($extra-- > 0) {
-            110:                %isa = ($pack,1);
-
-     Note that the breakable lines are marked with `:', lines with
-     breakpoints are marked by b, with actions by a, and the next
-     executed line is marked by C<==>>.
-
-Frame listing
-     When `frame' option is set, debugger would print entered (and
-     optionally exited) subroutines in different styles.
-
-     What follows is the start of the listing of
-
-          env "PERLDB_OPTS=f=n N" perl -d -V
-
-     for different values of n:
-
-       1.      entering main::BEGIN
-                entering Config::BEGIN
-                 Package lib/Exporter.pm.
-                 Package lib/Carp.pm.
-                Package lib/Config.pm.
-                entering Config::TIEHASH
-                entering Exporter::import
-                 entering Exporter::export
-               entering Config::myconfig
-                entering Config::FETCH
-                entering Config::FETCH
-                entering Config::FETCH
-                entering Config::FETCH
-
-       2.      entering main::BEGIN
-                entering Config::BEGIN
-                 Package lib/Exporter.pm.
-                 Package lib/Carp.pm.
-                exited Config::BEGIN
-                Package lib/Config.pm.
-                entering Config::TIEHASH
-                exited Config::TIEHASH
-                entering Exporter::import
-                 entering Exporter::export
-                 exited Exporter::export
-                exited Exporter::import
-               exited main::BEGIN
-               entering Config::myconfig
-                entering Config::FETCH
-                exited Config::FETCH
-                entering Config::FETCH
-                exited Config::FETCH
-                entering Config::FETCH
-
-       3.      in  $=main::BEGIN() from /dev/nul:0
-                in  $=Config::BEGIN() from lib/Config.pm:2
-                 Package lib/Exporter.pm.
-                 Package lib/Carp.pm.
-                Package lib/Config.pm.
-                in  $=Config::TIEHASH('Config') from lib/Config.pm:644
-                in  $=Exporter::import('Config', 'myconfig', 'config_vars') from /dev/nul:0
-                 in  $=Exporter::export('Config', 'main', 'myconfig', 'config_vars') from li
-               in  @=Config::myconfig() from /dev/nul:0
-                in  $=Config::FETCH(ref(Config), 'package') from lib/Config.pm:574
-                in  $=Config::FETCH(ref(Config), 'baserev') from lib/Config.pm:574
-                in  $=Config::FETCH(ref(Config), 'PATCHLEVEL') from lib/Config.pm:574
-                in  $=Config::FETCH(ref(Config), 'SUBVERSION') from lib/Config.pm:574
-                in  $=Config::FETCH(ref(Config), 'osname') from lib/Config.pm:574
-                in  $=Config::FETCH(ref(Config), 'osvers') from lib/Config.pm:574
-
-       4.      in  $=main::BEGIN() from /dev/nul:0
-                in  $=Config::BEGIN() from lib/Config.pm:2
-                 Package lib/Exporter.pm.
-                 Package lib/Carp.pm.
-                out $=Config::BEGIN() from lib/Config.pm:0
-                Package lib/Config.pm.
-                in  $=Config::TIEHASH('Config') from lib/Config.pm:644
-                out $=Config::TIEHASH('Config') from lib/Config.pm:644
-                in  $=Exporter::import('Config', 'myconfig', 'config_vars') from /dev/nul:0
-                 in  $=Exporter::export('Config', 'main', 'myconfig', 'config_vars') from lib/
-                 out $=Exporter::export('Config', 'main', 'myconfig', 'config_vars') from lib/
-                out $=Exporter::import('Config', 'myconfig', 'config_vars') from /dev/nul:0
-               out $=main::BEGIN() from /dev/nul:0
-               in  @=Config::myconfig() from /dev/nul:0
-                in  $=Config::FETCH(ref(Config), 'package') from lib/Config.pm:574
-                out $=Config::FETCH(ref(Config), 'package') from lib/Config.pm:574
-                in  $=Config::FETCH(ref(Config), 'baserev') from lib/Config.pm:574
-                out $=Config::FETCH(ref(Config), 'baserev') from lib/Config.pm:574
-                in  $=Config::FETCH(ref(Config), 'PATCHLEVEL') from lib/Config.pm:574
-                out $=Config::FETCH(ref(Config), 'PATCHLEVEL') from lib/Config.pm:574
-                in  $=Config::FETCH(ref(Config), 'SUBVERSION') from lib/Config.pm:574
-
-       5.      in  $=main::BEGIN() from /dev/nul:0
-                in  $=Config::BEGIN() from lib/Config.pm:2
-                 Package lib/Exporter.pm.
-                 Package lib/Carp.pm.
-                out $=Config::BEGIN() from lib/Config.pm:0
-                Package lib/Config.pm.
-                in  $=Config::TIEHASH('Config') from lib/Config.pm:644
-                out $=Config::TIEHASH('Config') from lib/Config.pm:644
-                in  $=Exporter::import('Config', 'myconfig', 'config_vars') from /dev/nul:0
-                 in  $=Exporter::export('Config', 'main', 'myconfig', 'config_vars') from lib/E
-                 out $=Exporter::export('Config', 'main', 'myconfig', 'config_vars') from lib/E
-                out $=Exporter::import('Config', 'myconfig', 'config_vars') from /dev/nul:0
-               out $=main::BEGIN() from /dev/nul:0
-               in  @=Config::myconfig() from /dev/nul:0
-                in  $=Config::FETCH('Config=HASH(0x1aa444)', 'package') from lib/Config.pm:574
-                out $=Config::FETCH('Config=HASH(0x1aa444)', 'package') from lib/Config.pm:574
-                in  $=Config::FETCH('Config=HASH(0x1aa444)', 'baserev') from lib/Config.pm:574
-                out $=Config::FETCH('Config=HASH(0x1aa444)', 'baserev') from lib/Config.pm:574
-
-       6.      in  $=CODE(0x15eca4)() from /dev/null:0
-                in  $=CODE(0x182528)() from lib/Config.pm:2
-                 Package lib/Exporter.pm.
-                out $=CODE(0x182528)() from lib/Config.pm:0
-                scalar context return from CODE(0x182528): undef
-                Package lib/Config.pm.
-                in  $=Config::TIEHASH('Config') from lib/Config.pm:628
-                out $=Config::TIEHASH('Config') from lib/Config.pm:628
-                scalar context return from Config::TIEHASH:   empty hash
-                in  $=Exporter::import('Config', 'myconfig', 'config_vars') from /dev/null:0
-                 in  $=Exporter::export('Config', 'main', 'myconfig', 'config_vars') from lib/Exporter.pm:171
-                 out $=Exporter::export('Config', 'main', 'myconfig', 'config_vars') from lib/Exporter.pm:171
-                 scalar context return from Exporter::export: ''
-                out $=Exporter::import('Config', 'myconfig', 'config_vars') from /dev/null:0
-                scalar context return from Exporter::import: ''
-
-          In all the cases indentation of lines shows the call tree, if
-     bit 2 of `frame' is set, then a line is printed on exit from a
-     subroutine as well, if bit 4 is set, then the arguments are
-     printed as well as the caller info, if bit 8 is set, the arguments
-     are printed even if they are tied or references, if bit 16 is set,
-     the return value is printed as well.
-
-     When a package is compiled, a line like this
-
-          Package lib/Carp.pm.
-
-     is printed with proper indentation.
-
-Debugging compile-time statements
----------------------------------
-
-If you have any compile-time executable statements (code within a BEGIN
-block or a use statement), these will `NOT' be stopped by debugger,
-although requires will (and compile-time statements can be traced with
-`AutoTrace' option set in `PERLDB_OPTS').  From your own Perl code,
-however, you can transfer control back to the debugger using the
-following statement, which is harmless if the debugger is not running:
-
-     $DB::single = 1;
-
-If you set `$DB::single' to the value 2, it's equivalent to having just
-typed the n command, whereas a value of 1 means the s command.  The
-`$DB::trace'  variable should be set to 1 to simulate having typed the
-t command.
-
-Another way to debug compile-time code is to start debugger, set a
-breakpoint on *load* of some module thusly
-
-     DB<7> b load f:/perllib/lib/Carp.pm
-       Will stop on load of `f:/perllib/lib/Carp.pm'.
-
-and restart debugger by R command (if possible).  One can use `b
-compile subname' for the same purpose.
-
-Debugger Customization
-----------------------
-
-Most probably you not want to modify the debugger, it contains enough
-hooks to satisfy most needs.  You may change the behaviour of debugger
-from the debugger itself, using Options, from the command line via
-`PERLDB_OPTS' environment variable, and from *customization files*.
-
-You can do some customization by setting up a `.perldb' file which
-contains initialization code.  For instance, you could make aliases
-like these (the last one is one people expect to be there):
-
-     $DB::alias{'len'}  = 's/^len(.*)/p length($1)/';
-     $DB::alias{'stop'} = 's/^stop (at|in)/b/';
-     $DB::alias{'ps'}   = 's/^ps\b/p scalar /';
-     $DB::alias{'quit'} = 's/^quit(\s*)/exit\$/';
-
-One changes options from `.perldb' file via calls like this one;
-
-     parse_options("NonStop=1 LineInfo=db.out AutoTrace=1 frame=2");
-
-(the code is executed in the package `DB').  Note that `.perldb' is
-processed before processing `PERLDB_OPTS'.  If `.perldb' defines the
-subroutine `afterinit', it is called after all the debugger
-initialization ends.  `.perldb' may be contained in the current
-directory, or in the LOGDIR/HOME directory.
-
-If you want to modify the debugger, copy `perl5db.pl' from the Perl
-library to another name and modify it as necessary.  You'll also want
-to set your PERL5DB environment variable to say something like this:
-
-     BEGIN { require "myperl5db.pl" }
-
-As the last resort, one can use PERL5DB to customize debugger by
-directly setting internal variables or calling debugger functions.
-
-Readline Support
-----------------
-
-As shipped, the only command line history supplied is a simplistic one
-that checks for leading exclamation points.  However, if you install
-the Term::ReadKey and Term::ReadLine modules from CPAN, you will have
-full editing capabilities much like GNU *readline*(3) provides.  Look
-for these in the `modules/by-module/Term' directory on CPAN.
-
-A rudimentary command line completion is also available.
-Unfortunately, the names of lexical variables are not available for
-completion.
-
-Editor Support for Debugging
-----------------------------
-
-If you have GNU *emacs* installed on your system, it can interact with
-the Perl debugger to provide an integrated software development
-environment reminiscent of its interactions with C debuggers.
-
-Perl is also delivered with a start file for making *emacs* act like a
-syntax-directed editor that understands (some of) Perl's syntax.  Look
-in the *emacs* directory of the Perl source distribution.
-
-(Historically, a similar setup for interacting with *vi* and the X11
-window system had also been available, but at the time of this writing,
-no debugger support for *vi* currently exists.)
-
-The Perl Profiler
------------------
-
-If you wish to supply an alternative debugger for Perl to run, just
-invoke your script with a colon and a package argument given to the -d
-flag.  One of the most popular alternative debuggers for Perl is
-*DProf*, the Perl profiler.   As of this writing, *DProf* is not
-included with the standard Perl distribution, but it is expected to be
-included soon, for certain values of "soon".
-
-Meanwhile, you can fetch the Devel::Dprof module from CPAN.  Assuming
-it's properly installed on your system, to profile your Perl program in
-the file `mycode.pl', just type:
-
-     perl -d:DProf mycode.pl
-
-When the script terminates the profiler will dump the profile
-information to a file called `tmon.out'.  A tool like *dprofpp* (also
-supplied with the Devel::DProf package) can be used to interpret the
-information which is in that profile.
-
-Debugger support in perl
-------------------------
-
-When you call the caller function (see `caller', *Note Perlfunc:
-perlfunc,) from the package DB, Perl sets the array @DB::args to
-contain the arguments the corresponding stack frame was called with.
-
-If perl is run with -d option, the following additional features are
-enabled:
-
-   * Perl inserts the contents of `$ENV{PERL5DB}' (or `BEGIN {require
-     'perl5db.pl'}' if not present) before the first line of the
-     application.
-
-   * The array C<@{"_<$filename"}> is the line-by-line contents of
-     $filename for all the compiled files.  Same for evaled strings
-     which contain subroutines, or which are currently executed.  The
-     `$filename' for evaled strings looks like `(eval 34)'.
-
-   * The hash C<%{"_<$filename"}> contains breakpoints and action (it is
-     keyed by line number), and individual entries are settable (as
-     opposed to the whole hash).  Only true/false is important to Perl,
-     though the values used by `perl5db.pl' have the form
-     `"$break_condition\0$action"'.  Values are magical in numeric
-     context: they are zeros if the line is not breakable.
-
-     Same for evaluated strings which contain subroutines, or which are
-     currently executed.  The `$filename' for evaled strings looks like
-     `(eval 34)'.
-
-   * The scalar C<${"_<$filename"}> contains C<"_<$filename">.  Same for
-     evaluated strings which contain subroutines, or which are currently
-     executed.  The `$filename' for evaled strings looks like `(eval
-     34)'.
-
-   * After each required file is compiled, but before it is executed,
-     C<DB::postponed(*{"_<$filename"})> is called (if subroutine
-     `DB::postponed' exists).  Here the $filename is the expanded name
-     of the required file (as found in values of %INC).
-
-   * After each subroutine `subname' is compiled existence of
-     `$DB::postponed{subname}' is checked.  If this key exists,
-     `DB::postponed(subname)' is called (if subroutine `DB::postponed'
-     exists).
-
-   * A hash `%DB::sub' is maintained, with keys being subroutine names,
-     values having the form `filename:startline-endline'.  `filename'
-     has the form `(eval 31)' for subroutines defined inside evals.
-
-   * When execution of the application reaches a place that can have a
-     breakpoint, a call to `DB::DB()' is performed if any one of
-     variables $DB::trace, $DB::single, or $DB::signal is true. (Note
-     that these variables are not localizable.) This feature is
-     disabled when the control is inside `DB::DB()' or functions called
-     from it (unless C<$^D & (1<<30)>).
-
-   * When execution of the application reaches a subroutine call, a call
-     to `&DB::sub'(*args*) is performed instead, with `$DB::sub' being
-     the name of the called subroutine. (Unless the subroutine is
-     compiled in the package `DB'.)
-
-Note that no subroutine call is possible until `&DB::sub' is defined
-(for subroutines outside of package `DB').  (This restriction is
-recently lifted.)
-
-(In fact, for the standard debugger the same is true if `$DB::deep'
-(how many levels of recursion deep into the debugger you can go before
-a mandatory break) is not defined.)
-
-With the recent updates the minimal possible debugger consists of one
-line
-
-     sub DB::DB {}
-
-which is quite handy as contents of PERL5DB environment variable:
-
-     env "PERL5DB=sub DB::DB {}" perl -d your-script
-
-Another (a little bit more useful) minimal debugger can be created with
-the only line being
-
-     sub DB::DB {print ++$i; scalar <STDIN>}
-
-This debugger would print the sequential number of encountered
-statement, and would wait for your `CR' to continue.
-
-The following debugger is quite functional:
-
-     {
-       package DB;
-       sub DB  {}
-       sub sub {print ++$i, " $sub\n"; &$sub}
-     }
-
-It prints the sequential number of subroutine call and the name of the
-called subroutine.  Note that `&DB::sub' should be compiled into the
-package `DB'.
-
-Debugger Internals
-------------------
-
-At the start, the debugger reads your rc file (`./.perldb' or
-`~/.perldb' under Unix), which can set important options.  This file may
-define a subroutine `&afterinit' to be executed after the debugger is
-initialized.
-
-After the rc file is read, the debugger reads environment variable
-PERLDB_OPTS and parses it as a rest of `O ...' line in debugger prompt.
-
-It also maintains magical internal variables, such as `@DB::dbline',
-`%DB::dbline', which are aliases for C<@{"::_<current_file"}>
-C<%{"::_<current_file"}>.  Here `current_file' is the currently
-selected (with the debugger's f command, or by flow of execution) file.
-
-Some functions are provided to simplify customization.  See `"Debugger
-Customization"' in this node for description of
-`DB::parse_options(string)'.  The function `DB::dump_trace(skip[,
-count])' skips the specified number of frames, and returns an array
-containing info about the caller frames (all if `count' is missing).
-Each entry is a hash with keys `context' (`$' or `@'), sub (subroutine
-name, or info about eval), `args' (undef or a reference to an array),
-`file', and `line'.
-
-The function `DB::print_trace(FH, skip[, count[, short]])' prints
-formatted info about caller frames.  The last two functions may be
-convenient as arguments to C<<>, `<<' commands.
-
-Other resources
----------------
-
-You did try the -w switch, didn't you?
-
-BUGS
-====
-
-You cannot get the stack frame information or otherwise debug functions
-that were not compiled by Perl, such as C or C++ extensions.
-
-If you alter your @_ arguments in a subroutine (such as with shift or
-pop, the stack backtrace will not show the original values.
+These messages are classified as follows (listed in increasing order of
+desperation):
+
+     (W) A warning (optional).
+     (D) A deprecation (optional).
+     (S) A severe warning (mandatory).
+     (F) A fatal error (trappable).
+     (P) An internal error you should never see (trappable).
+     (X) A very fatal error (nontrappable).
+     (A) An alien error message (not generated by Perl).
+
+Optional warnings are enabled by using the -w switch.  Warnings may be
+captured by setting `$SIG{__WARN__}' to a reference to a routine that
+will be called on each warning instead of printing it.  See *Note
+Perlvar: perlvar.  Trappable errors may be trapped using the eval
+operator.  See `eval', *Note Perlfunc: perlfunc.
+
+Some of these messages are generic.  Spots that vary are denoted with a
+%s, just as in a printf format.  Note that some messages start with a
+%s!  The symbols `"%-?@' sort before the letters, while `[' and `\'
+sort after.
+
+`"my" variable %s can't be in a package'
+     (F) Lexically scoped variables aren't in a package, so it doesn't
+     make sense to try to declare one with a package qualifier on the
+     front.  Use local() if you want to localize a package variable.
+
+`"my" variable %s masks earlier declaration in same scope'
+     (S) A lexical variable has been redeclared in the same scope,
+     effectively eliminating all access to the previous instance.  This
+     is almost always a typographical error.  Note that the earlier
+     variable will still exist until the end of the scope or until all
+     closure referents to it are destroyed.
+
+`"no" not allowed in expression'
+     (F) The "no" keyword is recognized and executed at compile time,
+     and returns no useful value.  See *Note Perlmod: perlmod.
+
+`"use" not allowed in expression'
+     (F) The "use" keyword is recognized and executed at compile time,
+     and returns no useful value.  See *Note Perlmod: perlmod.
+
+`% may only be used in unpack'
+     (F) You can't pack a string by supplying a checksum, because the
+     checksumming process loses information, and you can't go the other
+     way.  See `unpack', *Note Perlfunc: perlfunc.
+
+`%s (...) interpreted as function'
+     (W) You've run afoul of the rule that says that any list operator
+     followed by parentheses turns into a function, with all the list
+     operators arguments found inside the parentheses.  See `Terms and
+     List Operators (Leftward)', *Note Perlop: perlop.
+
+`%s argument is not a HASH element'
+     (F) The argument to exists() must be a hash element, such as
+
+          $foo{$bar}
+          $ref->[12]->{"susie"}
+
+`%s argument is not a HASH element or slice'
+     (F) The argument to delete() must be either a hash element, such as
+
+          $foo{$bar}
+          $ref->[12]->{"susie"}
+
+     or a hash slice, such as
+
+          @foo{$bar, $baz, $xyzzy}
+          @{$ref->[12]}{"susie", "queue"}
+
+`%s did not return a true value'
+     (F) A required (or used) file must return a true value to indicate
+     that it compiled correctly and ran its initialization code
+     correctly.  It's traditional to end such a file with a "1;",
+     though any true value would do.  See `require', *Note Perlfunc:
+     perlfunc.
+
+`%s found where operator expected'
+     (S) The Perl lexer knows whether to expect a term or an operator.
+     If it sees what it knows to be a term when it was expecting to see
+     an operator, it gives you this warning.  Usually it indicates that
+     an operator or delimiter was omitted, such as a semicolon.
+
+`%s had compilation errors'
+     (F) The final summary message when a `perl -c' fails.
+
+`%s has too many errors'
+     (F) The parser has given up trying to parse the program after 10
+     errors.  Further error messages would likely be uninformative.
+
+`%s matches null string many times'
+     (W) The pattern you've specified would be an infinite loop if the
+     regular expression engine didn't specifically check for that.  See
+     *Note Perlre: perlre.
+
+`%s never introduced'
+     (S) The symbol in question was declared but somehow went out of
+     scope before it could possibly have been used.
+
+`%s syntax OK'
+     (F) The final summary message when a `perl -c' succeeds.
+
+`%s: Command not found'
+     (A) You've accidentally run your script through *csh* instead of
+     Perl.  Check the #! line, or manually feed your script into Perl
+     yourself.
+
+`%s: Expression syntax'
+     (A) You've accidentally run your script through *csh* instead of
+     Perl.  Check the #! line, or manually feed your script into Perl
+     yourself.
+
+`%s: Undefined variable'
+     (A) You've accidentally run your script through *csh* instead of
+     Perl.  Check the #! line, or manually feed your script into Perl
+     yourself.
+
+`%s: not found'
+     (A) You've accidentally run your script through the Bourne shell
+     instead of Perl.  Check the #! line, or manually feed your script
+     into Perl yourself.
+
+`-P not allowed for setuid/setgid script'
+     (F) The script would have to be opened by the C preprocessor by
+     name, which provides a race condition that breaks security.
+
+`-T and `-B' not implemented on filehandles'
+     (F) Perl can't peek at the stdio buffer of filehandles when it
+     doesn't know about your kind of stdio.  You'll have to use a
+     filename instead.
+
+`500 Server error'
+     See Server error.
+
+`?+* follows nothing in regexp'
+     (F) You started a regular expression with a quantifier.  Backslash
+     it if you meant it literally.   See *Note Perlre: perlre.
+
+`@ outside of string'
+     (F) You had a pack template that specified an absolute position
+     outside the string being unpacked.  See `pack', *Note Perlfunc:
+     perlfunc.
+
+`accept() on closed fd'
+     (W) You tried to do an accept on a closed socket.  Did you forget
+     to check the return value of your socket() call?  See `accept',
+     *Note Perlfunc: perlfunc.
+
+`Allocation too large: %lx'
+     (X) You can't allocate more than 64K on an MS-DOS machine.
+
+`Allocation too large'
+     (F) You can't allocate more than 2^31+"small amount" bytes.
+
+`Applying %s to %s will act on scalar(%s)'
+     (W) The pattern match (//), substitution (s///), and translation
+     (tr///) operators work on scalar values.  If you apply one of them
+     to an array or a hash, it will convert the array or hash to a
+     scalar value - the length of an array, or the population info of a
+     hash - and then work on that scalar value.  This is probably not
+     what you meant to do.  See `grep', *Note Perlfunc: perlfunc, and
+     `map', *Note Perlfunc: perlfunc, for alternatives.
+
+`Arg too short for msgsnd'
+     (F) msgsnd() requires a string at least as long as sizeof(long).
+
+`Ambiguous use of %s resolved as %s'
+     (W)(S) You said something that may not be interpreted the way you
+     thought.  Normally it's pretty easy to disambiguate it by supplying
+     a missing quote, operator, parenthesis pair or declaration.
+
+`Args must match #! line'
+     (F) The setuid emulator requires that the arguments Perl was
+     invoked with match the arguments specified on the #! line.  Since
+     some systems impose a one-argument limit on the #! line, try
+     combining switches; for example, turn `-w -U' into `-wU'.
+
+`Argument "%s" isn't numeric%s'
+     (W) The indicated string was fed as an argument to an operator that
+     expected a numeric value instead.  If you're fortunate the message
+     will identify which operator was so unfortunate.
+
+`Array @%s missing the @ in argument %d of %s()'
+     (D) Really old Perl let you omit the @ on array names in some
+     spots.  This is now heavily deprecated.
+
+`assertion botched: %s'
+     (P) The malloc package that comes with Perl had an internal
+     failure.
+
+`Assertion failed: file "%s"'
+     (P) A general assertion failed.  The file in question must be
+     examined.
+
+`Assignment to both a list and a scalar'
+     (F) If you assign to a conditional operator, the 2nd and 3rd
+     arguments must either both be scalars or both be lists.  Otherwise
+     Perl won't know which context to supply to the right side.
+
+`Attempt to free non-arena SV: 0x%lx'
+     (P) All SV objects are supposed to be allocated from arenas that
+     will be garbage collected on exit.  An SV was discovered to be
+     outside any of those arenas.
+
+`Attempt to free nonexistent shared string'
+     (P) Perl maintains a reference counted internal table of strings to
+     optimize the storage and access of hash keys and other strings.
+     This indicates someone tried to decrement the reference count of a
+     string that can no longer be found in the table.
+
+`Attempt to free temp prematurely'
+     (W) Mortalized values are supposed to be freed by the free_tmps()
+     routine.  This indicates that something else is freeing the SV
+     before the free_tmps() routine gets a chance, which means that the
+     free_tmps() routine will be freeing an unreferenced scalar when it
+     does try to free it.
+
+`Attempt to free unreferenced glob pointers'
+     (P) The reference counts got screwed up on symbol aliases.
+
+`Attempt to free unreferenced scalar'
+     (W) Perl went to decrement the reference count of a scalar to see
+     if it would go to 0, and discovered that it had already gone to 0
+     earlier, and should have been freed, and in fact, probably was
+     freed.  This could indicate that SvREFCNT_dec() was called too
+     many times, or that SvREFCNT_inc() was called too few times, or
+     that the SV was mortalized when it shouldn't have been, or that
+     memory has been corrupted.
+
+`Attempt to use reference as lvalue in substr'
+     (W) You supplied a reference as the first argument to substr() used
+     as an lvalue, which is pretty strange.  Perhaps you forgot to
+     dereference it first.  See `substr', *Note Perlfunc: perlfunc.
+
+`Bad arg length for %s, is %d, should be %d'
+     (F) You passed a buffer of the wrong size to one of msgctl(),
+     semctl() or shmctl().  In C parlance, the correct sizes are,
+     respectively, sizeof(struct msqid_ds *),
+     sizeof(struct semid_ds *), and sizeof(struct shmid_ds *).
+
+`Bad filehandle: %s'
+     (F) A symbol was passed to something wanting a filehandle, but the
+     symbol has no filehandle associated with it.  Perhaps you didn't
+     do an open(), or did it in another package.
+
+`Bad free() ignored'
+     (S) An internal routine called free() on something that had never
+     been malloc()ed in the first place. Mandatory, but can be disabled
+     by setting environment variable `PERL_BADFREE' to 1.
+
+     This message can be quite often seen with DB_File on systems with
+     "hard" dynamic linking, like `AIX' and OS/2. It is a bug of
+     `Berkeley DB' which is left unnoticed if `DB' uses *forgiving*
+     system malloc().
+
+`Bad hash'
+     (P) One of the internal hash routines was passed a null HV pointer.
+
+`Bad name after %s::'
+     (F) You started to name a symbol by using a package prefix, and
+     then didn't finish the symbol.  In particular, you can't
+     interpolate outside of quotes, so
+
+          $var = 'myvar';
+          $sym = mypack::$var;
+
+     is not the same as
+
+          $var = 'myvar';
+          $sym = "mypack::$var";
+
+`Bad symbol for array'
+     (P) An internal request asked to add an array entry to something
+     that wasn't a symbol table entry.
+
+`Bad symbol for filehandle'
+     (P) An internal request asked to add a filehandle entry to
+     something that wasn't a symbol table entry.
+
+`Bad symbol for hash'
+     (P) An internal request asked to add a hash entry to something that
+     wasn't a symbol table entry.
+
+`Badly placed ()'s'
+     (A) You've accidentally run your script through *csh* instead of
+     Perl.  Check the #! line, or manually feed your script into Perl
+     yourself.
+
+`Bareword "%s" not allowed while "strict subs" in use'
+     (F) With "strict subs" in use, a bareword is only allowed as a
+     subroutine identifier, in curly braces or to the left of the "=>"
+     symbol.  Perhaps you need to predeclare a subroutine?
+
+`BEGIN failed--compilation aborted'
+     (F) An untrapped exception was raised while executing a BEGIN
+     subroutine.  Compilation stops immediately and the interpreter is
+     exited.
+
+`BEGIN not safe after errors--compilation aborted'
+     (F) Perl found a `BEGIN {}' subroutine (or a use directive, which
+     implies a `BEGIN {}') after one or more compilation errors had
+     already occurred.  Since the intended environment for the `BEGIN
+     {}' could not be guaranteed (due to the errors), and since
+     subsequent code likely depends on its correct operation, Perl just
+     gave up.
+
+`bind() on closed fd'
+     (W) You tried to do a bind on a closed socket.  Did you forget to
+     check the return value of your socket() call?  See `bind', *Note
+     Perlfunc: perlfunc.
+
+`Bizarre copy of %s in %s'
+     (P) Perl detected an attempt to copy an internal value that is not
+     copiable.
+
+`Callback called exit'
+     (F) A subroutine invoked from an external package via
+     perl_call_sv() exited by calling exit.
+
+`Can't "goto" outside a block'
+     (F) A "goto" statement was executed to jump out of what might look
+     like a block, except that it isn't a proper block.  This usually
+     occurs if you tried to jump out of a sort() block or subroutine,
+     which is a no-no.  See `goto', *Note Perlfunc: perlfunc.
+
+`Can't "last" outside a block'
+     (F) A "last" statement was executed to break out of the current
+     block, except that there's this itty bitty problem called there
+     isn't a current block.  Note that an "if" or "else" block doesn't
+     count as a "loopish" block, as doesn't a block given to sort().
+     You can usually double the curlies to get the same effect though,
+     because the inner curlies will be considered a block that loops
+     once.  See `last', *Note Perlfunc: perlfunc.
+
+`Can't "next" outside a block'
+     (F) A "next" statement was executed to reiterate the current
+     block, but there isn't a current block.  Note that an "if" or
+     "else" block doesn't count as a "loopish" block, as doesn't a
+     block given to sort().  You can usually double the curlies to get
+     the same effect though, because the inner curlies will be
+     considered a block that loops once.  See `next', *Note Perlfunc:
+     perlfunc.
+
+`Can't "redo" outside a block'
+     (F) A "redo" statement was executed to restart the current block,
+     but there isn't a current block.  Note that an "if" or "else"
+     block doesn't count as a "loopish" block, as doesn't a block given
+     to sort().  You can usually double the curlies to get the same
+     effect though, because the inner curlies will be considered a
+     block that loops once.  See `redo', *Note Perlfunc: perlfunc.
+
+`Can't bless non-reference value'
+     (F) Only hard references may be blessed.  This is how Perl
+     "enforces" encapsulation of objects.  See *Note Perlobj: perlobj.
+
+`Can't break at that line'
+     (S) A warning intended to only be printed while running within the
+     debugger, indicating the line number specified wasn't the location
+     of a statement that could be stopped at.
+
+`Can't call method "%s" in empty package "%s"'
+     (F) You called a method correctly, and it correctly indicated a
+     package functioning as a class, but that package doesn't have
+     ANYTHING defined in it, let alone methods.  See *Note Perlobj:
+     perlobj.
+
+`Can't call method "%s" on unblessed reference'
+     (F) A method call must know in what package it's supposed to run.
+     It ordinarily finds this out from the object reference you supply,
+     but you didn't supply an object reference in this case.  A
+     reference isn't an object reference until it has been blessed.
+     See *Note Perlobj: perlobj.
+
+`Can't call method "%s" without a package or object reference'
+     (F) You used the syntax of a method call, but the slot filled by
+     the object reference or package name contains an expression that
+     returns neither an object reference nor a package name.  (Perhaps
+     it's null?) Something like this will reproduce the error:
+
+          $BADREF = undef;
+          process $BADREF 1,2,3;
+          $BADREF->process(1,2,3);
+
+`Can't chdir to %s'
+     (F) You called `perl -x/foo/bar', but `/foo/bar' is not a directory
+     that you can chdir to, possibly because it doesn't exist.
+
+`Can't coerce %s to integer in %s'
+     (F) Certain types of SVs, in particular real symbol table entries
+     (typeglobs), can't be forced to stop being what they are.  So you
+     can't say things like:
+
+          *foo += 1;
+
+     You CAN say
+
+          $foo = *foo;
+          $foo += 1;
+
+     but then $foo no longer contains a glob.
+
+`Can't coerce %s to number in %s'
+     (F) Certain types of SVs, in particular real symbol table entries
+     (typeglobs), can't be forced to stop being what they are.
+
+`Can't coerce %s to string in %s'
+     (F) Certain types of SVs, in particular real symbol table entries
+     (typeglobs), can't be forced to stop being what they are.
+
+`Can't create pipe mailbox'
+     (P) An error peculiar to VMS.  The process is suffering from
+     exhausted quotas or other plumbing problems.
+
+`Can't declare %s in my'
+     (F) Only scalar, array, and hash variables may be declared as
+     lexical variables.  They must have ordinary identifiers as names.
+
+`Can't do inplace edit on %s: %s'
+     (S) The creation of the new file failed for the indicated reason.
+
+`Can't do inplace edit without backup'
+     (F) You're on a system such as MS-DOS that gets confused if you
+     try reading from a deleted (but still opened) file.  You have to
+     say `-i.bak', or some such.
+
+`Can't do inplace edit: %s > 14 characters'
+     (S) There isn't enough room in the filename to make a backup name
+     for the file.
+
+`Can't do inplace edit: %s is not a regular file'
+     (S) You tried to use the -i switch on a special file, such as a
+     file in /dev, or a FIFO.  The file was ignored.
+
+`Can't do setegid!'
+     (P) The setegid() call failed for some reason in the setuid
+     emulator of suidperl.
+
+`Can't do seteuid!'
+     (P) The setuid emulator of suidperl failed for some reason.
+
+`Can't do setuid'
+     (F) This typically means that ordinary perl tried to exec suidperl
+     to do setuid emulation, but couldn't exec it.  It looks for a name
+     of the form sperl5.000 in the same directory that the perl
+     executable resides under the name perl5.000, typically
+     /usr/local/bin on Unix machines.  If the file is there, check the
+     execute permissions.  If it isn't, ask your sysadmin why he and/or
+     she removed it.
+
+`Can't do waitpid with flags'
+     (F) This machine doesn't have either waitpid() or wait4(), so only
+     waitpid() without flags is emulated.
+
+`Can't do {n,m} with n > m'
+     (F) Minima must be less than or equal to maxima.  If you really
+     want your regexp to match something 0 times, just put {0}.  See
+     *Note Perlre: perlre.
+
+`Can't emulate -%s on #! line'
+     (F) The #! line specifies a switch that doesn't make sense at this
+     point.  For example, it'd be kind of silly to put a -x on the #!
+     line.
+
+`Can't exec "%s": %s'
+     (W) An system(), exec(), or piped open call could not execute the
+     named program for the indicated reason.  Typical reasons include:
+     the permissions were wrong on the file, the file wasn't found in
+     `$ENV{PATH}', the executable in question was compiled for another
+     architecture, or the #! line in a script points to an interpreter
+     that can't be run for similar reasons.  (Or maybe your system
+     doesn't support #! at all.)
+
+`Can't exec %s'
+     (F) Perl was trying to execute the indicated program for you
+     because that's what the #! line said.  If that's not what you
+     wanted, you may need to mention "perl" on the #! line somewhere.
+
+`Can't execute %s'
+     (F) You used the -S switch, but the script to execute could not be
+     found in the PATH, or at least not with the correct permissions.
+
+`Can't find label %s'
+     (F) You said to goto a label that isn't mentioned anywhere that
+     it's possible for us to go to.  See `goto', *Note Perlfunc:
+     perlfunc.
+
+`Can't find string terminator %s anywhere before EOF'
+     (F) Perl strings can stretch over multiple lines.  This message
+     means that the closing delimiter was omitted.  Because bracketed
+     quotes count nesting levels, the following is missing its final
+     parenthesis:
+
+          print q(The character '(' starts a side comment.)
+
+`Can't fork'
+     (F) A fatal error occurred while trying to fork while opening a
+     pipeline.
+
+`Can't get filespec - stale stat buffer?'
+     (S) A warning peculiar to VMS.  This arises because of the
+     difference between access checks under VMS and under the Unix
+     model Perl assumes.  Under VMS, access checks are done by
+     filename, rather than by bits in the stat buffer, so that ACLs and
+     other protections can be taken into account.  Unfortunately, Perl
+     assumes that the stat buffer contains all the necessary
+     information, and passes it, instead of the filespec, to the access
+     checking routine.  It will try to retrieve the filespec using the
+     device name and FID present in the stat buffer, but this works
+     only if you haven't made a subsequent call to the CRTL stat()
+     routine, because the device name is overwritten with each call.
+     If this warning appears, the name lookup failed, and the access
+     checking routine gave up and returned FALSE, just to be
+     conservative.  (Note: The access checking routine knows about the
+     Perl stat operator and file tests, so you shouldn't ever see this
+     warning in response to a Perl command; it arises only if some
+     internal code takes stat buffers lightly.)
+
+`Can't get pipe mailbox device name'
+     (P) An error peculiar to VMS.  After creating a mailbox to act as
+     a pipe, Perl can't retrieve its name for later use.
+
+`Can't get SYSGEN parameter value for MAXBUF'
+     (P) An error peculiar to VMS.  Perl asked $GETSYI how big you want
+     your mailbox buffers to be, and didn't get an answer.
+
+`Can't goto subroutine outside a subroutine'
+     (F) The deeply magical "goto subroutine" call can only replace one
+     subroutine call for another.  It can't manufacture one out of
+     whole cloth.  In general you should be calling it out of only an
+     AUTOLOAD routine anyway.  See `goto', *Note Perlfunc: perlfunc.
+
+`Can't localize a reference'
+     (F) You said something like `local $$ref', which is not allowed
+     because the compiler can't determine whether $ref will end up
+     pointing to anything with a symbol table entry, and a symbol table
+     entry is necessary to do a local.
+
+`Can't localize lexical variable %s'
+     (F) You used local on a variable name that was previously declared
+     as a lexical variable using "my".  This is not allowed.  If you
+     want to localize a package variable of the same name, qualify it
+     with the package name.
+
+`Can't locate %s in @INC'
+     (F) You said to do (or require, or use) a file that couldn't be
+     found in any of the libraries mentioned in @INC.  Perhaps you need
+     to set the PERL5LIB or PERL5OPT environment variable to say where
+     the extra library is, or maybe the script needs to add the library
+     name to @INC.  Or maybe you just misspelled the name of the file.
+     See `require', *Note Perlfunc: perlfunc.
+
+`Can't locate object method "%s" via package "%s"'
+     (F) You called a method correctly, and it correctly indicated a
+     package functioning as a class, but that package doesn't define
+     that particular method, nor does any of its base classes.  See
+     *Note Perlobj: perlobj.
+
+`Can't locate package %s for @%s::ISA'
+     (W) The @ISA array contained the name of another package that
+     doesn't seem to exist.
+
+`Can't make list assignment to \%ENV on this system'
+     (F) List assignment to %ENV is not supported on some systems,
+     notably VMS.
+
+`Can't mktemp()'
+     (F) The mktemp() routine failed for some reason while trying to
+     process a -e switch.  Maybe your /tmp partition is full, or
+     clobbered.
+
+`Can't modify %s in %s'
+     (F) You aren't allowed to assign to the item indicated, or
+     otherwise try to change it, such as with an auto-increment.
+
+`Can't modify nonexistent substring'
+     (P) The internal routine that does assignment to a substr() was
+     handed a NULL.
+
+`Can't msgrcv to read-only var'
+     (F) The target of a msgrcv must be modifiable to be used as a
+     receive buffer.
+
+`Can't open %s: %s'
+     (S) An inplace edit couldn't open the original file for the
+     indicated reason.  Usually this is because you don't have read
+     permission for the file.
+
+`Can't open bidirectional pipe'
+     (W) You tried to say `open(CMD, "|cmd|")', which is not supported.
+     You can try any of several modules in the Perl library to do
+     this, such as IPC::Open2.  Alternately, direct the pipe's output
+     to a file using ">", and then read it in under a different file
+     handle.
+
+`Can't open error file %s as stderr'
+     (F) An error peculiar to VMS.  Perl does its own command line
+     redirection, and couldn't open the file specified after '2>' or
+     '2>>' on the command line for writing.
+
+`Can't open input file %s as stdin'
+     (F) An error peculiar to VMS.  Perl does its own command line
+     redirection, and couldn't open the file specified after '<' on the
+     command line for reading.
+
+`Can't open output file %s as stdout'
+     (F) An error peculiar to VMS.  Perl does its own command line
+     redirection, and couldn't open the file specified after '>' or
+     '>>' on the command line for writing.
+
+`Can't open output pipe (name: %s)'
+     (P) An error peculiar to VMS.  Perl does its own command line
+     redirection, and couldn't open the pipe into which to send data
+     destined for stdout.
+
+`Can't open perl script "%s": %s'
+     (F) The script you specified can't be opened for the indicated
+     reason.
+
+`Can't redefine active sort subroutine %s'
+     (F) Perl optimizes the internal handling of sort subroutines and
+     keeps pointers into them.  You tried to redefine one such sort
+     subroutine when it was currently active, which is not allowed.  If
+     you really want to do this, you should write `sort { &func } @x'
+     instead of `sort func @x'.
+
+`Can't rename %s to %s: %s, skipping file'
+     (S) The rename done by the -i switch failed for some reason,
+     probably because you don't have write permission to the directory.
+
+`Can't reopen input pipe (name: %s) in binary mode'
+     (P) An error peculiar to VMS.  Perl thought stdin was a pipe, and
+     tried to reopen it to accept binary data.  Alas, it failed.
+
+`Can't reswap uid and euid'
+     (P) The setreuid() call failed for some reason in the setuid
+     emulator of suidperl.
+
+`Can't return outside a subroutine'
+     (F) The return statement was executed in mainline code, that is,
+     where there was no subroutine call to return out of.  See *Note
+     Perlsub: perlsub.
+
+`Can't stat script "%s"'
+     (P) For some reason you can't fstat() the script even though you
+     have it open already.  Bizarre.
+
+`Can't swap uid and euid'
+     (P) The setreuid() call failed for some reason in the setuid
+     emulator of suidperl.
+
+`Can't take log of %g'
+     (F) Logarithms are defined on only positive real numbers.
+
+`Can't take sqrt of %g'
+     (F) For ordinary real numbers, you can't take the square root of a
+     negative number.  There's a Complex package available for Perl,
+     though, if you really want to do that.
+
+`Can't undef active subroutine'
+     (F) You can't undefine a routine that's currently running.  You
+     can, however, redefine it while it's running, and you can even
+     undef the redefined subroutine while the old routine is running.
+     Go figure.
+
+`Can't unshift'
+     (F) You tried to unshift an "unreal" array that can't be
+     unshifted, such as the main Perl stack.
+
+`Can't upgrade that kind of scalar'
+     (P) The internal sv_upgrade routine adds "members" to an SV, making
+     it into a more specialized kind of SV.  The top several SV types
+     are so specialized, however, that they cannot be interconverted.
+     This message indicates that such a conversion was attempted.
+
+`Can't upgrade to undef'
+     (P) The undefined SV is the bottom of the totem pole, in the scheme
+     of upgradability.  Upgrading to undef indicates an error in the
+     code calling sv_upgrade.
+
+`Can't use "my %s" in sort comparison'
+     (F) The global variables $a and $b are reserved for sort
+     comparisons.  You mentioned $a or $b in the same line as the <=>
+     or cmp operator, and the variable had earlier been declared as a
+     lexical variable.  Either qualify the sort variable with the
+     package name, or rename the lexical variable.
+
+`Can't use %s for loop variable'
+     (F) Only a simple scalar variable may be used as a loop variable
+     on a foreach.
+
+`Can't use %s ref as %s ref'
+     (F) You've mixed up your reference types.  You have to dereference
+     a reference of the type needed.  You can use the ref() function to
+     test the type of the reference, if need be.
+
+`Can't use \1 to mean $1 in expression'
+     (W) In an ordinary expression, backslash is a unary operator that
+     creates a reference to its argument.  The use of backslash to
+     indicate a backreference to a matched substring is valid only as
+     part of a regular expression pattern.  Trying to do this in
+     ordinary Perl code produces a value that prints out looking like
+     SCALAR(0xdecaf).  Use the $1 form instead.
+
+`Can't use bareword ("%s") as %s ref while \"strict refs\" in use'
+     (F) Only hard references are allowed by "strict refs".  Symbolic
+     references are disallowed.  See *Note Perlref: perlref.
+
+`Can't use string ("%s") as %s ref while "strict refs" in use'
+     (F) Only hard references are allowed by "strict refs".  Symbolic
+     references are disallowed.  See *Note Perlref: perlref.
+
+`Can't use an undefined value as %s reference'
+     (F) A value used as either a hard reference or a symbolic
+     reference must be a defined value.  This helps to delurk some
+     insidious errors.
+
+`Can't use global %s in "my"'
+     (F) You tried to declare a magical variable as a lexical variable.
+     This is not allowed, because the magic can be tied to only one
+     location (namely the global variable) and it would be incredibly
+     confusing to have variables in your program that looked like
+     magical variables but weren't.
+
+`Can't use subscript on %s'
+     (F) The compiler tried to interpret a bracketed expression as a
+     subscript.  But to the left of the brackets was an expression that
+     didn't look like an array reference, or anything else
+     subscriptable.
+
+`Can't write to temp file for -e: %s'
+     (F) The write routine failed for some reason while trying to
+     process a -e switch.  Maybe your /tmp partition is full, or
+     clobbered.
+
+`Can't x= to read-only value'
+     (F) You tried to repeat a constant value (often the undefined
+     value) with an assignment operator, which implies modifying the
+     value itself.  Perhaps you need to copy the value to a temporary,
+     and repeat that.
+
+`Cannot open temporary file'
+     (F) The create routine failed for some reason while trying to
+     process a -e switch.  Maybe your /tmp partition is full, or
+     clobbered.
+
+`Cannot resolve method `%s' overloading `%s' in package `%s''
+     (F|P) Error resolving overloading specified by a method name (as
+     opposed to a subroutine reference): no such method callable via the
+     package. If method name is `???', this is an internal error.
+
+`chmod: mode argument is missing initial 0'
+     (W) A novice will sometimes say
+
+          chmod 777, $filename
+
+     not realizing that 777 will be interpreted as a decimal number,
+     equivalent to 01411.  Octal constants are introduced with a
+     leading 0 in Perl, as in C.
+
+`Close on unopened file <%s>'
+     (W) You tried to close a filehandle that was never opened.
+
+`Compilation failed in require'
+     (F) Perl could not compile a file specified in a require statement.
+     Perl uses this generic message when none of the errors that it
+     encountered were severe enough to halt compilation immediately.
+
+`connect() on closed fd'
+     (W) You tried to do a connect on a closed socket.  Did you forget
+     to check the return value of your socket() call?  See `connect',
+     *Note Perlfunc: perlfunc.
+
+`Constant subroutine %s redefined'
+     (S) You redefined a subroutine which had previously been eligible
+     for inlining.  See `"Constant Functions"', *Note Perlsub: perlsub,
+     for commentary and workarounds.
+
+`Constant subroutine %s undefined'
+     (S) You undefined a subroutine which had previously been eligible
+     for inlining.  See `"Constant Functions"', *Note Perlsub: perlsub,
+     for commentary and workarounds.
+
+`Copy method did not return a reference'
+     (F) The method which overloads "=" is buggy. See `overload' in
+     this node.
+
+`Corrupt malloc ptr 0x%lx at 0x%lx'
+     (P) The malloc package that comes with Perl had an internal
+     failure.
+
+`corrupted regexp pointers'
+     (P) The regular expression engine got confused by what the regular
+     expression compiler gave it.
+
+`corrupted regexp program'
+     (P) The regular expression engine got passed a regexp program
+     without a valid magic number.
+
+`Deep recursion on subroutine "%s"'
+     (W) This subroutine has called itself (directly or indirectly) 100
+     times more than it has returned.  This probably indicates an
+     infinite recursion, unless you're writing strange benchmark
+     programs, in which case it indicates something else.
+
+`Delimiter for here document is too long'
+     (F) In a here document construct like C<<<FOO>, the label `FOO' is
+     too long for Perl to handle.  You have to be seriously twisted to
+     write code that triggers this error.
+
+`Did you mean &%s instead?'
+     (W) You probably referred to an imported subroutine &FOO as $FOO
+     or some such.
+
+`Did you mean $ or @ instead of %?'
+     (W) You probably said %hash{$key} when you meant $hash{$key} or
+     @hash{@keys}.  On the other hand, maybe you just meant %hash and
+     got carried away.
+
+`Died'
+     (F) You passed die() an empty string (the equivalent of `die ""')
+     or you called it with no args and both `$@' and $_ were empty.
+
+`Do you need to predeclare %s?'
+     (S) This is an educated guess made in conjunction with the message
+     "%s found where operator expected".  It often means a subroutine
+     or module name is being referenced that hasn't been declared yet.
+     This may be because of ordering problems in your file, or because
+     of a missing "sub", "package", "require", or "use" statement.  If
+     you're referencing something that isn't defined yet, you don't
+     actually have to define the subroutine or package before the
+     current location.  You can use an empty "sub foo;" or "package
+     FOO;" to enter a "forward" declaration.
+
+`Don't know how to handle magic of type '%s''
+     (P) The internal handling of magical variables has been cursed.
+
+`do_study: out of memory'
+     (P) This should have been caught by safemalloc() instead.
+
+`Duplicate free() ignored'
+     (S) An internal routine called free() on something that had already
+     been freed.
+
+`elseif should be elsif'
+     (S) There is no keyword "elseif" in Perl because Larry thinks it's
+     ugly.  Your code will be interpreted as an attempt to call a method
+     named "elseif" for the class returned by the following block.
+     This is unlikely to be what you want.
+
+`END failed--cleanup aborted'
+     (F) An untrapped exception was raised while executing an END
+     subroutine.  The interpreter is immediately exited.
+
+`Error converting file specification %s'
+     (F) An error peculiar to VMS.  Because Perl may have to deal with
+     file specifications in either VMS or Unix syntax, it converts them
+     to a single form when it must operate on them directly.  Either
+     you've passed an invalid file specification to Perl, or you've
+     found a case the conversion routines don't handle.  Drat.
+
+`Excessively long <> operator'
+     (F) The contents of a <> operator may not exceed the maximum size
+     of a Perl identifier.  If you're just trying to glob a long list of
+     filenames, try using the glob() operator, or put the filenames
+     into a variable and glob that.
+
+`Execution of %s aborted due to compilation errors'
+     (F) The final summary message when a Perl compilation fails.
+
+`Exiting eval via %s'
+     (W) You are exiting an eval by unconventional means, such as a
+     goto, or a loop control statement.
+
+`Exiting pseudo-block via %s'
+     (W) You are exiting a rather special block construct (like a sort
+     block or subroutine) by unconventional means, such as a goto, or a
+     loop control statement.  See `sort', *Note Perlfunc: perlfunc.
+
+`Exiting subroutine via %s'
+     (W) You are exiting a subroutine by unconventional means, such as
+     a goto, or a loop control statement.
+
+`Exiting substitution via %s'
+     (W) You are exiting a substitution by unconventional means, such as
+     a return, a goto, or a loop control statement.
+
+`Fatal VMS error at %s, line %d'
+     (P) An error peculiar to VMS.  Something untoward happened in a
+     VMS system service or RTL routine; Perl's exit status should
+     provide more details.  The filename in "at %s" and the line number
+     in "line %d" tell you which section of the Perl source code is
+     distressed.
+
+`fcntl is not implemented'
+     (F) Your machine apparently doesn't implement fcntl().  What is
+     this, a PDP-11 or something?
+
+`Filehandle %s never opened'
+     (W) An I/O operation was attempted on a filehandle that was never
+     initialized.  You need to do an open() or a socket() call, or call
+     a constructor from the FileHandle package.
+
+`Filehandle %s opened for only input'
+     (W) You tried to write on a read-only filehandle.  If you intended
+     it to be a read-write filehandle, you needed to open it with "+<"
+     or "+>" or "+>>" instead of with "<" or nothing.  If you intended
+     only to write the file, use ">" or ">>".  See `open', *Note
+     Perlfunc: perlfunc.
+
+`Filehandle opened for only input'
+     (W) You tried to write on a read-only filehandle.  If you intended
+     it to be a read-write filehandle, you needed to open it with "+<"
+     or "+>" or "+>>" instead of with "<" or nothing.  If you intended
+     only to write the file, use ">" or ">>".  See `open', *Note
+     Perlfunc: perlfunc.
+
+`Final $ should be \$ or $name'
+     (F) You must now decide whether the final $ in a string was meant
+     to be a literal dollar sign, or was meant to introduce a variable
+     name that happens to be missing.  So you have to put either the
+     backslash or the name.
+
+`Final @ should be \@ or @name'
+     (F) You must now decide whether the final @ in a string was meant
+     to be a literal "at" sign, or was meant to introduce a variable
+     name that happens to be missing.  So you have to put either the
+     backslash or the name.
+
+`Format %s redefined'
+     (W) You redefined a format.  To suppress this warning, say
+
+          {
+                  local $^W = 0;
+                  eval "format NAME =...";
+          }
+
+`Format not terminated'
+     (F) A format must be terminated by a line with a solitary dot.
+     Perl got to the end of your file without finding such a line.
+
+`Found = in conditional, should be =='
+     (W) You said
+
+          if ($foo = 123)
+
+     when you meant
+
+          if ($foo == 123)
+
+     (or something like that).
+
+`gdbm store returned %d, errno %d, key "%s"'
+     (S) A warning from the GDBM_File extension that a store failed.
+
+`gethostent not implemented'
+     (F) Your C library apparently doesn't implement gethostent(),
+     probably because if it did, it'd feel morally obligated to return
+     every hostname on the Internet.
+
+`get{sock,peer}name() on closed fd'
+     (W) You tried to get a socket or peer socket name on a closed
+     socket.  Did you forget to check the return value of your socket()
+     call?
+
+`getpwnam returned invalid UIC %#o for user "%s"'
+     (S) A warning peculiar to VMS.  The call to `sys$getuai'
+     underlying the getpwnam operator returned an invalid UIC.
+
+`Glob not terminated'
+     (F) The lexer saw a left angle bracket in a place where it was
+     expecting a term, so it's looking for the corresponding right
+     angle bracket, and not finding it.  Chances are you left some
+     needed parentheses out earlier in the line, and you really meant a
+     "less than".
+
+`Global symbol "%s" requires explicit package name'
+     (F) You've said "use strict vars", which indicates that all
+     variables must either be lexically scoped (using "my"), or
+     explicitly qualified to say which package the global variable is
+     in (using "::").
+
+`goto must have label'
+     (F) Unlike with "next" or "last", you're not allowed to goto an
+     unspecified destination.  See `goto', *Note Perlfunc: perlfunc.
+
+`Had to create %s unexpectedly'
+     (S) A routine asked for a symbol from a symbol table that ought to
+     have existed already, but for some reason it didn't, and had to be
+     created on an emergency basis to prevent a core dump.
+
+`Hash %%s missing the % in argument %d of %s()'
+     (D) Really old Perl let you omit the % on hash names in some
+     spots.  This is now heavily deprecated.
+
+`Identifier too long'
+     (F) Perl limits identifiers (names for variables, functions, etc.)
+     to about 250 characters for simple names, and somewhat more for
+     compound names (like `$A::B').  You've exceeded Perl's limits.
+     Future versions of Perl are likely to eliminate these arbitrary
+     limitations.
+
+`Ill-formed logical name |%s| in prime_env_iter'
+     (W) A warning peculiar to VMS.  A logical name was encountered
+     when preparing to iterate over %ENV which violates the syntactic
+     rules governing logical names.  Because it cannot be translated
+     normally, it is skipped, and will not appear in %ENV.  This may be
+     a benign occurrence, as some software packages might directly
+     modify logical name tables and introduce nonstandard names, or it
+     may indicate that a logical name table has been corrupted.
+
+`Illegal character %s (carriage return)'
+     (F) A carriage return character was found in the input.  This is an
+     error, and not a warning, because carriage return characters can
+     break multi-line strings, including here documents (e.g., C<print
+     <<EOF;>).
+
+     Under Unix, this error is usually caused by executing Perl code -
+     either the main program, a module, or an eval'd string - that was
+     transferred over a network connection from a non-Unix system
+     without properly converting the text file format.
+
+     Under systems that use something other than '\n' to delimit lines
+     of text, this error can also be caused by reading Perl code from a
+     file handle that is in binary mode (as set by the binmode
+     operator).
+
+     In either case, the Perl code in question will probably need to be
+     converted with something like `s/\x0D\x0A?/\n/g' before it can be
+     executed.
+
+`Illegal division by zero'
+     (F) You tried to divide a number by 0.  Either something was wrong
+     in your logic, or you need to put a conditional in to guard
+     against meaningless input.
+
+`Illegal modulus zero'
+     (F) You tried to divide a number by 0 to get the remainder.  Most
+     numbers don't take to this kindly.
+
+`Illegal octal digit'
+     (F) You used an 8 or 9 in a octal number.
+
+`Illegal octal digit ignored'
+     (W) You may have tried to use an 8 or 9 in a octal number.
+     Interpretation of the octal number stopped before the 8 or 9.
+
+`Illegal switch in PERL5OPT: %s'
+     (X) The PERL5OPT environment variable may only be used to set the
+     following switches: *-[DIMUdmw]*.
+
+`In string, @%s now must be written as \@%s'
+     (F) It used to be that Perl would try to guess whether you wanted
+     an array interpolated or a literal @.  It did this when the string
+     was first used at runtime.  Now strings are parsed at compile
+     time, and ambiguous instances of @ must be disambiguated, either
+     by prepending a backslash to indicate a literal, or by declaring
+     (or using) the array within the program before the string
+     (lexically).  (Someday it will simply assume that an unbackslashed
+     @ interpolates an array.)
+
+`Insecure dependency in %s'
+     (F) You tried to do something that the tainting mechanism didn't
+     like.  The tainting mechanism is turned on when you're running
+     setuid or setgid, or when you specify -T to turn it on explicitly.
+     The tainting mechanism labels all data that's derived directly or
+     indirectly from the user, who is considered to be unworthy of your
+     trust.  If any such data is used in a "dangerous" operation, you
+     get this error.  See *Note Perlsec: perlsec, for more information.
+
+`Insecure directory in %s'
+     (F) You can't use system(), exec(), or a piped open in a setuid or
+     setgid script if `$ENV{PATH}' contains a directory that is
+     writable by the world.  See *Note Perlsec: perlsec.
+
+`Insecure PATH'
+     (F) You can't use system(), exec(), or a piped open in a setuid or
+     setgid script if `$ENV{PATH}' is derived from data supplied (or
+     potentially supplied) by the user.  The script must set the path
+     to a known value, using trustworthy data.  See *Note Perlsec:
+     perlsec.
+
+`Integer overflow in hex number'
+     (S) The literal hex number you have specified is too big for your
+     architecture. On a 32-bit architecture the largest hex literal is
+     0xFFFFFFFF.
+
+`Integer overflow in octal number'
+     (S) The literal octal number you have specified is too big for your
+     architecture. On a 32-bit architecture the largest octal literal is
+     037777777777.
+
+`Internal inconsistency in tracking vforks'
+     (S) A warning peculiar to VMS.  Perl keeps track of the number of
+     times you've called fork and exec, to determine whether the
+     current call to exec should affect the current script or a
+     subprocess (see `perlvms' in this node).  Somehow, this count has
+     become scrambled, so Perl is making a guess and treating this exec
+     as a request to terminate the Perl script and execute the
+     specified command.
+
+`internal disaster in regexp'
+     (P) Something went badly wrong in the regular expression parser.
+
+`internal error: glob failed'
+     (P) Something went wrong with the external program(s) used for glob
+     and C<<*.c>>.  This may mean that your csh (C shell) is broken.
+     If so, you should change all of the csh-related variables in
+     config.sh:  If you have tcsh, make the variables refer to it as if
+     it were csh (e.g. `full_csh='/usr/bin/tcsh''); otherwise, make
+     them all empty (except that `d_csh' should be `'undef'') so that
+     Perl will think csh is missing.  In either case, after editing
+     config.sh, run `./Configure -S' and rebuild Perl.
+
+`internal urp in regexp at /%s/'
+     (P) Something went badly awry in the regular expression parser.
+
+`invalid [] range in regexp'
+     (F) The range specified in a character class had a minimum
+     character greater than the maximum character.  See *Note Perlre:
+     perlre.
+
+`Invalid conversion in %s: "%s"'
+     (W) Perl does not understand the given format conversion.  See
+     `sprintf', *Note Perlfunc: perlfunc.
+
+`Invalid type in pack: '%s''
+     (F) The given character is not a valid pack type.  See `pack',
+     *Note Perlfunc: perlfunc.
+
+`Invalid type in unpack: '%s''
+     (F) The given character is not a valid unpack type.  See `unpack',
+     *Note Perlfunc: perlfunc.
+
+`ioctl is not implemented'
+     (F) Your machine apparently doesn't implement ioctl(), which is
+     pretty strange for a machine that supports C.
+
+`junk on end of regexp'
+     (P) The regular expression parser is confused.
+
+`Label not found for "last %s"'
+     (F) You named a loop to break out of, but you're not currently in a
+     loop of that name, not even if you count where you were called
+     from.  See `last', *Note Perlfunc: perlfunc.
+
+`Label not found for "next %s"'
+     (F) You named a loop to continue, but you're not currently in a
+     loop of that name, not even if you count where you were called
+     from.  See `last', *Note Perlfunc: perlfunc.
+
+`Label not found for "redo %s"'
+     (F) You named a loop to restart, but you're not currently in a
+     loop of that name, not even if you count where you were called
+     from.  See `last', *Note Perlfunc: perlfunc.
+
+`listen() on closed fd'
+     (W) You tried to do a listen on a closed socket.  Did you forget
+     to check the return value of your socket() call?  See `listen',
+     *Note Perlfunc: perlfunc.
+
+`Method for operation %s not found in package %s during blessing'
+     (F) An attempt was made to specify an entry in an overloading
+     table that doesn't resolve to a valid subroutine.  See `overload'
+     in this node.
+
+`Might be a runaway multi-line %s string starting on line %d'
+     (S) An advisory indicating that the previous error may have been
+     caused by a missing delimiter on a string or pattern, because it
+     eventually ended earlier on the current line.
+
+`Misplaced _ in number'
+     (W) An underline in a decimal constant wasn't on a 3-digit
+     boundary.
+
+`Missing $ on loop variable'
+     (F) Apparently you've been programming in *csh* too much.
+     Variables are always mentioned with the $ in Perl, unlike in the
+     shells, where it can vary from one line to the next.
+
+`Missing comma after first argument to %s function'
+     (F) While certain functions allow you to specify a filehandle or an
+     "indirect object" before the argument list, this ain't one of them.
+
+`Missing operator before %s?'
+     (S) This is an educated guess made in conjunction with the message
+     "%s found where operator expected".  Often the missing operator is
+     a comma.
+
+`Missing right bracket'
+     (F) The lexer counted more opening curly brackets (braces) than
+     closing ones.  As a general rule, you'll find it's missing near
+     the place you were last editing.
+
+`Missing semicolon on previous line?'
+     (S) This is an educated guess made in conjunction with the message
+     "%s found where operator expected".  Don't automatically put a
+     semicolon on the previous line just because you saw this message.
+
+`Modification of a read-only value attempted'
+     (F) You tried, directly or indirectly, to change the value of a
+     constant.  You didn't, of course, try "2 = 1", because the compiler
+     catches that.  But an easy way to do the same thing is:
+
+          sub mod { $_[0] = 1 }
+          mod(2);
+
+     Another way is to assign to a substr() that's off the end of the
+     string.
+
+`Modification of noncreatable array value attempted, subscript %d'
+     (F) You tried to make an array value spring into existence, and the
+     subscript was probably negative, even counting from end of the
+     array backwards.
+
+`Modification of noncreatable hash value attempted, subscript "%s"'
+     (F) You tried to make a hash value spring into existence, and it
+     couldn't be created for some peculiar reason.
+
+`Module name must be constant'
+     (F) Only a bare module name is allowed as the first argument to a
+     "use".
+
+`msg%s not implemented'
+     (F) You don't have System V message IPC on your system.
+
+`Multidimensional syntax %s not supported'
+     (W) Multidimensional arrays aren't written like `$foo[1,2,3]'.
+     They're written like `$foo[1][2][3]', as in C.
+
+`Name "%s::%s" used only once: possible typo'
+     (W) Typographical errors often show up as unique variable names.
+     If you had a good reason for having a unique name, then just
+     mention it again somehow to suppress the message.  The `use vars'
+     pragma is provided for just this purpose.
+
+`Negative length'
+     (F) You tried to do a read/write/send/recv operation with a buffer
+     length that is less than 0.  This is difficult to imagine.
+
+`nested *?+ in regexp'
+     (F) You can't quantify a quantifier without intervening
+     parentheses.  So things like ** or +* or ?* are illegal.
+
+     Note, however, that the minimal matching quantifiers, `*?', `+?',
+     and `??' appear to be nested quantifiers, but aren't.  See *Note
+     Perlre: perlre.
+
+`No #! line'
+     (F) The setuid emulator requires that scripts have a well-formed
+     #! line even on machines that don't support the #! construct.
+
+`No %s allowed while running setuid'
+     (F) Certain operations are deemed to be too insecure for a setuid
+     or setgid script to even be allowed to attempt.  Generally
+     speaking there will be another way to do what you want that is, if
+     not secure, at least securable.  See *Note Perlsec: perlsec.
+
+`No -e allowed in setuid scripts'
+     (F) A setuid script can't be specified by the user.
+
+`No comma allowed after %s'
+     (F) A list operator that has a filehandle or "indirect object" is
+     not allowed to have a comma between that and the following
+     arguments.  Otherwise it'd be just another one of the arguments.
+
+     One possible cause for this is that you expected to have imported a
+     constant to your name space with use or import while no such
+     importing took place, it may for example be that your operating
+     system does not support that particular constant. Hopefully you
+     did use an explicit import list for the constants you expect to
+     see, please see `use', *Note Perlfunc: perlfunc, and `import',
+     *Note Perlfunc: perlfunc. While an explicit import list would
+     probably have caught this error earlier it naturally does not
+     remedy the fact that your operating system still does not support
+     that constant. Maybe you have a typo in the constants of the
+     symbol import list of use or import or in the constant name at the
+     line where this error was triggered?
+
+`No command into which to pipe on command line'
+     (F) An error peculiar to VMS.  Perl handles its own command line
+     redirection, and found a '|' at the end of the command line, so it
+     doesn't know where you want to pipe the output from this command.
+
+`No DB::DB routine defined'
+     (F) The currently executing code was compiled with the -d switch,
+     but for some reason the perl5db.pl file (or some facsimile thereof)
+     didn't define a routine to be called at the beginning of each
+     statement.  Which is odd, because the file should have been
+     required automatically, and should have blown up the require if it
+     didn't parse right.
+
+`No dbm on this machine'
+     (P) This is counted as an internal error, because every machine
+     should supply dbm nowadays, because Perl comes with SDBM.  See
+     `SDBM_File' in this node.
+
+`No DBsub routine'
+     (F) The currently executing code was compiled with the -d switch,
+     but for some reason the perl5db.pl file (or some facsimile thereof)
+     didn't define a DB::sub routine to be called at the beginning of
+     each ordinary subroutine call.
+
+`No error file after 2> or 2>> on command line'
+     (F) An error peculiar to VMS.  Perl handles its own command line
+     redirection, and found a '2>' or a '2>>' on the command line, but
+     can't find the name of the file to which to write data destined
+     for stderr.
+
+`No input file after < on command line'
+     (F) An error peculiar to VMS.  Perl handles its own command line
+     redirection, and found a '<' on the command line, but can't find
+     the name of the file from which to read data for stdin.
+
+`No output file after > on command line'
+     (F) An error peculiar to VMS.  Perl handles its own command line
+     redirection, and found a lone '>' at the end of the command line,
+     so it doesn't know where you wanted to redirect stdout.
+
+`No output file after > or >> on command line'
+     (F) An error peculiar to VMS.  Perl handles its own command line
+     redirection, and found a '>' or a '>>' on the command line, but
+     can't find the name of the file to which to write data destined
+     for stdout.
+
+`No Perl script found in input'
+     (F) You called `perl -x', but no line was found in the file
+     beginning with #! and containing the word "perl".
+
+`No setregid available'
+     (F) Configure didn't find anything resembling the setregid() call
+     for your system.
+
+`No setreuid available'
+     (F) Configure didn't find anything resembling the setreuid() call
+     for your system.
+
+`No space allowed after -I'
+     (F) The argument to -I must follow the -I immediately with no
+     intervening space.
+
+`No such pipe open'
+     (P) An error peculiar to VMS.  The internal routine my_pclose()
+     tried to close a pipe which hadn't been opened.  This should have
+     been caught earlier as an attempt to close an unopened filehandle.
+
+`No such signal: SIG%s'
+     (W) You specified a signal name as a subscript to %SIG that was
+     not recognized.  Say `kill -l' in your shell to see the valid
+     signal names on your system.
+
+`Not a CODE reference'
+     (F) Perl was trying to evaluate a reference to a code value (that
+     is, a subroutine), but found a reference to something else
+     instead.  You can use the ref() function to find out what kind of
+     ref it really was.  See also *Note Perlref: perlref.
+
+`Not a format reference'
+     (F) I'm not sure how you managed to generate a reference to an
+     anonymous format, but this indicates you did, and that it didn't
+     exist.
+
+`Not a GLOB reference'
+     (F) Perl was trying to evaluate a reference to a "typeglob" (that
+     is, a symbol table entry that looks like `*foo'), but found a
+     reference to something else instead.  You can use the ref()
+     function to find out what kind of ref it really was.  See *Note
+     Perlref: perlref.
+
+`Not a HASH reference'
+     (F) Perl was trying to evaluate a reference to a hash value, but
+     found a reference to something else instead.  You can use the ref()
+     function to find out what kind of ref it really was.  See *Note
+     Perlref: perlref.
+
+`Not a perl script'
+     (F) The setuid emulator requires that scripts have a well-formed
+     #! line even on machines that don't support the #! construct.  The
+     line must mention perl.
+
+`Not a SCALAR reference'
+     (F) Perl was trying to evaluate a reference to a scalar value, but
+     found a reference to something else instead.  You can use the ref()
+     function to find out what kind of ref it really was.  See *Note
+     Perlref: perlref.
+
+`Not a subroutine reference'
+     (F) Perl was trying to evaluate a reference to a code value (that
+     is, a subroutine), but found a reference to something else
+     instead.  You can use the ref() function to find out what kind of
+     ref it really was.  See also *Note Perlref: perlref.
+
+`Not a subroutine reference in overload table'
+     (F) An attempt was made to specify an entry in an overloading
+     table that doesn't somehow point to a valid subroutine.  See
+     `overload' in this node.
+
+`Not an ARRAY reference'
+     (F) Perl was trying to evaluate a reference to an array value, but
+     found a reference to something else instead.  You can use the ref()
+     function to find out what kind of ref it really was.  See *Note
+     Perlref: perlref.
+
+`Not enough arguments for %s'
+     (F) The function requires more arguments than you specified.
+
+`Not enough format arguments'
+     (W) A format specified more picture fields than the next line
+     supplied.  See *Note Perlform: perlform.
+
+`Null filename used'
+     (F) You can't require the null filename, especially because on
+     many machines that means the current directory!  See `require',
+     *Note Perlfunc: perlfunc.
+
+`Null picture in formline'
+     (F) The first argument to formline must be a valid format picture
+     specification.  It was found to be empty, which probably means you
+     supplied it an uninitialized value.  See *Note Perlform: perlform.
+
+`NULL OP IN RUN'
+     (P) Some internal routine called run() with a null opcode pointer.
+
+`Null realloc'
+     (P) An attempt was made to realloc NULL.
+
+`NULL regexp argument'
+     (P) The internal pattern matching routines blew it big time.
+
+`NULL regexp parameter'
+     (P) The internal pattern matching routines are out of their gourd.
+
+`Number too long'
+     (F) Perl limits the representation of decimal numbers in programs
+     to about about 250 characters.  You've exceeded that length.
+     Future versions of Perl are likely to eliminate this arbitrary
+     limitation.  In the meantime, try using scientific notation (e.g.
+     "1e6" instead of "1_000_000").
+
+`Odd number of elements in hash list'
+     (S) You specified an odd number of elements to a hash list, which
+     is odd, because hash lists come in key/value pairs.
+
+`Offset outside string'
+     (F) You tried to do a read/write/send/recv operation with an offset
+     pointing outside the buffer.  This is difficult to imagine.  The
+     sole exception to this is that `sysread()'ing past the buffer will
+     extend the buffer and zero pad the new area.
+
+`oops: oopsAV'
+     (S) An internal warning that the grammar is screwed up.
+
+`oops: oopsHV'
+     (S) An internal warning that the grammar is screwed up.
+
+`Operation `%s': no method found,%s'
+     (F) An attempt was made to perform an overloaded operation for
+     which no handler was defined.  While some handlers can be
+     autogenerated in terms of other handlers, there is no default
+     handler for any operation, unless `fallback' overloading key is
+     specified to be true.  See `overload' in this node.
+
+`Operator or semicolon missing before %s'
+     (S) You used a variable or subroutine call where the parser was
+     expecting an operator.  The parser has assumed you really meant to
+     use an operator, but this is highly likely to be incorrect.  For
+     example, if you say "*foo *foo" it will be interpreted as if you
+     said "*foo * 'foo'".
+
+`Out of memory for yacc stack'
+     (F) The yacc parser wanted to grow its stack so it could continue
+     parsing, but realloc() wouldn't give it more memory, virtual or
+     otherwise.
+
+`Out of memory!'
+     (X|F) The malloc() function returned 0, indicating there was
+     insufficient remaining memory (or virtual memory) to satisfy the
+     request.
+
+     The request was judged to be small, so the possibility to trap it
+     depends on the way perl was compiled.  By default it is not
+     trappable.  However, if compiled for this, Perl may use the
+     contents of $^M as an emergency pool after die()ing with this
+     message.  In this case the error is trappable *once*.
+
+`Out of memory during request for %s'
+     (F) The malloc() function returned 0, indicating there was
+     insufficient remaining memory (or virtual memory) to satisfy the
+     request. However, the request was judged large enough
+     (compile-time default is 64K), so a possibility to shut down by
+     trapping this error is granted.
+
+`page overflow'
+     (W) A single call to write() produced more lines than can fit on a
+     page.  See *Note Perlform: perlform.
+
+`panic: ck_grep'
+     (P) Failed an internal consistency check trying to compile a grep.
+
+`panic: ck_split'
+     (P) Failed an internal consistency check trying to compile a split.
+
+`panic: corrupt saved stack index'
+     (P) The savestack was requested to restore more localized values
+     than there are in the savestack.
+
+`panic: die %s'
+     (P) We popped the context stack to an eval context, and then
+     discovered it wasn't an eval context.
+
+`panic: do_match'
+     (P) The internal pp_match() routine was called with invalid
+     operational data.
+
+`panic: do_split'
+     (P) Something terrible went wrong in setting up for the split.
+
+`panic: do_subst'
+     (P) The internal pp_subst() routine was called with invalid
+     operational data.
+
+`panic: do_trans'
+     (P) The internal do_trans() routine was called with invalid
+     operational data.
+
+`panic: frexp'
+     (P) The library function frexp() failed, making printf("%f")
+     impossible.
+
+`panic: goto'
+     (P) We popped the context stack to a context with the specified
+     label, and then discovered it wasn't a context we know how to do a
+     goto in.
+
+`panic: INTERPCASEMOD'
+     (P) The lexer got into a bad state at a case modifier.
+
+`panic: INTERPCONCAT'
+     (P) The lexer got into a bad state parsing a string with brackets.
+
+`panic: last'
+     (P) We popped the context stack to a block context, and then
+     discovered it wasn't a block context.
+
+`panic: leave_scope clearsv'
+     (P) A writable lexical variable became read-only somehow within
+     the scope.
+
+`panic: leave_scope inconsistency'
+     (P) The savestack probably got out of sync.  At least, there was an
+     invalid enum on the top of it.
+
+`panic: malloc'
+     (P) Something requested a negative number of bytes of malloc.
+
+`panic: mapstart'
+     (P) The compiler is screwed up with respect to the map() function.
+
+`panic: null array'
+     (P) One of the internal array routines was passed a null AV
+     pointer.
+
+`panic: pad_alloc'
+     (P) The compiler got confused about which scratch pad it was
+     allocating and freeing temporaries and lexicals from.
+
+`panic: pad_free curpad'
+     (P) The compiler got confused about which scratch pad it was
+     allocating and freeing temporaries and lexicals from.
+
+`panic: pad_free po'
+     (P) An invalid scratch pad offset was detected internally.
+
+`panic: pad_reset curpad'
+     (P) The compiler got confused about which scratch pad it was
+     allocating and freeing temporaries and lexicals from.
+
+`panic: pad_sv po'
+     (P) An invalid scratch pad offset was detected internally.
+
+`panic: pad_swipe curpad'
+     (P) The compiler got confused about which scratch pad it was
+     allocating and freeing temporaries and lexicals from.
+
+`panic: pad_swipe po'
+     (P) An invalid scratch pad offset was detected internally.
+
+`panic: pp_iter'
+     (P) The foreach iterator got called in a non-loop context frame.
+
+`panic: realloc'
+     (P) Something requested a negative number of bytes of realloc.
+
+`panic: restartop'
+     (P) Some internal routine requested a goto (or something like it),
+     and didn't supply the destination.
+
+`panic: return'
+     (P) We popped the context stack to a subroutine or eval context,
+     and then discovered it wasn't a subroutine or eval context.
+
+`panic: scan_num'
+     (P) scan_num() got called on something that wasn't a number.
+
+`panic: sv_insert'
+     (P) The sv_insert() routine was told to remove more string than
+     there was string.
+
+`panic: top_env'
+     (P) The compiler attempted to do a goto, or something weird like
+     that.
+
+`panic: yylex'
+     (P) The lexer got into a bad state while processing a case
+     modifier.
+
+`Pareneses missing around "%s" list'
+     (W) You said something like
+
+          my $foo, $bar = @_;
+
+     when you meant
+
+          my ($foo, $bar) = @_;
+
+     Remember that "my" and "local" bind closer than comma.
+
+`Perl %3.3f required--this is only version %s, stopped'
+     (F) The module in question uses features of a version of Perl more
+     recent than the currently running version.  How long has it been
+     since you upgraded, anyway?  See `require', *Note Perlfunc:
+     perlfunc.
+
+`Permission denied'
+     (F) The setuid emulator in suidperl decided you were up to no good.
+
+`pid %d not a child'
+     (W) A warning peculiar to VMS.  Waitpid() was asked to wait for a
+     process which isn't a subprocess of the current process.  While
+     this is fine from VMS' perspective, it's probably not what you
+     intended.
+
+`POSIX getpgrp can't take an argument'
+     (F) Your C compiler uses POSIX getpgrp(), which takes no argument,
+     unlike the BSD version, which takes a pid.
+
+`Possible attempt to put comments in qw() list'
+     (W) qw() lists contain items separated by whitespace; as with
+     literal strings, comment characters are not ignored, but are
+     instead treated as literal data.  (You may have used different
+     delimiters than the exclamation marks parentheses shown here;
+     braces are also frequently used.)
+
+     You probably wrote something like this:
+
+          @list = qw(
+                  a # a comment
+              b # another comment
+          );
+
+     when you should have written this:
+
+          @list = qw(
+                  a
+              b
+          );
+
+     If you really want comments, build your list the old-fashioned
+     way, with quotes and commas:
+
+          @list = (
+              'a',    # a comment
+              'b',    # another comment
+          );
+
+`Possible attempt to separate words with commas'
+     (W) qw() lists contain items separated by whitespace; therefore
+     commas aren't needed to separate the items.  (You may have used
+     different delimiters than the parentheses shown here; braces are
+     also frequently used.)
+
+     You probably wrote something like this:
+
+          qw! a, b, c !;
+
+     which puts literal commas into some of the list items.  Write it
+     without commas if you don't want them to appear in your data:
+
+          qw! a b c !;
+
+`Possible memory corruption: %s overflowed 3rd argument'
+     (F) An ioctl() or fcntl() returned more than Perl was bargaining
+     for.  Perl guesses a reasonable buffer size, but puts a sentinel
+     byte at the end of the buffer just in case.  This sentinel byte
+     got clobbered, and Perl assumes that memory is now corrupted.  See
+     `ioctl', *Note Perlfunc: perlfunc.
+
+`Precedence problem: open %s should be open(%s)'
+     (S) The old irregular construct
+
+          open FOO || die;
+
+     is now misinterpreted as
+
+          open(FOO || die);
+
+     because of the strict regularization of Perl 5's grammar into unary
+     and list operators.  (The old open was a little of both.)  You must
+     put parentheses around the filehandle, or use the new "or" operator
+     instead of "||".
+
+`print on closed filehandle %s'
+     (W) The filehandle you're printing on got itself closed sometime
+     before now.  Check your logic flow.
+
+`printf on closed filehandle %s'
+     (W) The filehandle you're writing to got itself closed sometime
+     before now.  Check your logic flow.
+
+`Probable precedence problem on %s'
+     (W) The compiler found a bareword where it expected a conditional,
+     which often indicates that an || or && was parsed as part of the
+     last argument of the previous construct, for example:
+
+          open FOO || die;
+
+`Prototype mismatch: %s vs %s'
+     (S) The subroutine being declared or defined had previously been
+     declared or defined with a different function prototype.
+
+`Read on closed filehandle <%s>'
+     (W) The filehandle you're reading from got itself closed sometime
+     before now.  Check your logic flow.
+
+`Reallocation too large: %lx'
+     (F) You can't allocate more than 64K on an MS-DOS machine.
+
+`Recompile perl with -DDEBUGGING to use -D switch'
+     (F) You can't use the -D option unless the code to produce the
+     desired output is compiled into Perl, which entails some overhead,
+     which is why it's currently left out of your copy.
+
+`Recursive inheritance detected'
+     (F) More than 100 levels of inheritance were used.  Probably
+     indicates an unintended loop in your inheritance hierarchy.
+
+`Reference miscount in sv_replace()'
+     (W) The internal sv_replace() function was handed a new SV with a
+     reference count of other than 1.
+
+`regexp memory corruption'
+     (P) The regular expression engine got confused by what the regular
+     expression compiler gave it.
+
+`regexp out of space'
+     (P) A "can't happen" error, because safemalloc() should have
+     caught it earlier.
+
+`regexp too big'
+     (F) The current implementation of regular expressions uses shorts
+     as address offsets within a string.  Unfortunately this means that
+     if the regular expression compiles to longer than 32767, it'll
+     blow up.  Usually when you want a regular expression this big,
+     there is a better way to do it with multiple statements.  See
+     *Note Perlre: perlre.
+
+`Reversed %s= operator'
+     (W) You wrote your assignment operator backwards.  The = must
+     always comes last, to avoid ambiguity with subsequent unary
+     operators.
+
+`Runaway format'
+     (F) Your format contained the ~~ repeat-until-blank sequence, but
+     it produced 200 lines at once, and the 200th line looked exactly
+     like the 199th line.  Apparently you didn't arrange for the
+     arguments to exhaust themselves, either by using ^ instead of @
+     (for scalar variables), or by shifting or popping (for array
+     variables).  See *Note Perlform: perlform.
+
+`Scalar value @%s[%s] better written as $%s[%s]'
+     (W) You've used an array slice (indicated by @) to select a single
+     element of an array.  Generally it's better to ask for a scalar
+     value (indicated by $).  The difference is that `$foo[&bar]'
+     always behaves like a scalar, both when assigning to it and when
+     evaluating its argument, while `@foo[&bar]' behaves like a list
+     when you assign to it, and provides a list context to its
+     subscript, which can do weird things if you're expecting only one
+     subscript.
+
+     On the other hand, if you were actually hoping to treat the array
+     element as a list, you need to look into how references work,
+     because Perl will not magically convert between scalars and lists
+     for you.  See *Note Perlref: perlref.
+
+`Scalar value @%s{%s} better written as $%s{%s}'
+     (W) You've used a hash slice (indicated by @) to select a single
+     element of a hash.  Generally it's better to ask for a scalar
+     value (indicated by $).  The difference is that `$foo{&bar}'
+     always behaves like a scalar, both when assigning to it and when
+     evaluating its argument, while `@foo{&bar}' behaves like a list
+     when you assign to it, and provides a list context to its
+     subscript, which can do weird things if you're expecting only one
+     subscript.
+
+     On the other hand, if you were actually hoping to treat the hash
+     element as a list, you need to look into how references work,
+     because Perl will not magically convert between scalars and lists
+     for you.  See *Note Perlref: perlref.
+
+`Script is not setuid/setgid in suidperl'
+     (F) Oddly, the suidperl program was invoked on a script without a
+     setuid or setgid bit set.  This doesn't make much sense.
+
+`Search pattern not terminated'
+     (F) The lexer couldn't find the final delimiter of a // or m{}
+     construct.  Remember that bracketing delimiters count nesting
+     level.
+
+`%sseek() on unopened file'
+     (W) You tried to use the seek() or sysseek() function on a
+     filehandle that was either never opened or has since been closed.
+
+`select not implemented'
+     (F) This machine doesn't implement the select() system call.
+
+`sem%s not implemented'
+     (F) You don't have System V semaphore IPC on your system.
+
+`semi-panic: attempt to dup freed string'
+     (S) The internal newSVsv() routine was called to duplicate a scalar
+     that had previously been marked as free.
+
+`Semicolon seems to be missing'
+     (W) A nearby syntax error was probably caused by a missing
+     semicolon, or possibly some other missing operator, such as a
+     comma.
+
+`Send on closed socket'
+     (W) The filehandle you're sending to got itself closed sometime
+     before now.  Check your logic flow.
+
+`Sequence (?#... not terminated'
+     (F) A regular expression comment must be terminated by a closing
+     parenthesis.  Embedded parentheses aren't allowed.  See *Note
+     Perlre: perlre.
+
+`Sequence (?%s...) not implemented'
+     (F) A proposed regular expression extension has the character
+     reserved but has not yet been written.  See *Note Perlre: perlre.
+
+`Sequence (?%s...) not recognized'
+     (F) You used a regular expression extension that doesn't make
+     sense.  See *Note Perlre: perlre.
+
+`Server error'
+     Also known as "500 Server error".
+
+     *This is a CGI error, not a Perl error*.
+
+     You need to make sure your script is executable, is accessible by
+     the user CGI is running the script under (which is probably not
+     the user account you tested it under), does not rely on any
+     environment variables (like PATH) from the user it isn't running
+     under, and isn't in a location where the CGI server can't find it,
+     basically, more or less.  Please see the following for more
+     information:
+
+          http://www.perl.com/perl/faq/idiots-guide.html
+          http://www.perl.com/perl/faq/perl-cgi-faq.html
+          ftp://rtfm.mit.edu/pub/usenet/news.answers/www/cgi-faq
+          http://hoohoo.ncsa.uiuc.edu/cgi/interface.html
+          http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html
+
+`setegid() not implemented'
+     (F) You tried to assign to $), and your operating system doesn't
+     support the setegid() system call (or equivalent), or at least
+     Configure didn't think so.
+
+`seteuid() not implemented'
+     (F) You tried to assign to C<$>>, and your operating system
+     doesn't support the seteuid() system call (or equivalent), or at
+     least Configure didn't think so.
+
+`setrgid() not implemented'
+     (F) You tried to assign to $(, and your operating system doesn't
+     support the setrgid() system call (or equivalent), or at least
+     Configure didn't think so.
+
+`setruid() not implemented'
+     (F) You tried to assign to C<$<>, and your operating system
+     doesn't support the setruid() system call (or equivalent), or at
+     least Configure didn't think so.
+
+`Setuid/gid script is writable by world'
+     (F) The setuid emulator won't run a script that is writable by the
+     world, because the world might have written on it already.
+
+`shm%s not implemented'
+     (F) You don't have System V shared memory IPC on your system.
+
+`shutdown() on closed fd'
+     (W) You tried to do a shutdown on a closed socket.  Seems a bit
+     superfluous.
+
+`SIG%s handler "%s" not defined'
+     (W) The signal handler named in %SIG doesn't, in fact, exist.
+     Perhaps you put it into the wrong package?
+
+`sort is now a reserved word'
+     (F) An ancient error message that almost nobody ever runs into
+     anymore.  But before sort was a keyword, people sometimes used it
+     as a filehandle.
+
+`Sort subroutine didn't return a numeric value'
+     (F) A sort comparison routine must return a number.  You probably
+     blew it by not using C<<=>> or `cmp', or by not using them
+     correctly.  See `sort', *Note Perlfunc: perlfunc.
+
+`Sort subroutine didn't return single value'
+     (F) A sort comparison subroutine may not return a list value with
+     more or less than one element.  See `sort', *Note Perlfunc:
+     perlfunc.
+
+`Split loop'
+     (P) The split was looping infinitely.  (Obviously, a split
+     shouldn't iterate more times than there are characters of input,
+     which is what happened.) See `split', *Note Perlfunc: perlfunc.
+
+`Stat on unopened file <%s>'
+     (W) You tried to use the stat() function (or an equivalent file
+     test) on a filehandle that was either never opened or has since
+     been closed.
+
+`Statement unlikely to be reached'
+     (W) You did an exec() with some statement after it other than a
+     die().  This is almost always an error, because exec() never
+     returns unless there was a failure.  You probably wanted to use
+     system() instead, which does return.  To suppress this warning,
+     put the exec() in a block by itself.
+
+`Stub found while resolving method `%s' overloading `%s' in package `%s''
+     (P) Overloading resolution over @ISA tree may be broken by
+     importation stubs.  Stubs should never be implicitely created, but
+     explicit calls to `can' may break this.
+
+`Subroutine %s redefined'
+     (W) You redefined a subroutine.  To suppress this warning, say
+
+          {
+                  local $^W = 0;
+                  eval "sub name { ... }";
+          }
+
+`Substitution loop'
+     (P) The substitution was looping infinitely.  (Obviously, a
+     substitution shouldn't iterate more times than there are
+     characters of input, which is what happened.)  See the discussion
+     of substitution in `"Quote and Quote-like Operators"', *Note
+     Perlop: perlop.
+
+`Substitution pattern not terminated'
+     (F) The lexer couldn't find the interior delimiter of a s/// or
+     s{}{} construct.  Remember that bracketing delimiters count
+     nesting level.
+
+`Substitution replacement not terminated'
+     (F) The lexer couldn't find the final delimiter of a s/// or s{}{}
+     construct.  Remember that bracketing delimiters count nesting
+     level.
+
+`substr outside of string'
+     (S),(W) You tried to reference a substr() that pointed outside of a
+     string.  That is, the absolute value of the offset was larger than
+     the length of the string.  See `substr', *Note Perlfunc: perlfunc.
+     This warning is mandatory if substr is used in an lvalue context
+     (as the left hand side of an assignment or as a subroutine
+     argument for example).
+
+`suidperl is no longer needed since %s'
+     (F) Your Perl was compiled with -DSETUID_SCRIPTS_ARE_SECURE_NOW,
+     but a version of the setuid emulator somehow got run anyway.
+
+`syntax error'
+     (F) Probably means you had a syntax error.  Common reasons include:
+
+          A keyword is misspelled.
+          A semicolon is missing.
+          A comma is missing.
+          An opening or closing parenthesis is missing.
+          An opening or closing brace is missing.
+          A closing quote is missing.
+
+     Often there will be another error message associated with the
+     syntax error giving more information.  (Sometimes it helps to turn
+     on -w.) The error message itself often tells you where it was in
+     the line when it decided to give up.  Sometimes the actual error
+     is several tokens before this, because Perl is good at
+     understanding random input.  Occasionally the line number may be
+     misleading, and once in a blue moon the only way to figure out
+     what's triggering the error is to call `perl -c' repeatedly,
+     chopping away half the program each time to see if the error went
+     away.  Sort of the cybernetic version of 20 questions.
+
+`syntax error at line %d: `%s' unexpected'
+     (A) You've accidentally run your script through the Bourne shell
+     instead of Perl.  Check the #! line, or manually feed your script
+     into Perl yourself.
+
+`System V IPC is not implemented on this machine'
+     (F) You tried to do something with a function beginning with
+     "sem", "shm", or "msg".  See `semctl', *Note Perlfunc: perlfunc,
+     for example.
+
+`Syswrite on closed filehandle'
+     (W) The filehandle you're writing to got itself closed sometime
+     before now.  Check your logic flow.
+
+`Target of goto is too deeply nested'
+     (F) You tried to use goto to reach a label that was too deeply
+     nested for Perl to reach.  Perl is doing you a favor by refusing.
+
+`tell() on unopened file'
+     (W) You tried to use the tell() function on a filehandle that was
+     either never opened or has since been closed.
+
+`Test on unopened file <%s>'
+     (W) You tried to invoke a file test operator on a filehandle that
+     isn't open.  Check your logic.  See also `-X', *Note Perlfunc:
+     perlfunc.
+
+`That use of $[ is unsupported'
+     (F) Assignment to $[ is now strictly circumscribed, and
+     interpreted as a compiler directive.  You may say only one of
+
+          $[ = 0;
+          $[ = 1;
+          ...
+          local $[ = 0;
+          local $[ = 1;
+          ...
+
+     This is to prevent the problem of one module changing the array
+     base out from under another module inadvertently.  See `$[', *Note
+     Perlvar: perlvar.
+
+`The %s function is unimplemented'
+     The function indicated isn't implemented on this architecture,
+     according to the probings of Configure.
+
+`The crypt() function is unimplemented due to excessive paranoia'
+     (F) Configure couldn't find the crypt() function on your machine,
+     probably because your vendor didn't supply it, probably because
+     they think the U.S. Government thinks it's a secret, or at least
+     that they will continue to pretend that it is.  And if you quote
+     me on that, I will deny it.
+
+`The stat preceding `-l _' wasn't an lstat'
+     (F) It makes no sense to test the current stat buffer for symbolic
+     linkhood if the last stat that wrote to the stat buffer already
+     went past the symlink to get to the real file.  Use an actual
+     filename instead.
+
+`times not implemented'
+     (F) Your version of the C library apparently doesn't do times().
+     I suspect you're not running on Unix.
+
+`Too few args to syscall'
+     (F) There has to be at least one argument to syscall() to specify
+     the system call to call, silly dilly.
+
+`Too late for "-T" option'
+     (X) The #! line (or local equivalent) in a Perl script contains the
+     -T option, but Perl was not invoked with -T in its command line.
+     This is an error because, by the time Perl discovers a -T in a
+     script, it's too late to properly taint everything from the
+     environment.  So Perl gives up.
+
+     If the Perl script is being executed as a command using the #!
+     mechanism (or its local equivalent), this error can usually be
+     fixed by editing the #! line so that the -T option is a part of
+     Perl's first argument: e.g. change `perl -n -T' to `perl -T -n'.
+
+     If the Perl script is being executed as `perl scriptname', then the
+     -T option must appear on the command line: `perl -T scriptname'.
+
+`Too late for "-%s" option'
+     (X) The #! line (or local equivalent) in a Perl script contains the
+     -M or -m option.  This is an error because -M and -m options are
+     not intended for use inside scripts.  Use the use pragma instead.
+
+`Too many ('s'
+`Too many )'s'
+     (A) You've accidentally run your script through *csh* instead of
+     Perl.  Check the #! line, or manually feed your script into Perl
+     yourself.
+
+`Too many args to syscall'
+     (F) Perl supports a maximum of only 14 args to syscall().
+
+`Too many arguments for %s'
+     (F) The function requires fewer arguments than you specified.
+
+`trailing \ in regexp'
+     (F) The regular expression ends with an unbackslashed backslash.
+     Backslash it.   See *Note Perlre: perlre.
+
+`Translation pattern not terminated'
+     (F) The lexer couldn't find the interior delimiter of a tr/// or
+     tr[][] construct.
+
+`Translation replacement not terminated'
+     (F) The lexer couldn't find the final delimiter of a tr/// or
+     tr[][] construct.
+
+`truncate not implemented'
+     (F) Your machine doesn't implement a file truncation mechanism that
+     Configure knows about.
+
+`Type of arg %d to %s must be %s (not %s)'
+     (F) This function requires the argument in that position to be of a
+     certain type.  Arrays must be @NAME or `@{EXPR}'.  Hashes must be
+     %NAME or `%{EXPR}'.  No implicit dereferencing is allowed-use the
+     {EXPR} forms as an explicit dereference.  See *Note Perlref:
+     perlref.
+
+`umask: argument is missing initial 0'
+     (W) A umask of 222 is incorrect.  It should be 0222, because octal
+     literals always start with 0 in Perl, as in C.
+
+`Unable to create sub named "%s"'
+     (F) You attempted to create or access a subroutine with an illegal
+     name.
+
+`Unbalanced context: %d more PUSHes than POPs'
+     (W) The exit code detected an internal inconsistency in how many
+     execution contexts were entered and left.
+
+`Unbalanced saves: %d more saves than restores'
+     (W) The exit code detected an internal inconsistency in how many
+     values were temporarily localized.
+
+`Unbalanced scopes: %d more ENTERs than LEAVEs'
+     (W) The exit code detected an internal inconsistency in how many
+     blocks were entered and left.
+
+`Unbalanced tmps: %d more allocs than frees'
+     (W) The exit code detected an internal inconsistency in how many
+     mortal scalars were allocated and freed.
+
+`Undefined format "%s" called'
+     (F) The format indicated doesn't seem to exist.  Perhaps it's
+     really in another package?  See *Note Perlform: perlform.
+
+`Undefined sort subroutine "%s" called'
+     (F) The sort comparison routine specified doesn't seem to exist.
+     Perhaps it's in a different package?  See `sort', *Note Perlfunc:
+     perlfunc.
+
+`Undefined subroutine &%s called'
+     (F) The subroutine indicated hasn't been defined, or if it was, it
+     has since been undefined.
+
+`Undefined subroutine called'
+     (F) The anonymous subroutine you're trying to call hasn't been
+     defined, or if it was, it has since been undefined.
+
+`Undefined subroutine in sort'
+     (F) The sort comparison routine specified is declared but doesn't
+     seem to have been defined yet.  See `sort', *Note Perlfunc:
+     perlfunc.
+
+`Undefined top format "%s" called'
+     (F) The format indicated doesn't seem to exist.  Perhaps it's
+     really in another package?  See *Note Perlform: perlform.
+
+`unexec of %s into %s failed!'
+     (F) The unexec() routine failed for some reason.  See your local
+     FSF representative, who probably put it there in the first place.
+
+`Unknown BYTEORDER'
+     (F) There are no byte-swapping functions for a machine with this
+     byte order.
+
+`unmatched () in regexp'
+     (F) Unbackslashed parentheses must always be balanced in regular
+     expressions.  If you're a vi user, the % key is valuable for
+     finding the matching parenthesis.  See *Note Perlre: perlre.
+
+`Unmatched right bracket'
+     (F) The lexer counted more closing curly brackets (braces) than
+     opening ones, so you're probably missing an opening bracket.  As a
+     general rule, you'll find the missing one (so to speak) near the
+     place you were last editing.
+
+`unmatched [] in regexp'
+     (F) The brackets around a character class must match.  If you wish
+     to include a closing bracket in a character class, backslash it or
+     put it first.  See *Note Perlre: perlre.
+
+`Unquoted string "%s" may clash with future reserved word'
+     (W) You used a bareword that might someday be claimed as a
+     reserved word.  It's best to put such a word in quotes, or
+     capitalize it somehow, or insert an underbar into it.  You might
+     also declare it as a subroutine.
+
+`Unrecognized character %s'
+     (F) The Perl parser has no idea what to do with the specified
+     character in your Perl script (or eval).  Perhaps you tried to run
+     a compressed script, a binary program, or a directory as a Perl
+     program.
+
+`Unrecognized signal name "%s"'
+     (F) You specified a signal name to the kill() function that was
+     not recognized.  Say `kill -l' in your shell to see the valid
+     signal names on your system.
+
+`Unrecognized switch: -%s'
+     (F) You specified an illegal option to Perl.  Don't do that.  (If
+     you think you didn't do that, check the #! line to see if it's
+     supplying the bad switch on your behalf.)
+
+`Unsuccessful %s on filename containing newline'
+     (W) A file operation was attempted on a filename, and that
+     operation failed, PROBABLY because the filename contained a
+     newline, PROBABLY because you forgot to chop() or chomp() it off.
+     See `chomp', *Note Perlfunc: perlfunc.
+
+`Unsupported directory function "%s" called'
+     (F) Your machine doesn't support opendir() and readdir().
+
+`Unsupported function fork'
+     (F) Your version of executable does not support forking.
+
+     Note that under some systems, like OS/2, there may be different
+     flavors of Perl executables, some of which may support fork, some
+     not. Try changing the name you call Perl by to `perl_', `perl__',
+     and so on.
+
+`Unsupported function %s'
+     (F) This machines doesn't implement the indicated function,
+     apparently.  At least, Configure doesn't think so.
+
+`Unsupported socket function "%s" called'
+     (F) Your machine doesn't support the Berkeley socket mechanism, or
+     at least that's what Configure thought.
+
+`Unterminated <> operator'
+     (F) The lexer saw a left angle bracket in a place where it was
+     expecting a term, so it's looking for the corresponding right
+     angle bracket, and not finding it.  Chances are you left some
+     needed parentheses out earlier in the line, and you really meant a
+     "less than".
+
+`Use of "$$<digit>" to mean "${$}<digit>" is deprecated'
+     (D) Perl versions before 5.004 misinterpreted any type marker
+     followed by "$" and a digit.  For example, "$$0" was incorrectly
+     taken to mean "${$}0" instead of "${$0}".  This bug is (mostly)
+     fixed in Perl 5.004.
+
+     However, the developers of Perl 5.004 could not fix this bug
+     completely, because at least two widely-used modules depend on the
+     old meaning of "$$0" in a string.  So Perl 5.004 still interprets
+     "$$<digit>" in the old (broken) way inside strings; but it
+     generates this message as a warning.  And in Perl 5.005, this
+     special treatment will cease.
+
+`Use of $# is deprecated'
+     (D) This was an ill-advised attempt to emulate a poorly defined
+     *awk* feature.  Use an explicit printf() or sprintf() instead.
+
+`Use of $* is deprecated'
+     (D) This variable magically turned on multi-line pattern matching,
+     both for you and for any luckless subroutine that you happen to
+     call.  You should use the new `//m' and `//s' modifiers now to do
+     that without the dangerous action-at-a-distance effects of $*.
+
+`Use of %s in printf format not supported'
+     (F) You attempted to use a feature of printf that is accessible
+     from only C.  This usually means there's a better way to do it in
+     Perl.
+
+`Use of bare << to mean <<"" is deprecated'
+     (D) You are now encouraged to use the explicitly quoted form if you
+     wish to use an empty line as the terminator of the here-document.
+
+`Use of implicit split to @_ is deprecated'
+     (D) It makes a lot of work for the compiler when you clobber a
+     subroutine's argument list, so it's better if you assign the
+     results of a split() explicitly to an array (or list).
+
+`Use of inherited AUTOLOAD for non-method %s() is deprecated'
+     (D) As an (ahem) accidental feature, `AUTOLOAD' subroutines are
+     looked up as methods (using the `@ISA' hierarchy) even when the
+     subroutines to be autoloaded were called as plain functions (e.g.
+     `Foo::bar()'), not as methods (e.g. `Foo-'bar()> or `$obj-'bar()>).
+
+     This bug will be rectified in Perl 5.005, which will use method
+     lookup only for methods' `AUTOLOAD's.  However, there is a
+     significant base of existing code that may be using the old
+     behavior.  So, as an interim step, Perl 5.004 issues an optional
+     warning when non-methods use inherited `AUTOLOAD's.
+
+     The simple rule is:  Inheritance will not work when autoloading
+     non-methods.  The simple fix for old code is:  In any module that
+     used to depend on inheriting `AUTOLOAD' for non-methods from a
+     base class named `BaseClass', execute `*AUTOLOAD =
+     \&BaseClass::AUTOLOAD' during startup.
+
+`Use of %s is deprecated'
+     (D) The construct indicated is no longer recommended for use,
+     generally because there's a better way to do it, and also because
+     the old way has bad side effects.
+
+`Use of uninitialized value'
+     (W) An undefined value was used as if it were already defined.  It
+     was interpreted as a "" or a 0, but maybe it was a mistake.  To
+     suppress this warning assign an initial value to your variables.
+
+`Useless use of %s in void context'
+     (W) You did something without a side effect in a context that does
+     nothing with the return value, such as a statement that doesn't
+     return a value from a block, or the left side of a scalar comma
+     operator.  Very often this points not to stupidity on your part,
+     but a failure of Perl to parse your program the way you thought it
+     would.  For example, you'd get this if you mixed up your C
+     precedence with Python precedence and said
+
+          $one, $two = 1, 2;
+
+     when you meant to say
+
+          ($one, $two) = (1, 2);
+
+     Another common error is to use ordinary parentheses to construct a
+     list reference when you should be using square or curly brackets,
+     for example, if you say
+
+          $array = (1,2);
+
+     when you should have said
+
+          $array = [1,2];
+
+     The square brackets explicitly turn a list value into a scalar
+     value, while parentheses do not.  So when a parenthesized list is
+     evaluated in a scalar context, the comma is treated like C's comma
+     operator, which throws away the left argument, which is not what
+     you want.  See *Note Perlref: perlref, for more on this.
+
+`untie attempted while %d inner references still exist'
+     (W) A copy of the object returned from tie (or tied) was still
+     valid when untie was called.
+
+`Value of %s can be "0"; test with defined()'
+     (W) In a conditional expression, you used <HANDLE>, <*> (glob),
+     `each()', or `readdir()' as a boolean value.  Each of these
+     constructs can return a value of "0"; that would make the
+     conditional expression false, which is probably not what you
+     intended.  When using these constructs in conditional expressions,
+     test their values with the defined operator.
+
+`Variable "%s" is not imported%s'
+     (F) While "use strict" in effect, you referred to a global variable
+     that you apparently thought was imported from another module,
+     because something else of the same name (usually a subroutine) is
+     exported by that module.  It usually means you put the wrong funny
+     character on the front of your variable.
+
+`Variable "%s" may be unavailable'
+     (W) An inner (nested) *anonymous* subroutine is inside a *named*
+     subroutine, and outside that is another subroutine; and the
+     anonymous (innermost) subroutine is referencing a lexical variable
+     defined in the outermost subroutine.  For example:
+
+          sub outermost { my $a; sub middle { sub { $a } } }
+
+     If the anonymous subroutine is called or referenced (directly or
+     indirectly) from the outermost subroutine, it will share the
+     variable as you would expect.  But if the anonymous subroutine is
+     called or referenced when the outermost subroutine is not active,
+     it will see the value of the shared variable as it was before and
+     during the *first* call to the outermost subroutine, which is
+     probably not what you want.
+
+     In these circumstances, it is usually best to make the middle
+     subroutine anonymous, using the `sub {}' syntax.  Perl has specific
+     support for shared variables in nested anonymous subroutines; a
+     named subroutine in between interferes with this feature.
+
+`Variable "%s" will not stay shared'
+     (W) An inner (nested) *named* subroutine is referencing a lexical
+     variable defined in an outer subroutine.
+
+     When the inner subroutine is called, it will probably see the
+     value of the outer subroutine's variable as it was before and
+     during the *first* call to the outer subroutine; in this case,
+     after the first call to the outer subroutine is complete, the
+     inner and outer subroutines will no longer share a common value
+     for the variable.  In other words, the variable will no longer be
+     shared.
+
+     Furthermore, if the outer subroutine is anonymous and references a
+     lexical variable outside itself, then the outer and inner
+     subroutines will *never* share the given variable.
+
+     This problem can usually be solved by making the inner subroutine
+     anonymous, using the `sub {}' syntax.  When inner anonymous subs
+     that reference variables in outer subroutines are called or
+     referenced, they are automatically rebound to the current values
+     of such variables.
+
+`Variable syntax'
+     (A) You've accidentally run your script through *csh* instead of
+     Perl.  Check the #! line, or manually feed your script into Perl
+     yourself.
+
+`Warning: something's wrong'
+     (W) You passed warn() an empty string (the equivalent of `warn
+     ""') or you called it with no args and $_ was empty.
+
+`Warning: unable to close filehandle %s properly'
+     (S) The implicit close() done by an open() got an error indication
+     on the close().  This usually indicates your file system ran out
+     of disk space.
+
+`Warning: Use of "%s" without parentheses is ambiguous'
+     (S) You wrote a unary operator followed by something that looks
+     like a binary operator that could also have been interpreted as a
+     term or unary operator.  For instance, if you know that the rand
+     function has a default argument of 1.0, and you write
+
+          rand + 5;
+
+     you may THINK you wrote the same thing as
+
+          rand() + 5;
+
+     but in actual fact, you got
+
+          rand(+5);
+
+     So put in parentheses to say what you really mean.
+
+`Write on closed filehandle'
+     (W) The filehandle you're writing to got itself closed sometime
+     before now.  Check your logic flow.
+
+`X outside of string'
+     (F) You had a pack template that specified a relative position
+     before the beginning of the string being unpacked.  See `pack',
+     *Note Perlfunc: perlfunc.
+
+`x outside of string'
+     (F) You had a pack template that specified a relative position
+     after the end of the string being unpacked.  See `pack', *Note
+     Perlfunc: perlfunc.
+
+`Xsub "%s" called in sort'
+     (F) The use of an external subroutine as a sort comparison is not
+     yet supported.
+
+`Xsub called in sort'
+     (F) The use of an external subroutine as a sort comparison is not
+     yet supported.
+
+`You can't use -l on a filehandle'
+     (F) A filehandle represents an opened file, and when you opened
+     the file it already went past any symlink you are presumably
+     trying to look for.  Use a filename instead.
+
+`YOU HAVEN'T DISABLED SET-ID SCRIPTS IN THE KERNEL YET!'
+     (F) And you probably never will, because you probably don't have
+     the sources to your kernel, and your vendor probably doesn't give
+     a rip about what you want.  Your best bet is to use the wrapsuid
+     script in the eg directory to put a setuid C wrapper around your
+     script.
+
+`You need to quote "%s"'
+     (W) You assigned a bareword as a signal handler name.
+     Unfortunately, you already have a subroutine of that name
+     declared, which means that Perl 5 will try to call the subroutine
+     when the assignment is executed, which is probably not what you
+     want.  (If it IS what you want, put an & in front.)
+
+`[gs]etsockopt() on closed fd'
+     (W) You tried to get or set a socket option on a closed socket.
+     Did you forget to check the return value of your socket() call?
+     See `getsockopt', *Note Perlfunc: perlfunc.
+
+`\1 better written as $1'
+     (W) Outside of patterns, backreferences live on as variables.  The
+     use of backslashes is grandfathered on the right-hand side of a
+     substitution, but stylistically it's better to use the variable
+     form because other Perl programmers will expect it, and it works
+     better if there are more than 9 backreferences.
+
+`'|' and '<' may not both be specified on command line'
+     (F) An error peculiar to VMS.  Perl does its own command line
+     redirection, and found that STDIN was a pipe, and that you also
+     tried to redirect STDIN using '<'.  Only one STDIN stream to a
+     customer, please.
+
+`'|' and '>' may not both be specified on command line'
+     (F) An error peculiar to VMS.  Perl does its own command line
+     redirection, and thinks you tried to redirect stdout both to a
+     file and into a pipe to another command.  You need to choose one
+     or the other, though nothing's stopping you from piping into a
+     program or Perl script which 'splits' output into two streams,
+     such as
+
+          open(OUT,">$ARGV[0]") or die "Can't write to $ARGV[0]: $!";
+          while (<STDIN>) {
+              print;
+              print OUT;
+          }
+          close OUT;
+
+`Got an error from DosAllocMem'
+     (P) An error peculiar to OS/2.  Most probably you're using an
+     obsolete version of Perl, and this should not happen anyway.
+
+`Malformed PERLLIB_PREFIX'
+     (F) An error peculiar to OS/2.  PERLLIB_PREFIX should be of the
+     form
+
+          prefix1;prefix2
+
+     or
+
+          prefix1 prefix2
+
+     with nonempty prefix1 and prefix2.  If `prefix1' is indeed a prefix
+     of a builtin library search path, prefix2 is substituted.  The
+     error may appear if components are not found, or are too long.  See
+     "PERLLIB_PREFIX" in `README.os2'.
+
+`PERL_SH_DIR too long'
+     (F) An error peculiar to OS/2. PERL_SH_DIR is the directory to
+     find the `sh'-shell in.  See "PERL_SH_DIR" in `README.os2'.
+
+`Process terminated by SIG%s'
+     (W) This is a standard message issued by OS/2 applications, while
+     *nix applications die in silence.  It is considered a feature of
+     the OS/2 port.  One can easily disable this by appropriate
+     sighandlers, see `"Signals"', *Note Perlipc: perlipc.  See also
+     "Process terminated by SIGTERM/SIGINT" in `README.os2'.
 

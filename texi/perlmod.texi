@@ -241,7 +241,7 @@ as a class if it provides subroutines that function as methods.  Such a
 package may also derive some of its methods from another class package
 by listing the other package name in its @@ISA array.
 
-For more on this, see @xref{perltoot,Perltoot}, and @xref{perlobj,Perlobj},.
+For more on this, see @xref{perltoot,Perltoot}, and @xref{perlobj,Perlobj}.
 
 @unnumberedsubsec Perl Modules
 A module is just a package that is defined in a library file of

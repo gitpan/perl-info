@@ -40,7 +40,7 @@ embedding Perl. For details on embedding Perl in C refer to
 
 Before you launch yourself head first into the rest of this document,
 it would be a good idea to have read the following two documents -
-@xref{perlxs,Perlxs}, and @xref{perlguts,Perlguts},.
+@xref{perlxs,Perlxs}, and @xref{perlguts,Perlguts}.
 
 @unnumberedsec THE PERL_CALL FUNCTIONS
 Although this stuff is easier to explain using examples, you first need
@@ -2023,7 +2023,7 @@ will be the return value as well.  Once this code reference is in hand, it
 can be mixed in with all the previous examples we@'ve shown.
 
 @unnumberedsec SEE ALSO
-@xref{perlxs,Perlxs}, @xref{perlguts,Perlguts},, @xref{perlembed,Perlembed},
+@xref{perlxs,Perlxs}, @xref{perlguts,Perlguts}, @xref{perlembed,Perlembed},
 
 @unnumberedsec AUTHOR
 Paul Marquess <@file{pmarquess@@bfsec.bt.co.uk}>

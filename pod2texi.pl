@@ -188,7 +188,8 @@ foreach $pod (@podlist){
 	  $next_para=1 if $rest;
 	  &maybe_open_itemize;
 	}
-	elsif ($what =~ /^\d+\.?/) { # if digits, get rid of them ...
+	elsif ($what =~ /^\d+\.?/ and $' eq '' or $' =~ /^\s/) {
+	  # if this looks like an item number - enumerate
 	  
 	  # texinfo enumerate can put in its own numbers
 	  $_ = $rest;

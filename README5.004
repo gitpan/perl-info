@@ -13,7 +13,7 @@ you want a hard copy you will likely fare much better with pod2latex
 program distributed with Perl sources.
 
 Documents converted are all pods from main pod directory; no module
-docs.  This should be enough as it makes for thirty five info files. :-)
+docs.  This should be enough as it makes for thirty four info files. :-)
 
 A converter used is modified from an original pod2texinfo.pl without
 trying to untangle its intricacies.  Some parts of it were made a bit
@@ -32,6 +32,11 @@ of modules pods is commented out with '@ignore'.  Resulting '.texi'
 files were made into '.info' files with a help of 'makeinfo' program.
 Some concerns mentioned in README do not seem to be valid any longer
 but possibly some other are.
+
+Generated '.texi' file are sufficient for 'makeinfo' but not good
+enough for TeX to accept and some further effort would be needed if
+you would think that you need that.  It does not seem to much point as
+hardcopy can be easily generated from pod2man created manpages.
 
 If you want to try conversions yourself then you will copies
 (or links) of core pod files from a Perl distribution.  They are

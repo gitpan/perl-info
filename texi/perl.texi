@@ -20,14 +20,15 @@ perl [ -sTuU ]
         [ @strong{-hv} ] [ -V[:@emph{configvar}] 
         [ @strong{-cw} ] [ -d[:@emph{debugger}] ] [ -D[@emph{number/list}] 
         [ @strong{-pna} ] [ -F@emph{pattern} ] [ -l[@emph{octal}] ] [ -0[@emph{octal}] 
-        [ -I@emph{dir} ] [ -m[-]@emph{module} ] [ -M[-]@emph{@'module@dots{}@'} 
+        [ -I@emph{dir} ] [ -m[-]@emph{module} ] [ -M[-]@emph{'module@dots{}'} 
         [ -P 
         [ -S 
         [ -x[@emph{dir}] 
         [ -i[@emph{extension}] 
-        [ -e @emph{@'command@'} ] [ @strong{--} ] [ @emph{programfile} ] [ @emph{argument} ]@dots{}
+        [ -e @emph{'command'} ] [ @strong{--} ] [ @emph{programfile} ] [ @emph{argument} ]@dots{}
 @end iftex
 
+This manual generated from pod files included in 5.004_1 distribution.
 For ease of access, the Perl manual has been split up into a number
 of sections:
 

@@ -2,1265 +2,1444 @@ This is Info file perl.info, produced by Makeinfo-1.64 from the input
 file Pmaster.texi.
 
 
-File: perl.info,  Node: perlpod,  Next: perlbook,  Prev: perlstyle,  Up: Top
+File: perl.info,  Node: perlapio,  Next: perlxs,  Prev: perlembed,  Up: Top
 
 NAME
 ====
 
-perlpod - plain old documentation
+perlapio - perl's IO abstraction interface.
 
-DESCRIPTION
-===========
-
-A pod-to-whatever translator reads a pod file paragraph by paragraph,
-and translates it to the appropriate output format.  There are three
-kinds of paragraphs:
-
-   * A verbatim paragraph, distinguished by being indented (that is, it
-     starts with space or tab).  It should be reproduced exactly, with
-     tabs assumed to be on 8-column boundaries.  There are no special
-     formatting escapes, so you can't italicize or anything like that.
-     A \ means \, and nothing else.
-
-   * A command.  All command paragraphs start with "=", followed by an
-     identifier, followed by arbitrary text that the command can use
-     however it pleases.  Currently recognized commands are
-
-          =head1 heading
-          =head2 heading
-          =item text
-          =over N
-          =back
-          =cut
-          =pod
-          =for X
-          =begin X
-          =end X
-
-     The "=pod" directive does nothing beyond telling the compiler to
-     lay off parsing code through the next "=cut".  It's useful for
-     adding another paragraph to the doc if you're mixing up code and
-     pod a lot.
-
-     Head1 and head2 produce first and second level headings, with the
-     text in the same paragraph as the "=headn" directive forming the
-     heading description.
-
-     Item, over, and back require a little more explanation: "=over"
-     starts a section specifically for the generation of a list using
-     "=item" commands. At the end of your list, use "=back" to end it.
-     You will probably want to give "4" as the number to "=over", as
-     some formatters will use this for indentation.  This should
-     probably be a default. Note also that there are some basic rules
-     to using =item: don't use them outside of an =over/=back block,
-     use at least one inside an =over/=back block, you don't _have_ to
-     include the =back if the list just runs off the document, and
-     perhaps most importantly, keep the items consistent: either use
-     "=item *" for all of them, to produce bullets, or use "=item 1.",
-     "=item 2.", etc., to produce numbered lists, or use "=item foo",
-     "=item bar", etc., i.e., things that looks nothing like bullets or
-     numbers. If you start with bullets or numbers, stick with them, as
-     many formatters use the first "=item" type to decide how to format
-     the list.
-
-     For, begin, and end let you include sections that are not
-     interpreted as pod text, but passed directly to particular
-     formatters. A formatter that can utilize that format will use the
-     section, otherwise it will be completely ignored.  The directive
-     "=for" specifies that the entire next paragraph is in the format
-     indicated by the first word after "=for", like this:
-
-          =for html <br>
-           <p> This is a raw HTML paragraph </p>
-
-     The paired commands "=begin" and "=end" work very similarly to
-     "=for", but instead of only accepting a single paragraph, all text
-     from "=begin" to a paragraph with a matching "=end" are treated as
-     a particular format.
-
-     Here are some examples of how to use these:
-
-          =begin html
-          
-          <br>Figure 1.<IMG SRC="figure1.png"><br>
-          
-          =end html
-          
-          =begin text
-          
-          ---------------
-          |  foo        |
-          |        bar  |
-          ---------------
-          
-          ^^^^ Figure 1. ^^^^
-          
-          =end text
-
-     Some format names that formatters currently are known to accept
-     include "roff", "man", "latex", "tex", "text", and "html". (Some
-     formatters will treat some of these as synonyms.)
-
-     And don't forget, when using any command, that the command lasts
-     up until the end of the *paragraph*, not the line. Hence in the
-     examples below, you can see the empty lines after each command to
-     end its paragraph.
-
-     Some examples of lists include:
-
-          =over 4
-          
-          =item *
-          
-          First item
-          
-          =item *
-          
-          Second item
-          
-          =back
-          
-          =over 4
-          
-          =item Foo()
-          
-          Description of Foo function
-          
-          =item Bar()
-          
-          Description of Bar function
-          
-          =back
-
-   * An ordinary block of text.  It will be filled, and maybe even
-     justified.  Certain interior sequences are recognized both here
-     and in commands:
-
-          I<text>     italicize text, used for emphasis or variables
-          B<text>     embolden text, used for switches and programs
-          S<text>     text contains non-breaking spaces
-          C<code> literal code
-          L<name>     A link (cross reference) to name
-                              L<name>             manual page
-                              L<name/ident>       item in manual page
-                              L<name/"sec">       section in other manual page
-                              L<"sec">            section in this manual page
-                                                  (the quotes are optional)
-                              L</"sec">           ditto
-          F<file> Used for filenames
-          X<index>        An index entry
-          Z<>             A zero-width character
-          E<escape>   A named character (very similar to HTML escapes)
-                              E<lt>               A literal <
-                              E<gt>               A literal >
-                              (these are optional except in other interior
-                               sequences and when preceded by a capital letter)
-                              E<n>                Character number n (probably in ASCII)
-                              E<html>             Some non-numeric HTML entity, such
-                                                  as E<Agrave>
-
-That's it.  The intent is simplicity, not power.  I wanted paragraphs
-to look like paragraphs (block format), so that they stand out
-visually, and so that I could run them through fmt easily to reformat
-them (that's F7 in my version of *vi*).  I wanted the translator (and
-not me) to worry about whether " or ' is a left quote or a right quote
-within filled text, and I wanted it to leave the quotes alone, dammit,
-in verbatim mode, so I could slurp in a working program, shift it over 4
-spaces, and have it print out, er, verbatim.  And presumably in a
-constant width font.
-
-In particular, you can leave things like this verbatim in your text:
-
-     Perl
-     FILEHANDLE
-     $variable
-     function()
-     manpage(3r)
-
-Doubtless a few other commands or sequences will need to be added along
-the way, but I've gotten along surprisingly well with just these.
-
-Note that I'm not at all claiming this to be sufficient for producing a
-book.  I'm just trying to make an idiot-proof common source for nroff,
-TeX, and other markup languages, as used for online documentation.
-Translators exist for pod2man  (that's for nroff(1) and troff(1)),
-pod2html, *pod2latex*, and *pod2fm*.
-
-Embedding Pods in Perl Modules
-==============================
-
-You can embed pod documentation in your Perl scripts.  Start your
-documentation with a "=head1" command at the beginning, and end it with
-a "=cut" command.  Perl will ignore the pod text.  See any of the
-supplied library modules for examples.  If you're going to put your
-pods at the end of the file, and you're using an __END__ or __DATA__
-cut mark, make sure to put an empty line there before the first pod
-directive.
-
-     __END__
-     
-     =head1 NAME
-     
-     modern - I am a modern module
-
-If you had not had that empty line there, then the translators wouldn't
-have seen it.
-
-Common Pod Pitfalls
-===================
-
-   * Pod translators usually will require paragraphs to be separated by
-     completely empty lines.  If you have an apparently empty line with
-     some spaces on it, this can cause odd formatting.
-
-   * Translators will mostly add wording around a L<> link, so that
-     C<L<foo(1)>> becomes "the *foo*(1) manpage", for example (see
-     pod2man for details).  Thus, you shouldn't write things like C<the
-     L<foo> manpage>, if you want the translated document to read
-     sensibly.
-
-   * The script `pod/checkpods.PL' in the Perl source distribution
-     provides skeletal checking for lines that look empty but aren't
-     *only*, but is there as a placeholder until someone writes
-     Pod::Checker.  The best way to check your pod is to pass it through
-     one or more translators and proofread the result, or print out the
-     result and proofread that.  Some of the problems found may be bugs
-     in the translators, which you may or may not wish to work around.
-
-SEE ALSO
+SYNOPSIS
 ========
 
-`pod2man' in this node and `"PODs: Embedded Documentation"', *Note
-Perlsyn: perlsyn,
-
-AUTHOR
-======
-
-Larry Wall
-
-
-File: perl.info,  Node: perlbook,  Next: perlembed,  Prev: perlpod,  Up: Top
-
-NAME
-====
-
-perlbook - Perl book information
+     PerlIO *PerlIO_stdin(void);
+     PerlIO *PerlIO_stdout(void);
+     PerlIO *PerlIO_stderr(void);
+     
+     PerlIO *PerlIO_open(const char *,const char *);
+     int     PerlIO_close(PerlIO *);
+     
+     int     PerlIO_stdoutf(const char *,...)
+     int     PerlIO_puts(PerlIO *,const char *);
+     int     PerlIO_putc(PerlIO *,int);
+     int     PerlIO_write(PerlIO *,const void *,size_t);
+     int     PerlIO_printf(PerlIO *, const char *,...);
+     int     PerlIO_vprintf(PerlIO *, const char *, va_list);
+     int     PerlIO_flush(PerlIO *);
+     
+     int     PerlIO_eof(PerlIO *);
+     int     PerlIO_error(PerlIO *);
+     void    PerlIO_clearerr(PerlIO *);
+     
+     int     PerlIO_getc(PerlIO *);
+     int     PerlIO_ungetc(PerlIO *,int);
+     int     PerlIO_read(PerlIO *,void *,size_t);
+     
+     int     PerlIO_fileno(PerlIO *);
+     PerlIO *PerlIO_fdopen(int, const char *);
+     PerlIO *PerlIO_importFILE(FILE *);
+     FILE   *PerlIO_exportFILE(PerlIO *);
+     FILE   *PerlIO_findFILE(PerlIO *);
+     void    PerlIO_releaseFILE(PerlIO *,FILE *);
+     
+     void    PerlIO_setlinebuf(PerlIO *);
+     
+     long    PerlIO_tell(PerlIO *);
+     int     PerlIO_seek(PerlIO *,off_t,int);
+     int     PerlIO_getpos(PerlIO *,Fpos_t *)
+     int     PerlIO_setpos(PerlIO *,Fpos_t *)
+     void    PerlIO_rewind(PerlIO *);
+     
+     int     PerlIO_has_base(PerlIO *);
+     int     PerlIO_has_cntptr(PerlIO *);
+     int     PerlIO_fast_gets(PerlIO *);
+     int     PerlIO_canset_cnt(PerlIO *);
+     
+     char   *PerlIO_get_ptr(PerlIO *);
+     int     PerlIO_get_cnt(PerlIO *);
+     void    PerlIO_set_cnt(PerlIO *,int);
+     void    PerlIO_set_ptrcnt(PerlIO *,char *,int);
+     char   *PerlIO_get_base(PerlIO *);
+     int     PerlIO_get_bufsiz(PerlIO *);
 
 DESCRIPTION
 ===========
 
-You can order Perl books from O'Reilly & Associates, 1-800-998-9938.
-Local/overseas is +1 707 829 0515.  If you can locate an O'Reilly order
-form, you can also fax to +1 707 829 0104.  If you're web-connected,
-you can even mosey on over to http://www.ora.com/ for an online order
-form.
+Perl's source code should use the above functions instead of those
+defined in ANSI C's *stdio.h*,  *perlio.h* will the `#define' them to
+the I/O mechanism selected at Configure time.
 
-*Programming Perl, Second Edition* is a reference work that covers
-nearly all of Perl, while *Learning Perl* is a tutorial that covers the
-most frequently used subset of the language.  You might also check out
-the very handy, inexpensive, and compact *Perl 5 Desktop Reference*,
-especially when the thought of lugging the 676-page Camel around
-doesn't make much sense.  *Mastering Regular Expressions*, by Jeffrey
-Friedl, is a reference work that covers the art and implementation of
-regular expressions in various languages including Perl.
+The functions are modeled on those in *stdio.h*, but parameter order
+has been "tidied up a little".
 
-     Programming Perl, Second Edition (the Camel Book):
-             ISBN 1-56592-149-6      (English)
-     
-     Learning Perl (the Llama Book):
-             ISBN 1-56592-042-2      (English)
-             ISBN 4-89502-678-1      (Japanese)
-             ISBN 2-84177-005-2      (French)
-             ISBN 3-930673-08-8      (German)
-     
-     Perl 5 Desktop Reference (the reference card):
-             ISBN 1-56592-187-9      (brief English)
-     
-     Mastering Regular Expressions (the Hip Owl Book):
-             ISBN 1-56592-257-3      (English)
+*PerlIO **
+     This takes the place of FILE *. Unlike FILE * it should be treated
+     as opaque (it is probably safe to assume it is a pointer to
+     something).
+
+*PerlIO_stdin()*, *PerlIO_stdout()*, *PerlIO_stderr()*
+     Use these rather than `stdin', `stdout', `stderr'. They are written
+     to look like "function calls" rather than variables because this
+     makes it easier to *make them* function calls if platform cannot
+     export data to loaded modules, or if (say) different "threads"
+     might have different values.
+
+*PerlIO_open(path, mode)*, *PerlIO_fdopen(fd,mode)*
+     These correspond to fopen()/fdopen() arguments are the same.
+
+*PerlIO_printf(f,fmt,...)*, *PerlIO_vprintf(f,fmt,a)*
+     These are is fprintf()/vfprintf equivalents.
+
+PerlIO_stdoutf(fmt,...)
+     This is printf() equivalent. printf is #defined to this function,
+     so it is (currently) legal to use `printf(fmt,...)' in perl
+     sources.
+
+*PerlIO_read(f,buf,count)*, *PerlIO_write(f,buf,count)*
+     These correspond to fread() and fwrite(). Note that arguments are
+     different, there is only one "count" and order has "file" first.
+
+PerlIO_close(f)
+*PerlIO_puts(s,f)*, *PerlIO_putc(c,f)*
+     These correspond to fputs() and fputc().  Note that arguments have
+     been revised to have "file" first.
+
+PerlIO_ungetc(c,f)
+     This corresponds to ungetc().  Note that arguments have been
+     revised to have "file" first.
+
+PerlIO_getc(f)
+     This corresponds to getc().
+
+PerlIO_eof(f)
+     This corresponds to feof().
+
+PerlIO_error(f)
+     This corresponds to ferror().
+
+PerlIO_fileno(f)
+     This corresponds to fileno(), note that on some platforms, the
+     meaning of "fileno" may not match Unix.
+
+PerlIO_clearerr(f)
+     This corresponds to clearerr(), i.e., clears 'eof' and 'error'
+     flags for the "stream".
+
+PerlIO_flush(f)
+     This corresponds to fflush().
+
+PerlIO_tell(f)
+     This corresponds to ftell().
+
+PerlIO_seek(f,o,w)
+     This corresponds to fseek().
+
+*PerlIO_getpos(f,p)*, *PerlIO_setpos(f,p)*
+     These correspond to fgetpos() and fsetpos(). If platform does not
+     have the stdio calls then they are implemented in terms of
+     PerlIO_tell() and PerlIO_seek().
+
+PerlIO_rewind(f)
+     This corresponds to rewind(). Note may be redefined in terms of
+     PerlIO_seek() at some point.
+
+PerlIO_tmpfile()
+     This corresponds to tmpfile(), i.e., returns an anonymous PerlIO
+     which will automatically be deleted when closed.
+
+Co-existence with stdio
+-----------------------
+
+There is outline support for co-existence of PerlIO with stdio.
+Obviously if PerlIO is implemented in terms of stdio there is no
+problem. However if perlio is implemented on top of (say) sfio then
+mechanisms must exist to create a FILE * which can be passed to library
+code which is going to use stdio calls.
+
+PerlIO_importFILE(f,flags)
+     Used to get a PerlIO * from a FILE *.  May need additional
+     arguments, interface under review.
+
+PerlIO_exportFILE(f,flags)
+     Given an PerlIO * return a 'native' FILE * suitable for passing to
+     code expecting to be compiled and linked with ANSI C *stdio.h*.
+
+     The fact that such a FILE * has been 'exported' is recorded, and
+     may affect future PerlIO operations on the original PerlIO *.
+
+PerlIO_findFILE(f)
+     Returns previously 'exported' FILE * (if any).  Place holder until
+     interface is fully defined.
+
+PerlIO_releaseFILE(p,f)
+     Calling PerlIO_releaseFILE informs PerlIO that all use of FILE *
+     is complete. It is removed from list of 'exported' FILE *s, and
+     associated PerlIO * should revert to original behaviour.
+
+PerlIO_setlinebuf(f)
+     This corresponds to setlinebuf(). Use is deprecated pending
+     further discussion. (Perl core uses it *only* when "dumping" is
+     has nothing to do with $| auto-flush.)
+
+In addition to user API above there is an "implementation" interface
+which allows perl to get at internals of PerlIO.  The following calls
+correspond to the various FILE_xxx macros determined by Configure. This
+section is really of interest to only those concerned with detailed
+perl-core behaviour or implementing a PerlIO mapping.
+
+PerlIO_has_cntptr(f)
+     Implementation can return pointer to current position in the
+     "buffer" and a count of bytes available in the buffer.
+
+PerlIO_get_ptr(f)
+     Return pointer to next readable byte in buffer.
+
+PerlIO_get_cnt(f)
+     Return count of readable bytes in the buffer.
+
+PerlIO_canset_cnt(f)
+     Implementation can adjust its idea of number of bytes in the
+     buffer.
+
+PerlIO_fast_gets(f)
+     Implementation has all the interfaces required to allow perl's
+     fast code to handle <FILE> mechanism.
+
+          PerlIO_fast_gets(f) = PerlIO_has_cntptr(f) && \
+                                PerlIO_canset_cnt(f) && \
+                                `Can set pointer into buffer'
+
+PerlIO_set_ptrcnt(f,p,c)
+     Set pointer into buffer, and a count of bytes still in the buffer.
+     Should be used only to set pointer to within range implied by
+     previous calls to `PerlIO_get_ptr' and `PerlIO_get_cnt'.
+
+PerlIO_set_cnt(f,c)
+     Obscure - set count of bytes in the buffer. Deprecated.  Currently
+     used in only doio.c to force count < -1 to -1.  Perhaps should be
+     PerlIO_set_empty or similar.  This call may actually do nothing if
+     "count" is deduced from pointer and a "limit".
+
+PerlIO_has_base(f)
+     Implementation has a buffer, and can return pointer to whole
+     buffer and its size. Used by perl for -T / *-B* tests.  Other uses
+     would be very obscure...
+
+PerlIO_get_base(f)
+     Return *start* of buffer.
+
+PerlIO_get_bufsiz(f)
+     Return *total size* of buffer.
 
 
-File: perl.info,  Node: perlembed,  Next: perlapio,  Prev: perlbook,  Up: Top
+File: perl.info,  Node: perlxs,  Next: perlxstut,  Prev: perlapio,  Up: Top
 
 NAME
 ====
 
-perlembed - how to embed perl in your C program
+perlxs - XS language reference manual
 
 DESCRIPTION
 ===========
 
-PREAMBLE
---------
+Introduction
+------------
 
-Do you want to:
+XS is a language used to create an extension interface between Perl and
+some C library which one wishes to use with Perl.  The XS interface is
+combined with the library to create a new library which can be linked
+to Perl.  An *XSUB* is a function in the XS language and is the core
+component of the Perl application interface.
 
-*Use C from Perl?*
-     Read *Note Perlcall: perlcall, and *Note Perlxs: perlxs,.
+The XS compiler is called xsubpp.  This compiler will embed the
+constructs necessary to let an XSUB, which is really a C function in
+disguise, manipulate Perl values and creates the glue necessary to let
+Perl access the XSUB.  The compiler uses *typemaps* to determine how to
+map C function parameters and variables to Perl values.  The default
+typemap handles many common C types.  A supplement typemap must be
+created to handle special structures and types for the library being
+linked.
 
-*Use a Unix program from Perl?*
-     Read about back-quotes and about system and exec in *Note
-     Perlfunc: perlfunc.
+See *Note Perlxstut: perlxstut, for a tutorial on the whole extension
+creation process.
 
-*Use Perl from Perl?*
-     Read about `do', *Note Perlfunc: perlfunc, and `eval', *Note
-     Perlfunc: perlfunc, and `require', *Note Perlfunc: perlfunc, and
-     `use', *Note Perlfunc: perlfunc.
+On The Road
+-----------
 
-*Use C from C?*
-     Rethink your design.
+Many of the examples which follow will concentrate on creating an
+interface between Perl and the ONC+ RPC bind library functions.  The
+rpcb_gettime() function is used to demonstrate many features of the XS
+language.  This function has two parameters; the first is an input
+parameter and the second is an output parameter.  The function also
+returns a status value.
 
-*Use Perl from C?*
-     Read on...
+     bool_t rpcb_gettime(const char *host, time_t *timep);
 
-ROADMAP
--------
+From C this function will be called with the following statements.
 
-`Compiling your C program' in this node
+     #include <rpc/rpc.h>
+     bool_t status;
+     time_t timep;
+     status = rpcb_gettime( "localhost", &timep );
 
-There's one example in each of the eight sections:
+If an XSUB is created to offer a direct translation between this
+function and Perl, then this XSUB will be used from Perl with the
+following code.  The $status and $timep variables will contain the
+output of the function.
 
-`Adding a Perl interpreter to your C program' in this node
+     use RPC;
+     $status = rpcb_gettime( "localhost", $timep );
 
-`Calling a Perl subroutine from your C program' in this node
+The following XS file shows an XS subroutine, or XSUB, which
+demonstrates one possible interface to the rpcb_gettime() function.
+This XSUB represents a direct translation between C and Perl and so
+preserves the interface even from Perl.  This XSUB will be invoked from
+Perl with the usage shown above.  Note that the first three #include
+statements, for `EXTERN.h', `perl.h', and `XSUB.h', will always be
+present at the beginning of an XS file.  This approach and others will
+be expanded later in this document.
 
-`Evaluating a Perl statement from your C program' in this node
+     #include "EXTERN.h"
+     #include "perl.h"
+     #include "XSUB.h"
+     #include <rpc/rpc.h>
+     
+     MODULE = RPC  PACKAGE = RPC
+     
+     bool_t
+     rpcb_gettime(host,timep)
+          char *host
+          time_t &timep
+          OUTPUT:
+          timep
 
-`Performing Perl pattern matches and substitutions from your C program'
-in this node
+Any extension to Perl, including those containing XSUBs, should have a
+Perl module to serve as the bootstrap which pulls the extension into
+Perl.  This module will export the extension's functions and variables
+to the Perl program and will cause the extension's XSUBs to be linked
+into Perl.  The following module will be used for most of the examples
+in this document and should be used from Perl with the use command as
+shown earlier.  Perl modules are explained in more detail later in this
+document.
 
-`Fiddling with the Perl stack from your C program' in this node
+     package RPC;
+     
+     require Exporter;
+     require DynaLoader;
+     @ISA = qw(Exporter DynaLoader);
+     @EXPORT = qw( rpcb_gettime );
+     
+     bootstrap RPC;
+     1;
 
-`Maintaining a persistent interpreter' in this node
+Throughout this document a variety of interfaces to the rpcb_gettime()
+XSUB will be explored.  The XSUBs will take their parameters in
+different orders or will take different numbers of parameters.  In each
+case the XSUB is an abstraction between Perl and the real C
+rpcb_gettime() function, and the XSUB must always ensure that the real
+rpcb_gettime() function is called with the correct parameters.  This
+abstraction will allow the programmer to create a more Perl-like
+interface to the C function.
 
-`Maintaining multiple interpreter instances' in this node
+The Anatomy of an XSUB
+----------------------
 
-`Using Perl modules, which themselves use C libraries, from your C
-program' in this node
+The following XSUB allows a Perl program to access a C library function
+called sin().  The XSUB will imitate the C function which takes a single
+argument and returns a single value.
 
-This documentation is Unix specific; if you have information about how
-to embed Perl on other platforms, please send e-mail to
-<`orwant@tpj.com'>.
+     double
+     sin(x)
+       double x
 
-Compiling your C program
+When using C pointers the indirection operator * should be considered
+part of the type and the address operator `&' should be considered part
+of the variable, as is demonstrated in the rpcb_gettime() function
+above.  See the section on typemaps for more about handling qualifiers
+and unary operators in C types.
+
+The function name and the return type must be placed on separate lines.
+
+     INCORRECT                        CORRECT
+     
+     double sin(x)                    double
+       double x                       sin(x)
+                                          double x
+
+The function body may be indented or left-adjusted.  The following
+example shows a function with its body left-adjusted.  Most examples in
+this document will indent the body.
+
+     CORRECT
+     
+     double
+     sin(x)
+     double x
+
+The Argument Stack
+------------------
+
+The argument stack is used to store the values which are sent as
+parameters to the XSUB and to store the XSUB's return value.  In
+reality all Perl functions keep their values on this stack at the same
+time, each limited to its own range of positions on the stack.  In this
+document the first position on that stack which belongs to the active
+function will be referred to as position 0 for that function.
+
+XSUBs refer to their stack arguments with the macro *ST(x)*, where x
+refers to a position in this XSUB's part of the stack.  Position 0 for
+that function would be known to the XSUB as ST(0).  The XSUB's incoming
+parameters and outgoing return values always begin at ST(0).  For many
+simple cases the xsubpp compiler will generate the code necessary to
+handle the argument stack by embedding code fragments found in the
+typemaps.  In more complex cases the programmer must supply the code.
+
+The RETVAL Variable
+-------------------
+
+The RETVAL variable is a magic variable which always matches the return
+type of the C library function.  The xsubpp compiler will supply this
+variable in each XSUB and by default will use it to hold the return
+value of the C library function being called.  In simple cases the
+value of RETVAL will be placed in ST(0) of the argument stack where it
+can be received by Perl as the return value of the XSUB.
+
+If the XSUB has a return type of `void' then the compiler will not
+supply a RETVAL variable for that function.  When using the PPCODE:
+directive the RETVAL variable is not needed, unless used explicitly.
+
+If PPCODE: directive is not used, `void' return value should be used
+only for subroutines which do not return a value, *even if* CODE:
+directive is used which sets ST(0) explicitly.
+
+Older versions of this document recommended to use `void' return value
+in such cases. It was discovered that this could lead to segfaults in
+cases when XSUB was *truely* `void'. This practice is now deprecated,
+and may be not supported at some future version. Use the return value
+`SV *' in such cases. (Currently xsubpp contains some heuristic code
+which tries to disambiguate between "truely-void" and
+"old-practice-declared-as-void" functions. Hence your code is at mercy
+of this heuristics unless you use `SV *' as return value.)
+
+The MODULE Keyword
+------------------
+
+The MODULE keyword is used to start the XS code and to specify the
+package of the functions which are being defined.  All text preceding
+the first MODULE keyword is considered C code and is passed through to
+the output untouched.  Every XS module will have a bootstrap function
+which is used to hook the XSUBs into Perl.  The package name of this
+bootstrap function will match the value of the last MODULE statement in
+the XS source files.  The value of MODULE should always remain constant
+within the same XS file, though this is not required.
+
+The following example will start the XS code and will place all
+functions in a package named RPC.
+
+     MODULE = RPC
+
+The PACKAGE Keyword
+-------------------
+
+When functions within an XS source file must be separated into packages
+the PACKAGE keyword should be used.  This keyword is used with the
+MODULE keyword and must follow immediately after it when used.
+
+     MODULE = RPC  PACKAGE = RPC
+     
+     [ XS code in package RPC ]
+     
+     MODULE = RPC  PACKAGE = RPCB
+     
+     [ XS code in package RPCB ]
+     
+     MODULE = RPC  PACKAGE = RPC
+     
+     [ XS code in package RPC ]
+
+Although this keyword is optional and in some cases provides redundant
+information it should always be used.  This keyword will ensure that the
+XSUBs appear in the desired package.
+
+The PREFIX Keyword
+------------------
+
+The PREFIX keyword designates prefixes which should be removed from the
+Perl function names.  If the C function is `rpcb_gettime()' and the
+PREFIX value is `rpcb_' then Perl will see this function as `gettime()'.
+
+This keyword should follow the PACKAGE keyword when used.  If PACKAGE
+is not used then PREFIX should follow the MODULE keyword.
+
+     MODULE = RPC  PREFIX = rpc_
+     
+     MODULE = RPC  PACKAGE = RPCB  PREFIX = rpcb_
+
+The OUTPUT: Keyword
+-------------------
+
+The OUTPUT: keyword indicates that certain function parameters should be
+updated (new values made visible to Perl) when the XSUB terminates or
+that certain values should be returned to the calling Perl function.
+For simple functions, such as the sin() function above, the RETVAL
+variable is automatically designated as an output value.  In more
+complex functions the xsubpp compiler will need help to determine which
+variables are output variables.
+
+This keyword will normally be used to complement the CODE:  keyword.
+The RETVAL variable is not recognized as an output variable when the
+CODE: keyword is present.  The OUTPUT:  keyword is used in this
+situation to tell the compiler that RETVAL really is an output variable.
+
+The OUTPUT: keyword can also be used to indicate that function
+parameters are output variables.  This may be necessary when a
+parameter has been modified within the function and the programmer
+would like the update to be seen by Perl.
+
+     bool_t
+     rpcb_gettime(host,timep)
+          char *host
+          time_t &timep
+          OUTPUT:
+          timep
+
+The OUTPUT: keyword will also allow an output parameter to be mapped to
+a matching piece of code rather than to a typemap.
+
+     bool_t
+     rpcb_gettime(host,timep)
+          char *host
+          time_t &timep
+          OUTPUT:
+          timep sv_setnv(ST(1), (double)timep);
+
+The CODE: Keyword
+-----------------
+
+This keyword is used in more complicated XSUBs which require special
+handling for the C function.  The RETVAL variable is available but will
+not be returned unless it is specified under the OUTPUT: keyword.
+
+The following XSUB is for a C function which requires special handling
+of its parameters.  The Perl usage is given first.
+
+     $status = rpcb_gettime( "localhost", $timep );
+
+The XSUB follows.
+
+     bool_t
+     rpcb_gettime(host,timep)
+          char *host
+          time_t timep
+          CODE:
+               RETVAL = rpcb_gettime( host, &timep );
+          OUTPUT:
+          timep
+          RETVAL
+
+The INIT: Keyword
+-----------------
+
+The INIT: keyword allows initialization to be inserted into the XSUB
+before the compiler generates the call to the C function.  Unlike the
+CODE: keyword above, this keyword does not affect the way the compiler
+handles RETVAL.
+
+     bool_t
+     rpcb_gettime(host,timep)
+           char *host
+           time_t &timep
+               INIT:
+               printf("# Host is %s\n", host );
+           OUTPUT:
+           timep
+
+The NO_INIT Keyword
+-------------------
+
+The NO_INIT keyword is used to indicate that a function parameter is
+being used only as an output value.  The xsubpp compiler will normally
+generate code to read the values of all function parameters from the
+argument stack and assign them to C variables upon entry to the
+function.  NO_INIT will tell the compiler that some parameters will be
+used for output rather than for input and that they will be handled
+before the function terminates.
+
+The following example shows a variation of the rpcb_gettime() function.
+This function uses the timep variable only as an output variable and
+does not care about its initial contents.
+
+     bool_t
+     rpcb_gettime(host,timep)
+          char *host
+          time_t &timep = NO_INIT
+          OUTPUT:
+          timep
+
+Initializing Function Parameters
+--------------------------------
+
+Function parameters are normally initialized with their values from the
+argument stack.  The typemaps contain the code segments which are used
+to transfer the Perl values to the C parameters.  The programmer,
+however, is allowed to override the typemaps and supply alternate
+initialization code.
+
+The following code demonstrates how to supply initialization code for
+function parameters.  The initialization code is eval'd by the compiler
+before it is added to the output so anything which should be interpreted
+literally, such as double quotes, must be protected with backslashes.
+
+     bool_t
+     rpcb_gettime(host,timep)
+          char *host = (char *)SvPV(ST(0),na);
+          time_t &timep = 0;
+          OUTPUT:
+          timep
+
+This should not be used to supply default values for parameters.  One
+would normally use this when a function parameter must be processed by
+another library function before it can be used.  Default parameters are
+covered in the next section.
+
+Default Parameter Values
 ------------------------
 
-If you have trouble compiling the scripts in this documentation, you're
-not alone.  The cardinal rule: COMPILE THE PROGRAMS IN EXACTLY THE SAME
-WAY THAT YOUR PERL WAS COMPILED.  (Sorry for yelling.)
+Default values can be specified for function parameters by placing an
+assignment statement in the parameter list.  The default value may be a
+number or a string.  Defaults should always be used on the right-most
+parameters only.
 
-Also, every C program that uses Perl must link in the *perl library*.
-What's that, you ask?  Perl is itself written in C; the perl library is
-the collection of compiled C programs that were used to create your
-perl executable (*/usr/bin/perl* or equivalent).  (Corollary: you can't
-use Perl from your C program unless Perl has been compiled on your
-machine, or installed properly-that's why you shouldn't blithely copy
-Perl executables from machine to machine without also copying the lib
-directory.)
+To allow the XSUB for rpcb_gettime() to have a default host value the
+parameters to the XSUB could be rearranged.  The XSUB will then call
+the real rpcb_gettime() function with the parameters in the correct
+order.  Perl will call this XSUB with either of the following
+statements.
 
-When you use Perl from C, your C program will-usually-allocate, "run",
-and deallocate a *PerlInterpreter* object, which is defined by the perl
-library.
-
-If your copy of Perl is recent enough to contain this documentation
-(version 5.002 or later), then the perl library (and *EXTERN.h* and
-*perl.h*, which you'll also need) will reside in a directory that looks
-like this:
-
-     /usr/local/lib/perl5/your_architecture_here/CORE
-
-or perhaps just
-
-     /usr/local/lib/perl5/CORE
-
-or maybe something like
-
-     /usr/opt/perl5/CORE
-
-Execute this statement for a hint about where to find CORE:
-
-     perl -MConfig -e 'print $Config{archlib}'
-
-Here's how you'd compile the example in the next section, `Adding a
-Perl interpreter to your C program' in this node, on my Linux box:
-
-     % gcc -O2 -Dbool=char -DHAS_BOOL -I/usr/local/include
-     -I/usr/local/lib/perl5/i586-linux/5.003/CORE
-     -L/usr/local/lib/perl5/i586-linux/5.003/CORE
-     -o interp interp.c -lperl -lm
-
-(That's all one line.)  On my DEC Alpha running 5.003_05, the
-incantation is a bit different:
-
-     % cc -O2 -Olimit 2900 -DSTANDARD_C -I/usr/local/include
-     -I/usr/local/lib/perl5/alpha-dec_osf/5.00305/CORE
-     -L/usr/local/lib/perl5/alpha-dec_osf/5.00305/CORE -L/usr/local/lib
-     -D__LANGUAGE_C__ -D_NO_PROTO -o interp interp.c -lperl -lm
-
-How can you figure out what to add?  Assuming your Perl is post-5.001,
-execute a `perl -V' command and pay special attention to the "cc" and
-"ccflags" information.
-
-You'll have to choose the appropriate compiler (*cc*, *gcc*, et al.) for
-your machine: `perl -MConfig -e 'print $Config{cc}'' will tell you what
-to use.
-
-You'll also have to choose the appropriate library directory
-(*/usr/local/lib/...*) for your machine.  If your compiler complains
-that certain functions are undefined, or that it can't locate *-lperl*,
-then you need to change the path following the `-L'.  If it complains
-that it can't find *EXTERN.h* and *perl.h*, you need to change the path
-following the -I.
-
-You may have to add extra libraries as well.  Which ones?  Perhaps
-those printed by
-
-     perl -MConfig -e 'print $Config{libs}'
-
-Provided your perl binary was properly configured and installed the
-ExtUtils::Embed module will determine all of this information for you:
-
-     % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
-
-If the ExtUtils::Embed module isn't part of your Perl distribution, you
-can retrieve it from
-http://www.perl.com/perl/CPAN/modules/by-module/ExtUtils::Embed.  (If
-this documentation came from your Perl distribution, then you're
-running 5.004 or better and you already have it.)
-
-The ExtUtils::Embed kit on CPAN also contains all source code for the
-examples in this document, tests, additional examples and other
-information you may find useful.
-
-Adding a Perl interpreter to your C program
--------------------------------------------
-
-In a sense, perl (the C program) is a good example of embedding Perl
-(the language), so I'll demonstrate embedding with *miniperlmain.c*,
-from the source distribution.  Here's a bastardized, nonportable
-version of *miniperlmain.c* containing the essentials of embedding:
-
-     #include <EXTERN.h>               /* from the Perl distribution     */
-     #include <perl.h>                 /* from the Perl distribution     */
+     $status = rpcb_gettime( $timep, $host );
      
-     static PerlInterpreter *my_perl;  /***    The Perl interpreter    ***/
+     $status = rpcb_gettime( $timep );
+
+The XSUB will look like the code  which  follows.   A  CODE: block  is
+used to call the real rpcb_gettime() function with the parameters in
+the correct order for that function.
+
+     bool_t
+     rpcb_gettime(timep,host="localhost")
+          char *host
+          time_t timep = NO_INIT
+          CODE:
+               RETVAL = rpcb_gettime( host, &timep );
+          OUTPUT:
+          timep
+          RETVAL
+
+The PREINIT: Keyword
+--------------------
+
+The PREINIT: keyword allows extra variables to be declared before the
+typemaps are expanded.  If a variable is declared in a CODE: block then
+that variable will follow any typemap code.  This may result in a C
+syntax error.  To force the variable to be declared before the typemap
+code, place it into a PREINIT: block.  The PREINIT: keyword may be used
+one or more times within an XSUB.
+
+The following examples are equivalent, but if the code is using complex
+typemaps then the first example is safer.
+
+     bool_t
+     rpcb_gettime(timep)
+          time_t timep = NO_INIT
+               PREINIT:
+          char *host = "localhost";
+          CODE:
+               RETVAL = rpcb_gettime( host, &timep );
+          OUTPUT:
+          timep
+          RETVAL
+
+A correct, but error-prone example.
+
+     bool_t
+     rpcb_gettime(timep)
+          time_t timep = NO_INIT
+               CODE:
+          char *host = "localhost";
+               RETVAL = rpcb_gettime( host, &timep );
+          OUTPUT:
+          timep
+          RETVAL
+
+The SCOPE: Keyword
+------------------
+
+The SCOPE: keyword allows scoping to be enabled for a particular XSUB.
+If enabled, the XSUB will invoke ENTER and LEAVE automatically.
+
+To support potentially complex type mappings, if a typemap entry used
+by this XSUB contains a comment like `/*scope*/' then scoping will
+automatically be enabled for that XSUB.
+
+To enable scoping:
+
+     SCOPE: ENABLE
+
+To disable scoping:
+
+     SCOPE: DISABLE
+
+The INPUT: Keyword
+------------------
+
+The XSUB's parameters are usually evaluated immediately after entering
+the XSUB.  The INPUT: keyword can be used to force those parameters to
+be evaluated a little later.  The INPUT: keyword can be used multiple
+times within an XSUB and can be used to list one or more input
+variables.  This keyword is used with the PREINIT: keyword.
+
+The following example shows how the input parameter `timep' can be
+evaluated late, after a PREINIT.
+
+     bool_t
+     rpcb_gettime(host,timep)
+           char *host
+               PREINIT:
+               time_t tt;
+               INPUT:
+           time_t timep
+           CODE:
+                RETVAL = rpcb_gettime( host, &tt );
+                    timep = tt;
+           OUTPUT:
+           timep
+           RETVAL
+
+The next example shows each input parameter evaluated late.
+
+     bool_t
+     rpcb_gettime(host,timep)
+               PREINIT:
+               time_t tt;
+               INPUT:
+           char *host
+               PREINIT:
+               char *h;
+               INPUT:
+           time_t timep
+           CODE:
+                    h = host;
+                    RETVAL = rpcb_gettime( h, &tt );
+                    timep = tt;
+           OUTPUT:
+           timep
+           RETVAL
+
+Variable-length Parameter Lists
+-------------------------------
+
+XSUBs can have variable-length parameter lists by specifying an ellipsis
+`(...)' in the parameter list.  This use of the ellipsis is similar to
+that found in ANSI C.  The programmer is able to determine the number of
+arguments passed to the XSUB by examining the items variable which the
+xsubpp compiler supplies for all XSUBs.  By using this mechanism one can
+create an XSUB which accepts a list of parameters of unknown length.
+
+The *host* parameter for the rpcb_gettime() XSUB can be optional so the
+ellipsis can be used to indicate that the XSUB will take a variable
+number of parameters.  Perl should be able to call this XSUB with
+either of the following statements.
+
+     $status = rpcb_gettime( $timep, $host );
      
-     int main(int argc, char **argv, char **env)
-     {
-         my_perl = perl_alloc();
-         perl_construct(my_perl);
-         perl_parse(my_perl, NULL, argc, argv, (char **)NULL);
-         perl_run(my_perl);
-         perl_destruct(my_perl);
-         perl_free(my_perl);
-     }
+     $status = rpcb_gettime( $timep );
 
-Notice that we don't use the `env' pointer.  Normally handed to
-perl_parse as its final argument, `env' here is replaced by NULL, which
-means that the current environment will be used.
+The XS code, with ellipsis, follows.
 
-Now compile this program (I'll call it *interp.c*) into an executable:
+     bool_t
+     rpcb_gettime(timep, ...)
+          time_t timep = NO_INIT
+               PREINIT:
+          char *host = "localhost";
+          CODE:
+                       if( items > 1 )
+                            host = (char *)SvPV(ST(1), na);
+                       RETVAL = rpcb_gettime( host, &timep );
+          OUTPUT:
+          timep
+          RETVAL
 
-     % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+The PPCODE: Keyword
+-------------------
 
-After a successful compilation, you'll be able to use *interp* just
-like perl itself:
+The PPCODE: keyword is an alternate form of the CODE: keyword and is
+used to tell the xsubpp compiler that the programmer is supplying the
+code to control the argument stack for the XSUBs return values.
+Occasionally one will want an XSUB to return a list of values rather
+than a single value.  In these cases one must use PPCODE: and then
+explicitly push the list of values on the stack.  The PPCODE: and CODE:
+keywords are not used together within the same XSUB.
 
-     % interp
-     print "Pretty Good Perl \n";
-     print "10890 - 9801 is ", 10890 - 9801;
-     <CTRL-D>
-     Pretty Good Perl
-     10890 - 9801 is 1089
+The following XSUB will call the C rpcb_gettime() function and will
+return its two output values, timep and status, to Perl as a single
+list.
 
-or
+     void
+     rpcb_gettime(host)
+          char *host
+               PREINIT:
+          time_t  timep;
+          bool_t  status;
+          PPCODE:
+          status = rpcb_gettime( host, &timep );
+          EXTEND(sp, 2);
+          PUSHs(sv_2mortal(newSViv(status)));
+          PUSHs(sv_2mortal(newSViv(timep)));
 
-     % interp -e 'printf("%x", 3735928559)'
-     deadbeef
+Notice that the programmer must supply the C code necessary to have the
+real rpcb_gettime() function called and to have the return values
+properly placed on the argument stack.
 
-You can also read and execute Perl statements from a file while in the
-midst of your C program, by placing the filename in *argv[1]* before
-calling *perl_run()*.
+The `void' return type for this function tells the xsubpp compiler that
+the RETVAL variable is not needed or used and that it should not be
+created.  In most scenarios the void return type should be used with
+the PPCODE: directive.
 
-Calling a Perl subroutine from your C program
----------------------------------------------
+The EXTEND() macro is used to make room on the argument stack for 2
+return values.  The PPCODE: directive causes the xsubpp compiler to
+create a stack pointer called `sp', and it is this pointer which is
+being used in the EXTEND() macro.  The values are then pushed onto the
+stack with the PUSHs() macro.
 
-To call individual Perl subroutines, you can use any of the
-*perl_call_** functions documented in the *Note Perlcall: perlcall,
-manpage.  In this example we'll use perl_call_argv.
+Now the rpcb_gettime() function can be used from Perl with the
+following statement.
 
-That's shown below, in a program I'll call *showtime.c*.
+     ($status, $timep) = rpcb_gettime("localhost");
 
-     #include <EXTERN.h>
-     #include <perl.h>
+Returning Undef And Empty Lists
+-------------------------------
+
+Occasionally the programmer will want to return simply undef or an
+empty list if a function fails rather than a separate status value.
+The rpcb_gettime() function offers just this situation.  If the
+function succeeds we would like to have it return the time and if it
+fails we would like to have undef returned.  In the following Perl code
+the value of $timep will either be undef or it will be a valid time.
+
+     $timep = rpcb_gettime( "localhost" );
+
+The following XSUB uses the `SV *' return type as a mneumonic only, and
+uses a CODE: block to indicate to the compiler that the programmer has
+supplied all the necessary code.  The sv_newmortal() call will
+initialize the return value to undef, making that the default return
+value.
+
+     SV *
+     rpcb_gettime(host)
+          char *  host
+               PREINIT:
+          time_t  timep;
+          bool_t x;
+          CODE:
+          ST(0) = sv_newmortal();
+          if( rpcb_gettime( host, &timep ) )
+               sv_setnv( ST(0), (double)timep);
+
+The next example demonstrates how one would place an explicit undef in
+the return value, should the need arise.
+
+     SV *
+     rpcb_gettime(host)
+          char *  host
+               PREINIT:
+          time_t  timep;
+          bool_t x;
+          CODE:
+          ST(0) = sv_newmortal();
+          if( rpcb_gettime( host, &timep ) ){
+               sv_setnv( ST(0), (double)timep);
+          }
+          else{
+               ST(0) = &sv_undef;
+          }
+
+To return an empty list one must use a PPCODE: block and then not push
+return values on the stack.
+
+     void
+     rpcb_gettime(host)
+          char *host
+               PREINIT:
+          time_t  timep;
+          PPCODE:
+          if( rpcb_gettime( host, &timep ) )
+               PUSHs(sv_2mortal(newSViv(timep)));
+          else{
+          /* Nothing pushed on stack, so an empty */
+          /* list is implicitly returned. */
+          }
+
+Some people may be inclined to include an explicit return in the above
+XSUB, rather than letting control fall through to the end.  In those
+situations XSRETURN_EMPTY should be used, instead.  This will ensure
+that the XSUB stack is properly adjusted.  Consult `"API LISTING"',
+*Note Perlguts: perlguts, for other XSRETURN macros.
+
+The REQUIRE: Keyword
+--------------------
+
+The REQUIRE: keyword is used to indicate the minimum version of the
+xsubpp compiler needed to compile the XS module.  An XS module which
+contains the following statement will compile with only xsubpp version
+1.922 or greater:
+
+     REQUIRE: 1.922
+
+The CLEANUP: Keyword
+--------------------
+
+This keyword can be used when an XSUB requires special cleanup
+procedures before it terminates.  When the CLEANUP:  keyword is used it
+must follow any CODE:, PPCODE:, or OUTPUT: blocks which are present in
+the XSUB.  The code specified for the cleanup block will be added as
+the last statements in the XSUB.
+
+The BOOT: Keyword
+-----------------
+
+The BOOT: keyword is used to add code to the extension's bootstrap
+function.  The bootstrap function is generated by the xsubpp compiler
+and normally holds the statements necessary to register any XSUBs with
+Perl.  With the BOOT: keyword the programmer can tell the compiler to
+add extra statements to the bootstrap function.
+
+This keyword may be used any time after the first MODULE keyword and
+should appear on a line by itself.  The first blank line after the
+keyword will terminate the code block.
+
+     BOOT:
+     # The following message will be printed when the
+     # bootstrap function executes.
+     printf("Hello from the bootstrap!\n");
+
+The VERSIONCHECK: Keyword
+-------------------------
+
+The VERSIONCHECK: keyword corresponds to xsubpp's `-versioncheck' and
+`-noversioncheck' options.  This keyword overrides the command line
+options.  Version checking is enabled by default.  When version
+checking is enabled the XS module will attempt to verify that its
+version matches the version of the PM module.
+
+To enable version checking:
+
+     VERSIONCHECK: ENABLE
+
+To disable version checking:
+
+     VERSIONCHECK: DISABLE
+
+The PROTOTYPES: Keyword
+-----------------------
+
+The PROTOTYPES: keyword corresponds to xsubpp's `-prototypes' and
+`-noprototypes' options.  This keyword overrides the command line
+options.  Prototypes are enabled by default.  When prototypes are
+enabled XSUBs will be given Perl prototypes.  This keyword may be used
+multiple times in an XS module to enable and disable prototypes for
+different parts of the module.
+
+To enable prototypes:
+
+     PROTOTYPES: ENABLE
+
+To disable prototypes:
+
+     PROTOTYPES: DISABLE
+
+The PROTOTYPE: Keyword
+----------------------
+
+This keyword is similar to the PROTOTYPES: keyword above but can be
+used to force xsubpp to use a specific prototype for the XSUB.  This
+keyword overrides all other prototype options and keywords but affects
+only the current XSUB.  Consult `Prototypes', *Note Perlsub: perlsub,
+for information about Perl prototypes.
+
+     bool_t
+     rpcb_gettime(timep, ...)
+           time_t timep = NO_INIT
+               PROTOTYPE: $;$
+               PREINIT:
+           char *host = "localhost";
+           CODE:
+                       if( items > 1 )
+                            host = (char *)SvPV(ST(1), na);
+                       RETVAL = rpcb_gettime( host, &timep );
+           OUTPUT:
+           timep
+           RETVAL
+
+The ALIAS: Keyword
+------------------
+
+The ALIAS: keyword allows an XSUB to have two more unique Perl names
+and to know which of those names was used when it was invoked.  The Perl
+names may be fully-qualified with package names.  Each alias is given an
+index.  The compiler will setup a variable called ix which contain the
+index of the alias which was used.  When the XSUB is called with its
+declared name ix will be 0.
+
+The following example will create aliases `FOO::gettime()' and
+`BAR::getit()' for this function.
+
+     bool_t
+     rpcb_gettime(host,timep)
+           char *host
+           time_t &timep
+               ALIAS:
+                 FOO::gettime = 1
+                 BAR::getit = 2
+               INIT:
+               printf("# ix = %d\n", ix );
+           OUTPUT:
+           timep
+
+The INCLUDE: Keyword
+--------------------
+
+This keyword can be used to pull other files into the XS module.  The
+other files may have XS code.  INCLUDE: can also be used to run a
+command to generate the XS code to be pulled into the module.
+
+The file `Rpcb1.xsh' contains our `rpcb_gettime()' function:
+
+     bool_t
+     rpcb_gettime(host,timep)
+           char *host
+           time_t &timep
+           OUTPUT:
+           timep
+
+The XS module can use INCLUDE: to pull that file into it.
+
+     INCLUDE: Rpcb1.xsh
+
+If the parameters to the INCLUDE: keyword are followed by a pipe (`|')
+then the compiler will interpret the parameters as a command.
+
+     INCLUDE: cat Rpcb1.xsh |
+
+The CASE: Keyword
+-----------------
+
+The CASE: keyword allows an XSUB to have multiple distinct parts with
+each part acting as a virtual XSUB.  CASE: is greedy and if it is used
+then all other XS keywords must be contained within a CASE:.  This
+means nothing may precede the first CASE: in the XSUB and anything
+following the last CASE: is included in that case.
+
+A CASE: might switch via a parameter of the XSUB, via the ix ALIAS:
+variable (see `"The ALIAS: Keyword"' in this node), or maybe via the
+items variable (see `"Variable-length Parameter Lists"' in this node).
+The last CASE: becomes the *default* case if it is not associated with
+a conditional.  The following example shows CASE switched via ix with a
+function `rpcb_gettime()' having an alias `x_gettime()'.  When the
+function is called as `rpcb_gettime()' its parameters are the usual
+`(char *host, time_t *timep)', but when the function is called as
+`x_gettime()' its parameters are reversed, `(time_t *timep, char
+*host)'.
+
+     long
+     rpcb_gettime(a,b)
+       CASE: ix == 1
+               ALIAS:
+               x_gettime = 1
+               INPUT:
+               # 'a' is timep, 'b' is host
+           char *b
+           time_t a = NO_INIT
+           CODE:
+                RETVAL = rpcb_gettime( b, &a );
+           OUTPUT:
+           a
+           RETVAL
+       CASE:
+               # 'a' is host, 'b' is timep
+           char *a
+           time_t &b = NO_INIT
+           OUTPUT:
+           b
+           RETVAL
+
+That function can be called with either of the following statements.
+Note the different argument lists.
+
+     $status = rpcb_gettime( $host, $timep );
      
-     static PerlInterpreter *my_perl;
-     
-     int main(int argc, char **argv, char **env)
-     {
-         char *args[] = { NULL };
-         my_perl = perl_alloc();
-         perl_construct(my_perl);
-     
-     perl_parse(my_perl, NULL, argc, argv, NULL);
-     
-     /*** skipping perl_run() ***/
-     
-     perl_call_argv("showtime", G_DISCARD | G_NOARGS, args);
-     
-     perl_destruct(my_perl);
-     perl_free(my_perl);
-         }
+     $status = x_gettime( $timep, $host );
 
-where *showtime* is a Perl subroutine that takes no arguments (that's
-the G_NOARGS) and for which I'll ignore the return value (that's the
-G_DISCARD).  Those flags, and others, are discussed in *Note Perlcall:
-perlcall.
+The & Unary Operator
+--------------------
 
-I'll define the *showtime* subroutine in a file called *showtime.pl*:
+The & unary operator is used to tell the compiler that it should
+dereference the object when it calls the C function.  This is used when
+a CODE: block is not used and the object is a not a pointer type (the
+object is an int or `long' but not a `int*' or `long*').
 
-     print "I shan't be printed.";
-     
-     sub showtime {
-         print time;
-     }
+The following XSUB will generate incorrect C code.  The xsubpp compiler
+will turn this into code which calls `rpcb_gettime()' with parameters
+`(char *host, time_t timep)', but the real `rpcb_gettime()' wants the
+`timep' parameter to be of type `time_t*' rather than `time_t'.
 
-Simple enough.  Now compile and run:
+     bool_t
+     rpcb_gettime(host,timep)
+           char *host
+           time_t timep
+           OUTPUT:
+           timep
 
-     % cc -o showtime showtime.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
-     
-     % showtime showtime.pl
-     818284590
+That problem is corrected by using the `&' operator.  The xsubpp
+compiler will now turn this into code which calls `rpcb_gettime()'
+correctly with parameters `(char *host, time_t *timep)'.  It does this
+by carrying the `&' through, so the function call looks like
+`rpcb_gettime(host, &timep)'.
 
-yielding the number of seconds that elapsed between January 1, 1970
-(the beginning of the Unix epoch), and the moment I began writing this
-sentence.
+     bool_t
+     rpcb_gettime(host,timep)
+           char *host
+           time_t &timep
+           OUTPUT:
+           timep
 
-In this particular case we don't have to call perl_run, but in general
-it's considered good practice to ensure proper initialization of
-library code, including execution of all object DESTROY methods and
-package `END {}' blocks.
-
-If you want to pass arguments to the Perl subroutine, you can add
-strings to the NULL-terminated `args' list passed to perl_call_argv.
-For other data types, or to examine return values, you'll need to
-manipulate the Perl stack.  That's demonstrated in the last section of
-this document: `Fiddling with the Perl stack from your C program' in
-this node.
-
-Evaluating a Perl statement from your C program
------------------------------------------------
-
-Perl provides two API functions to evaluate pieces of Perl code.  These
-are `perl_eval_sv()', *Note Perlguts: perlguts, and `perl_eval_pv()',
-*Note Perlguts: perlguts,.
-
-Arguably, these are the only routines you'll ever need to execute
-snippets of Perl code from within your C program.  Your code can be as
-long as you wish; it can contain multiple statements; it can employ
-`use', *Note Perlfunc: perlfunc, `require', *Note Perlfunc: perlfunc,
-and `do', *Note Perlfunc: perlfunc, to include external Perl files.
-
-*perl_eval_pv()* lets us evaluate individual Perl strings, and then
-extract variables for coercion into C types.  The following program,
-*string.c*, executes three Perl strings, extracting an int from the
-first, a `float' from the second, and a `char *' from the third.
-
-     #include <EXTERN.h>
-     #include <perl.h>
-     
-     static PerlInterpreter *my_perl;
-     
-     main (int argc, char **argv, char **env)
-     {
-         char *embedding[] = { "", "-e", "0" };
-     
-         my_perl = perl_alloc();
-         perl_construct( my_perl );
-     
-         perl_parse(my_perl, NULL, 3, embedding, NULL);
-         perl_run(my_perl);
-     
-         /** Treat $a as an integer **/
-         perl_eval_pv("$a = 3; $a **= 2", TRUE);
-         printf("a = %d\n", SvIV(perl_get_sv("a", FALSE)));
-     
-         /** Treat $a as a float **/
-         perl_eval_pv("$a = 3.14; $a **= 2", TRUE);
-         printf("a = %f\n", SvNV(perl_get_sv("a", FALSE)));
-     
-         /** Treat $a as a string **/
-         perl_eval_pv("$a = 'rekcaH lreP rehtonA tsuJ'; $a = reverse($a);", TRUE);
-         printf("a = %s\n", SvPV(perl_get_sv("a", FALSE), na));
-     
-         perl_destruct(my_perl);
-         perl_free(my_perl);
-     }
-
-All of those strange functions with *sv* in their names help convert
-Perl scalars to C types.  They're described in *Note Perlguts: perlguts.
-
-If you compile and run *string.c*, you'll see the results of using
-*SvIV()* to create an int, *SvNV()* to create a `float', and *SvPV()*
-to create a string:
-
-     a = 9
-     a = 9.859600
-     a = Just Another Perl Hacker
-
-In the example above, we've created a global variable to temporarily
-store the computed value of our eval'd expression.  It is also possible
-and in most cases a better strategy to fetch the return value from
-`perl_eval_pv' in this node instead.  Example:
-
-     ...
-     SV *val = perl_eval_pv("reverse 'rekcaH lreP rehtonA tsuJ'", TRUE);
-     printf("%s\n", SvPV(val,na));
-     ...
-
-This way, we avoid namespace pollution by not creating global variables
-and we've simplified our code as well.
-
-Performing Perl pattern matches and substitutions from your C program
----------------------------------------------------------------------
-
-The *perl_eval_pv()* function lets us evaluate strings of Perl code, so
-we can define some functions that use it to "specialize" in matches and
-substitutions: *match()*, *substitute()*, and *matches()*.
-
-     char match(char *string, char *pattern);
-
-Given a string and a pattern (e.g., `m/clasp/' or `/\b\w*\b/', which in
-your C program might appear as "/\\b\\w*\\b/"), match() returns 1 if
-the string matches the pattern and 0 otherwise.
-
-     int substitute(char *string[], char *pattern);
-
-Given a pointer to a string and an `=~' operation (e.g.,
-`s/bob/robert/g' or `tr[A-Z][a-z]'), substitute() modifies the string
-according to the operation, returning the number of substitutions made.
-
-     int matches(char *string, char *pattern, char **matches[]);
-
-Given a string, a pattern, and a pointer to an empty array of strings,
-matches() evaluates `$string =~ $pattern' in an array context, and
-fills in *matches* with the array elements (allocating memory as it
-does so), returning the number of matches found.
-
-Here's a sample program, *match.c*, that uses all three (long lines have
-been wrapped here):
-
-     #include <EXTERN.h>
-     #include <perl.h>
-     
-     static PerlInterpreter *my_perl;
-     
-     /** match(string, pattern)
-     **
-     ** Used for matches in a scalar context.
-     **
-     ** Returns 1 if the match was successful; 0 otherwise.
-     **/
-     char match(char *string, char *pattern)
-     {
-       char *command;
-       command = malloc(sizeof(char) * strlen(string) + strlen(pattern) + 37);
-       sprintf(command, "$string = '%s'; $return = $string =~ %s",
-                        string, pattern);
-       perl_eval_pv(command, TRUE);
-       free(command);
-       return SvIV(perl_get_sv("return", FALSE));
-     }
-     /** substitute(string, pattern)
-     **
-     ** Used for =~ operations that modify their left-hand side (s/// and tr///)
-     **
-     ** Returns the number of successful matches, and
-     ** modifies the input string if there were any.
-     **/
-     int substitute(char *string[], char *pattern)
-     {
-       char *command;
-       STRLEN length;
-       command = malloc(sizeof(char) * strlen(*string) + strlen(pattern) + 35);
-       sprintf(command, "$string = '%s'; $ret = ($string =~ %s)",
-                        *string, pattern);
-       perl_eval_pv(command, TRUE);
-       free(command);
-       *string = SvPV(perl_get_sv("string", FALSE), length);
-       return SvIV(perl_get_sv("ret", FALSE));
-     }
-     /** matches(string, pattern, matches)
-     **
-     ** Used for matches in an array context.
-     **
-     ** Returns the number of matches,
-     ** and fills in **matches with the matching substrings (allocates memory!)
-     **/
-     int matches(char *string, char *pattern, char **match_list[])
-     {
-       char *command;
-       SV *current_match;
-       AV *array;
-       I32 num_matches;
-       STRLEN length;
-       int i;
-       command = malloc(sizeof(char) * strlen(string) + strlen(pattern) + 38);
-       sprintf(command, "$string = '%s'; @array = ($string =~ %s)",
-                        string, pattern);
-       perl_eval_pv(command, TRUE);
-       free(command);
-       array = perl_get_av("array", FALSE);
-       num_matches = av_len(array) + 1; /** assume $[ is 0 **/
-       *match_list = (char **) malloc(sizeof(char *) * num_matches);
-       for (i = 0; i <= num_matches; i++) {
-         current_match = av_shift(array);
-         (*match_list)[i] = SvPV(current_match, length);
-       }
-       return num_matches;
-     }
-     main (int argc, char **argv, char **env)
-     {
-       char *embedding[] = { "", "-e", "0" };
-       char *text, **match_list;
-       int num_matches, i;
-       int j;
-       my_perl = perl_alloc();
-       perl_construct( my_perl );
-       perl_parse(my_perl, NULL, 3, embedding, NULL);
-       perl_run(my_perl);
-     
-     text = (char *) malloc(sizeof(char) * 486); /** A long string follows! **/
-     sprintf(text, "%s", "When he is at a convenience store and the bill \
-     comes to some amount like 76 cents, Maynard is aware that there is \
-     something he *should* do, something that will enable him to get back \
-     a quarter, but he has no idea *what*.  He fumbles through his red \
-     squeezey changepurse and gives the boy three extra pennies with his \
-     dollar, hoping that he might luck into the correct amount.  The boy \
-     gives him back two of his own pennies and then the big shiny quarter \
-     that is his prize. -RICHH");
-     if (match(text, "m/quarter/")) /** Does text contain 'quarter'? **/
-       printf("match: Text contains the word 'quarter'.\n\n");
-     else
-       printf("match: Text doesn't contain the word 'quarter'.\n\n");
-     if (match(text, "m/eighth/")) /** Does text contain 'eighth'? **/
-       printf("match: Text contains the word 'eighth'.\n\n");
-     else
-       printf("match: Text doesn't contain the word 'eighth'.\n\n");
-     /** Match all occurrences of /wi../ **/
-     num_matches = matches(text, "m/(wi..)/g", &match_list);
-     printf("matches: m/(wi..)/g found %d matches...\n", num_matches);
-     for (i = 0; i < num_matches; i++)
-       printf("match: %s\n", match_list[i]);
-     printf("\n");
-     for (i = 0; i < num_matches; i++) {
-       free(match_list[i]);
-     }
-     free(match_list);
-     /** Remove all vowels from text **/
-     num_matches = substitute(&text, "s/[aeiou]//gi");
-     if (num_matches) {
-       printf("substitute: s/[aeiou]//gi...%d substitutions made.\n",
-              num_matches);
-       printf("Now text is: %s\n\n", text);
-     }
-     /** Attempt a substitution **/
-     if (!substitute(&text, "s/Perl/C/")) {
-       printf("substitute: s/Perl/C...No substitution made.\n\n");
-     }
-     free(text);
-     perl_destruct(my_perl);
-     perl_free(my_perl);
-        }
-
-which produces the output (again, long lines have been wrapped here)
-
-     match: Text contains the word 'quarter'.
-     
-     match: Text doesn't contain the word 'eighth'.
-     
-     matches: m/(wi..)/g found 2 matches...
-     match: will
-     match: with
-     
-     substitute: s/[aeiou]//gi...139 substitutions made.
-     Now text is: Whn h s t  cnvnnc str nd th bll cms t sm mnt lk 76 cnts,
-     Mynrd s wr tht thr s smthng h *shld* d, smthng tht wll nbl hm t gt bck
-     qrtr, bt h hs n d *wht*.  H fmbls thrgh hs rd sqzy chngprs nd gvs th by
-     thr xtr pnns wth hs dllr, hpng tht h mght lck nt th crrct mnt.  Th by gvs
-     hm bck tw f hs wn pnns nd thn th bg shny qrtr tht s hs prz. -RCHH
-     
-     substitute: s/Perl/C...No substitution made.
-
-Fiddling with the Perl stack from your C program
+Inserting Comments and C Preprocessor Directives
 ------------------------------------------------
 
-When trying to explain stacks, most computer science textbooks mumble
-something about spring-loaded columns of cafeteria plates: the last
-thing you pushed on the stack is the first thing you pop off.  That'll
-do for our purposes: your C program will push some arguments onto "the
-Perl stack", shut its eyes while some magic happens, and then pop the
-results-the return value of your Perl subroutine-off the stack.
+C preprocessor directives are allowed within BOOT:, PREINIT: INIT:,
+CODE:, PPCODE:, and CLEANUP: blocks, as well as outside the functions.
+Comments are allowed anywhere after the MODULE keyword.  The compiler
+will pass the preprocessor directives through untouched and will remove
+the commented lines.
 
-First you'll need to know how to convert between C types and Perl
-types, with newSViv() and sv_setnv() and newAV() and all their friends.
-They're described in *Note Perlguts: perlguts.
+Comments can be added to XSUBs by placing a `#' as the first
+non-whitespace of a line.  Care should be taken to avoid making the
+comment look like a C preprocessor directive, lest it be interpreted as
+such.  The simplest way to prevent this is to put whitespace in front of
+the `#'.
 
-Then you'll need to know how to manipulate the Perl stack.  That's
-described in *Note Perlcall: perlcall.
+If you use preprocessor directives to choose one of two versions of a
+function, use
 
-Once you've understood those, embedding Perl in C is easy.
-
-Because C has no builtin function for integer exponentiation, let's
-make Perl's ** operator available to it (this is less useful than it
-sounds, because Perl implements ** with C's *pow()* function).  First
-I'll create a stub exponentiation function in *power.pl*:
-
-     sub expo {
-         my ($a, $b) = @_;
-         return $a ** $b;
-     }
-
-Now I'll create a C program, *power.c*, with a function *PerlPower()*
-that contains all the perlguts necessary to push the two arguments into
-*expo()* and to pop the return value out.  Take a deep breath...
-
-     #include <EXTERN.h>
-     #include <perl.h>
-     
-     static PerlInterpreter *my_perl;
-     
-     static void
-     PerlPower(int a, int b)
-     {
-       dSP;                            /* initialize stack pointer      */
-       ENTER;                          /* everything created after here */
-       SAVETMPS;                       /* ...is a temporary variable.   */
-       PUSHMARK(sp);                   /* remember the stack pointer    */
-       XPUSHs(sv_2mortal(newSViv(a))); /* push the base onto the stack  */
-       XPUSHs(sv_2mortal(newSViv(b))); /* push the exponent onto stack  */
-       PUTBACK;                      /* make local stack pointer global */
-       perl_call_pv("expo", G_SCALAR); /* call the function             */
-       SPAGAIN;                        /* refresh stack pointer         */
-                                     /* pop the return value from stack */
-       printf ("%d to the %dth power is %d.\n", a, b, POPi);
-       PUTBACK;
-       FREETMPS;                       /* free that return value        */
-       LEAVE;                       /* ...and the XPUSHed "mortal" args.*/
-     }
-     
-     int main (int argc, char **argv, char **env)
-     {
-       char *my_argv[2];
-     
-     my_perl = perl_alloc();
-     perl_construct( my_perl );
-     
-     my_argv[1] = (char *) malloc(10);
-     sprintf(my_argv[1], "power.pl");
-     
-     perl_parse(my_perl, NULL, argc, my_argv, NULL);
-     perl_run(my_perl);
-     
-     PerlPower(3, 4);                      /*** Compute 3 ** 4 ***/
-     
-     perl_destruct(my_perl);
-     perl_free(my_perl);
-         }
-
-Compile and run:
-
-     % cc -o power power.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
-     
-     % power
-     3 to the 4th power is 81.
-
-Maintaining a persistent interpreter
-------------------------------------
-
-When developing interactive and/or potentially long-running
-applications, it's a good idea to maintain a persistent interpreter
-rather than allocating and constructing a new interpreter multiple
-times.  The major reason is speed: since Perl will only be loaded into
-memory once.
-
-However, you have to be more cautious with namespace and variable
-scoping when using a persistent interpreter.  In previous examples
-we've been using global variables in the default package `main'.  We
-knew exactly what code would be run, and assumed we could avoid
-variable collisions and outrageous symbol table growth.
-
-Let's say your application is a server that will occasionally run Perl
-code from some arbitrary file.  Your server has no way of knowing what
-code it's going to run.  Very dangerous.
-
-If the file is pulled in by `perl_parse()', compiled into a newly
-constructed interpreter, and subsequently cleaned out with
-`perl_destruct()' afterwards, you're shielded from most namespace
-troubles.
-
-One way to avoid namespace collisions in this scenario is to translate
-the filename into a guaranteed-unique package name, and then compile
-the code into that package using `eval', *Note Perlfunc: perlfunc.  In
-the example below, each file will only be compiled once.  Or, the
-application might choose to clean out the symbol table associated with
-the file after it's no longer needed.  Using `perl_call_argv', *Note
-Perlcall: perlcall, We'll call the subroutine
-`Embed::Persistent::eval_file' which lives in the file `persistent.pl'
-and pass the filename and boolean cleanup/cache flag as arguments.
-
-Note that the process will continue to grow for each file that it uses.
-In addition, there might be `AUTOLOAD'ed subroutines and other
-conditions that cause Perl's symbol table to grow.  You might want to
-add some logic that keeps track of the process size, or restarts itself
-after a certain number of requests, to ensure that memory consumption
-is minimized.  You'll also want to scope your variables with `my',
-*Note Perlfunc: perlfunc, whenever possible.
-
-     package Embed::Persistent;
-     #persistent.pl
-     
-     use strict;
-     use vars '%Cache';
-     
-     sub valid_package_name {
-         my($string) = @_;
-         $string =~ s/([^A-Za-z0-9\/])/sprintf("_%2x",unpack("C",$1))/eg;
-         # second pass only for words starting with a digit
-         $string =~ s|/(\d)|sprintf("/_%2x",unpack("C",$1))|eg;
-     
-     # Dress it up as a real package name
-     $string =~ s|/|::|g;
-     return "Embed" . $string;
-      }
-     
-     #borrowed from Safe.pm
-     sub delete_package {
-         my $pkg = shift;
-         my ($stem, $leaf);
-     
-     no strict 'refs';
-     $pkg = "main::$pkg\::";    # expand to full symbol table name
-     ($stem, $leaf) = $pkg =~ m/(.*::)(\w+::)$/;
-     
-     my $stem_symtab = *{$stem}{HASH};
-     
-     delete $stem_symtab->{$leaf};
-      }
-     
-     sub eval_file {
-         my($filename, $delete) = @_;
-         my $package = valid_package_name($filename);
-         my $mtime = -M $filename;
-         if(defined $Cache{$package}{mtime}
-            &&
-            $Cache{$package}{mtime} <= $mtime)
-         {
-            # we have compiled this subroutine already,
-            # it has not been updated on disk, nothing left to do
-            print STDERR "already compiled $package->handler\n";
-         }
-         else {
-            local *FH;
-            open FH, $filename or die "open '$filename' $!";
-            local($/) = undef;
-            my $sub = <FH>;
-            close FH;
-     
-     #wrap the code into a subroutine inside our unique package
-     my $eval = qq{package $package; sub handler { $sub; }};
-     {
-         # hide our variables within this block
-         my($filename,$mtime,$package,$sub);
-         eval $eval;
-     }
-     die $@ if $@;
-     
-     #cache it unless we're cleaning out each time
-     $Cache{$package}{mtime} = $mtime unless $delete;
-          }
-     
-     eval {$package->handler;};
-     die $@ if $@;
-     
-     delete_package($package) if $delete;
-     
-     #take a look if you want
-     #print Devel::Symdump->rnew($package)->as_string, $/;
-      }
-     
-     1;
-     
-     __END__
-     
-     /* persistent.c */
-     #include <EXTERN.h>
-     #include <perl.h>
-     
-     /* 1 = clean out filename's symbol table after each request, 0 = don't */
-     #ifndef DO_CLEAN
-     #define DO_CLEAN 0
+     #if ... version1
+     #else /* ... version2  */
      #endif
+
+and not
+
+     #if ... version1
+     #endif
+     #if ... version2
+     #endif
+
+because otherwise xsubpp will believe that you made a duplicate
+definition of the function.  Also, put a blank line before the
+#else/#endif so it will not be seen as part of the function body.
+
+Using XS With C++
+-----------------
+
+If a function is defined as a C++ method then it will assume its first
+argument is an object pointer.  The object pointer will be stored in a
+variable called THIS.  The object should have been created by C++ with
+the new() function and should be blessed by Perl with the
+sv_setref_pv() macro.  The blessing of the object by Perl can be
+handled by a typemap.  An example typemap is shown at the end of this
+section.
+
+If the method is defined as static it will call the C++ function using
+the class::method() syntax.  If the method is not static the function
+will be called using the THIS->method() syntax.
+
+The next examples will use the following C++ class.
+
+     class color {
+          public:
+          color();
+          ~color();
+          int blue();
+          void set_blue( int );
      
-     static PerlInterpreter *perl = NULL;
-     
+     private:
+     int c_blue;
+          };
+
+The XSUBs for the blue() and set_blue() methods are defined with the
+class name but the parameter for the object (THIS, or "self") is
+implicit and is not listed.
+
      int
-     main(int argc, char **argv, char **env)
-     {
-         char *embedding[] = { "", "persistent.pl" };
-         char *args[] = { "", DO_CLEAN, NULL };
-         char filename [1024];
-         int exitstatus = 0;
+     color::blue()
      
-     if((perl = perl_alloc()) == NULL) {
-        fprintf(stderr, "no memory!");
-        exit(1);
-     }
-     perl_construct(perl);
+     void
+     color::set_blue( val )
+          int val
+
+Both functions will expect an object as the first parameter.  The xsubpp
+compiler will call that object THIS and will use it to call the
+specified method.  So in the C++ code the blue() and set_blue() methods
+will be called in the following manner.
+
+     RETVAL = THIS->blue();
      
-     exitstatus = perl_parse(perl, NULL, 2, embedding, NULL);
+     THIS->set_blue( val );
+
+If the function's name is DESTROY then the C++ delete function will be
+called and THIS will be given as its parameter.
+
+     void
+     color::DESTROY()
+
+The C++ code will call delete.
+
+     delete THIS;
+
+If the function's name is *new* then the C++ `new' function will be
+called to create a dynamic C++ object.  The XSUB will expect the class
+name, which will be kept in a variable called CLASS, to be given as the
+first argument.
+
+     color *
+     color::new()
+
+The C++ code will call `new'.
+
+     RETVAL = new color();
+
+The following is an example of a typemap that could be used for this C++
+example.
+
+     TYPEMAP
+     color *         O_OBJECT
      
-     if(!exitstatus) {
-        exitstatus = perl_run(perl);
+     OUTPUT
+     # The Perl object is blessed into 'CLASS', which should be a
+     # char* having the name of the package for the blessing.
+     O_OBJECT
+             sv_setref_pv( $arg, CLASS, (void*)$var );
      
-     while(printf("Enter file name: ") && gets(filename)) {
-     
-     /* call the subroutine, passing it the filename as an argument */
-     args[0] = filename;
-     perl_call_argv("Embed::Persistent::eval_file",
-                    G_DISCARD | G_EVAL, args);
-     
-     /* check $@ */
-     if(SvTRUE(GvSV(errgv)))
-         fprintf(stderr, "eval error: %s\n", SvPV(GvSV(errgv),na));
+     INPUT
+     O_OBJECT
+             if( sv_isobject($arg) && (SvTYPE(SvRV($arg)) == SVt_PVMG) )
+                     $var = ($type)SvIV((SV*)SvRV( $arg ));
+             else{
+                     warn( \"${Package}::$func_name() -- $var is not a blessed SV reference\" );
+                     XSRETURN_UNDEF;
              }
-          }
+
+Interface Strategy
+------------------
+
+When designing an interface between Perl and a C library a straight
+translation from C to XS is often sufficient.  The interface will often
+be very C-like and occasionally nonintuitive, especially when the C
+function modifies one of its parameters.  In cases where the programmer
+wishes to create a more Perl-like interface the following strategy may
+help to identify the more critical parts of the interface.
+
+Identify the C functions which modify their parameters.  The XSUBs for
+these functions may be able to return lists to Perl, or may be
+candidates to return undef or an empty list in case of failure.
+
+Identify which values are used by only the C and XSUB functions
+themselves.  If Perl does not need to access the contents of the value
+then it may not be necessary to provide a translation for that value
+from C to Perl.
+
+Identify the pointers in the C function parameter lists and return
+values.  Some pointers can be handled in XS with the & unary operator on
+the variable name while others will require the use of the * operator on
+the type name.  In general it is easier to work with the & operator.
+
+Identify the structures used by the C functions.  In many cases it may
+be helpful to use the T_PTROBJ typemap for these structures so they can
+be manipulated by Perl as blessed objects.
+
+Perl Objects And C Structures
+-----------------------------
+
+When dealing with C structures one should select either *T_PTROBJ* or
+*T_PTRREF* for the XS type.  Both types are designed to handle pointers
+to complex objects.  The T_PTRREF type will allow the Perl object to be
+unblessed while the T_PTROBJ type requires that the object be blessed.
+By using T_PTROBJ one can achieve a form of type-checking because the
+XSUB will attempt to verify that the Perl object is of the expected
+type.
+
+The following XS code shows the getnetconfigent() function which is used
+with ONC+ TIRPC.  The getnetconfigent() function will return a pointer
+to a C structure and has the C prototype shown below.  The example will
+demonstrate how the C pointer will become a Perl reference.  Perl will
+consider this reference to be a pointer to a blessed object and will
+attempt to call a destructor for the object.  A destructor will be
+provided in the XS source to free the memory used by getnetconfigent().
+Destructors in XS can be created by specifying an XSUB function whose
+name ends with the word DESTROY.  XS destructors can be used to free
+memory which may have been malloc'd by another XSUB.
+
+     struct netconfig *getnetconfigent(const char *netid);
+
+A `typedef' will be created for `struct netconfig'.  The Perl object
+will be blessed in a class matching the name of the C type, with the
+tag `Ptr' appended, and the name should not have embedded spaces if it
+will be a Perl package name.  The destructor will be placed in a class
+corresponding to the class of the object and the PREFIX keyword will be
+used to trim the name to the word DESTROY as Perl will expect.
+
+     typedef struct netconfig Netconfig;
      
-     perl_destruct_level = 0;
-     perl_destruct(perl);
-     perl_free(perl);
-     exit(exitstatus);
-      }
-
-Now compile:
-
-     % cc -o persistent persistent.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
-
-Here's a example script file:
-
-     #test.pl
-     my $string = "hello";
-     foo($string);
+     MODULE = RPC  PACKAGE = RPC
      
-     sub foo {
-         print "foo says: @_\n";
-     }
-
-Now run:
-
-     % persistent
-     Enter file name: test.pl
-     foo says: hello
-     Enter file name: test.pl
-     already compiled Embed::test_2epl->handler
-     foo says: hello
-     Enter file name: ^C
-
-Maintaining multiple interpreter instances
-------------------------------------------
-
-Some rare applications will need to create more than one interpreter
-during a session.  Such an application might sporadically decide to
-release any resources associated with the interpreter.
-
-The program must take care to ensure that this takes place *before* the
-next interpreter is constructed.  By default, the global variable
-`perl_destruct_level' is set to `0', since extra cleaning isn't needed
-when a program has only one interpreter.
-
-Setting `perl_destruct_level' to 1 makes everything squeaky clean:
-
-     perl_destruct_level = 1;
+     Netconfig *
+     getnetconfigent(netid)
+          char *netid
      
-     while(1) {
-         ...
-         /* reset global variables here with perl_destruct_level = 1 */
-         perl_construct(my_perl);
-         ...
-         /* clean and reset _everything_ during perl_destruct */
-         perl_destruct(my_perl);
-         perl_free(my_perl);
-         ...
-         /* let's go do it again! */
-     }
-
-When *perl_destruct()* is called, the interpreter's syntax parse tree
-and symbol tables are cleaned up, and global variables are reset.
-
-Now suppose we have more than one interpreter instance running at the
-same time.  This is feasible, but only if you used the `-DMULTIPLICITY'
-flag when building Perl.  By default, that sets `perl_destruct_level'
-to 1.
-
-Let's give it a try:
-
-     #include <EXTERN.h>
-     #include <perl.h>
+     MODULE = RPC  PACKAGE = NetconfigPtr  PREFIX = rpcb_
      
-     /* we're going to embed two interpreters */
-     /* we're going to embed two interpreters */
+     void
+     rpcb_DESTROY(netconf)
+          Netconfig *netconf
+          CODE:
+          printf("Now in NetconfigPtr::DESTROY\n");
+          free( netconf );
+
+This example requires the following typemap entry.  Consult the typemap
+section for more information about adding new typemaps for an extension.
+
+     TYPEMAP
+     Netconfig *  T_PTROBJ
+
+This example will be used with the following Perl statements.
+
+     use RPC;
+     $netconf = getnetconfigent("udp");
+
+When Perl destroys the object referenced by $netconf it will send the
+object to the supplied XSUB DESTROY function.  Perl cannot determine,
+and does not care, that this object is a C struct and not a Perl
+object.  In this sense, there is no difference between the object
+created by the getnetconfigent() XSUB and an object created by a normal
+Perl subroutine.
+
+The Typemap
+-----------
+
+The typemap is a collection of code fragments which are used by the
+xsubpp compiler to map C function parameters and values to Perl values.
+The typemap file may consist of three sections labeled `TYPEMAP',
+INPUT, and `OUTPUT'.  The INPUT section tells the compiler how to
+translate Perl values into variables of certain C types.  The OUTPUT
+section tells the compiler how to translate the values from certain C
+types into values Perl can understand.  The TYPEMAP section tells the
+compiler which of the INPUT and OUTPUT code fragments should be used to
+map a given C type to a Perl value.  Each of the sections of the
+typemap must be preceded by one of the TYPEMAP, INPUT, or OUTPUT
+keywords.
+
+The default typemap in the `ext' directory of the Perl source contains
+many useful types which can be used by Perl extensions.  Some
+extensions define additional typemaps which they keep in their own
+directory.  These additional typemaps may reference INPUT and OUTPUT
+maps in the main typemap.  The xsubpp compiler will allow the
+extension's own typemap to override any mappings which are in the
+default typemap.
+
+Most extensions which require a custom typemap will need only the
+TYPEMAP section of the typemap file.  The custom typemap used in the
+getnetconfigent() example shown earlier demonstrates what may be the
+typical use of extension typemaps.  That typemap is used to equate a C
+structure with the T_PTROBJ typemap.  The typemap used by
+getnetconfigent() is shown here.  Note that the C type is separated
+from the XS type with a tab and that the C unary operator * is
+considered to be a part of the C type name.
+
+     TYPEMAP
+     Netconfig *<tab>T_PTROBJ
+
+EXAMPLES
+========
+
+File `RPC.xs': Interface to some ONC+ RPC bind library functions.
+
+     #include "EXTERN.h"
+     #include "perl.h"
+     #include "XSUB.h"
      
-     #define SAY_HELLO "-e", "print qq(Hi, I'm $^X\n)"
+     #include <rpc/rpc.h>
      
-     int main(int argc, char **argv, char **env)
-     {
-         PerlInterpreter
-             *one_perl = perl_alloc(),
-             *two_perl = perl_alloc();
-         char *one_args[] = { "one_perl", SAY_HELLO };
-         char *two_args[] = { "two_perl", SAY_HELLO };
+     typedef struct netconfig Netconfig;
      
-     perl_construct(one_perl);
-     perl_construct(two_perl);
+     MODULE = RPC  PACKAGE = RPC
      
-     perl_parse(one_perl, NULL, 3, one_args, (char **)NULL);
-     perl_parse(two_perl, NULL, 3, two_args, (char **)NULL);
+     SV *
+     rpcb_gettime(host="localhost")
+          char *host
+               PREINIT:
+          time_t  timep;
+          CODE:
+          ST(0) = sv_newmortal();
+          if( rpcb_gettime( host, &timep ) )
+               sv_setnv( ST(0), (double)timep );
      
-     perl_run(one_perl);
-     perl_run(two_perl);
+     Netconfig *
+     getnetconfigent(netid="udp")
+          char *netid
      
-     perl_destruct(one_perl);
-     perl_destruct(two_perl);
+     MODULE = RPC  PACKAGE = NetconfigPtr  PREFIX = rpcb_
      
-     perl_free(one_perl);
-     perl_free(two_perl);
-      }
+     void
+     rpcb_DESTROY(netconf)
+          Netconfig *netconf
+          CODE:
+          printf("NetconfigPtr::DESTROY\n");
+          free( netconf );
 
-Compile as usual:
+File `typemap': Custom typemap for RPC.xs.
 
-     % cc -o multiplicity multiplicity.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+     TYPEMAP
+     Netconfig *  T_PTROBJ
 
-Run it, Run it:
+File `RPC.pm': Perl module for the RPC extension.
 
-     % multiplicity
-     Hi, I'm one_perl
-     Hi, I'm two_perl
-
-Using Perl modules, which themselves use C libraries, from your C program
--------------------------------------------------------------------------
-
-If you've played with the examples above and tried to embed a script
-that *use()*s a Perl module (such as Socket) which itself uses a C or
-C++ library, this probably happened:
-
-     Can't load module Socket, dynamic loading not available in this perl.
-      (You may need to build a new perl executable which either supports
-      dynamic loading or has the Socket module statically linked into it.)
-
-What's wrong?
-
-Your interpreter doesn't know how to communicate with these extensions
-on its own.  A little glue will help.  Up until now you've been calling
-*perl_parse()*, handing it NULL for the second argument:
-
-     perl_parse(my_perl, NULL, argc, my_argv, NULL);
-
-That's where the glue code can be inserted to create the initial
-contact between Perl and linked C/C++ routines.  Let's take a look some
-pieces of *perlmain.c* to see how Perl does this:
-
-     #ifdef __cplusplus
-     #  define EXTERN_C extern "C"
-     #else
-     #  define EXTERN_C extern
-     #endif
+     package RPC;
      
-     static void xs_init _((void));
+     require Exporter;
+     require DynaLoader;
+     @ISA = qw(Exporter DynaLoader);
+     @EXPORT = qw(rpcb_gettime getnetconfigent);
      
-     EXTERN_C void boot_DynaLoader _((CV* cv));
-     EXTERN_C void boot_Socket _((CV* cv));
+     bootstrap RPC;
+     1;
+
+File `rpctest.pl': Perl test program for the RPC extension.
+
+     use RPC;
      
-     EXTERN_C void
-     xs_init()
-     {
-            char *file = __FILE__;
-            /* DynaLoader is a special case */
-            newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
-            newXS("Socket::bootstrap", boot_Socket, file);
-     }
-
-Simply put: for each extension linked with your Perl executable
-(determined during its initial configuration on your computer or when
-adding a new extension), a Perl subroutine is created to incorporate
-the extension's routines.  Normally, that subroutine is named
-*Module::bootstrap()* and is invoked when you say *use Module*.  In
-turn, this hooks into an XSUB, *boot_Module*, which creates a Perl
-counterpart for each of the extension's XSUBs.  Don't worry about this
-part; leave that to the xsubpp and extension authors.  If your
-extension is dynamically loaded, DynaLoader creates
-*Module::bootstrap()* for you on the fly.  In fact, if you have a
-working DynaLoader then there is rarely any need to link in any other
-extensions statically.
-
-Once you have this code, slap it into the second argument of
-*perl_parse()*:
-
-     perl_parse(my_perl, xs_init, argc, my_argv, NULL);
-
-Then compile:
-
-     % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+     $netconf = getnetconfigent();
+     $a = rpcb_gettime();
+     print "time = $a\n";
+     print "netconf = $netconf\n";
      
-     % interp
-       use Socket;
-       use SomeDynamicallyLoadedModule;
-     
-     print "Now I can use extensions!\n"'
+     $netconf = getnetconfigent("tcp");
+     $a = rpcb_gettime("poplar");
+     print "time = $a\n";
+     print "netconf = $netconf\n";
 
-ExtUtils::Embed can also automate writing the *xs_init* glue code.
+XS VERSION
+==========
 
-     % perl -MExtUtils::Embed -e xsinit -- -o perlxsi.c
-     % cc -c perlxsi.c `perl -MExtUtils::Embed -e ccopts`
-     % cc -c interp.c  `perl -MExtUtils::Embed -e ccopts`
-     % cc -o interp perlxsi.o interp.o `perl -MExtUtils::Embed -e ldopts`
-
-Consult *Note Perlxs: perlxs, and *Note Perlguts: perlguts, for more
-details.
-
-MORAL
-=====
-
-You can sometimes *write faster code* in C, but you can always *write
-code faster* in Perl.  Because you can use each from the other, combine
-them as you wish.
+This document covers features supported by xsubpp 1.935.
 
 AUTHOR
 ======
 
-Jon Orwant and <`orwant@tpj.com'> and Doug MacEachern <`dougm@osf.org'>,
-with small contributions from Tim Bunce, Tom Christiansen, Hallvard
-Furuseth, Dov Grobgeld, and Ilya Zakharevich.
-
-Check out Doug's article on embedding in Volume 1, Issue 4 of The Perl
-Journal.  Info about TPJ is available from http://tpj.com.
-
-April 14, 1997
-
-Some of this material is excerpted from Jon Orwant's book: *Perl 5
-Interactive*, Waite Group Press, 1996 (ISBN 1-57169-064-6) and appears
-courtesy of Waite Group Press.
-
-COPYRIGHT
-=========
-
-Copyright (C) 1995, 1996, 1997 Doug MacEachern and Jon Orwant.  All
-Rights Reserved.
-
-Although destined for release with the standard Perl distribution, this
-document is not public domain, nor is any of Perl and its
-documentation.  Permission is granted to freely distribute verbatim
-copies of this document provided that no modifications outside of
-formatting be made, and that this notice remain intact.  You are
-permitted and encouraged to use its code and derivatives thereof in
-your own source code for fun or for profit as you see fit.
+Dean Roehrich <`roehrich@cray.com'> Jul 8, 1996
 

@@ -659,6 +659,10 @@ method, nor does any of its base classes.  See @xref{perlobj,Perlobj}.
 (W) The @@ISA array contained the name of another package that doesn@'t seem
 to exist.
 
+@item Can@'t make list assignment to \%ENV on this system
+@kindex Can@'t make list assignment to \%ENV on this system
+(F) List assignment to %ENV is not supported on some systems, notably VMS.
+
 @item Can@'t mktemp()
 @kindex Can@'t mktemp()
 (F) The mktemp() routine failed for some reason while trying to process
@@ -925,7 +929,7 @@ a valid magic number.
 @item Deep recursion on subroutine "%s"
 @kindex Deep recursion on subroutine "%s"
 (W) This subroutine has called itself (directly or indirectly) 100
-times than it has returned.  This probably indicates an infinite
+times more than it has returned.  This probably indicates an infinite
 recursion, unless you@'re writing strange benchmark programs, in which
 case it indicates something else.
 
@@ -1469,7 +1473,7 @@ constant to your name space with use or import while no such
 importing took place, it may for example be that your operating system
 does not support that particular constant. Hopefully you did use an
 explicit import list for the constants you expect to see, please see
-@samp{use}, @xref{perlfunc,Perlfunc}, and @samp{import}, @xref{perlfunc,Perlfunc},. While an explicit import list
+@samp{use}, @xref{perlfunc,Perlfunc}, and @samp{import}, @xref{perlfunc,Perlfunc}. While an explicit import list
 would probably have caught this error earlier it naturally does not
 remedy the fact that your operating system still does not support that
 constant. Maybe you have a typo in the constants of the symbol import
@@ -2196,7 +2200,7 @@ think so.
 
 @item setruid() not implemented
 @kindex setruid() not implemented
-(F) You tried to assign to C<$<lt>>, and your operating system doesn@'t support
+(F) You tried to assign to C<$<>, and your operating system doesn@'t support
 the setruid() system call (or equivalent), or at least Configure didn@'t
 think so.
 
@@ -2290,9 +2294,11 @@ construct.  Remember that bracketing delimiters count nesting level.
 
 @item substr outside of string
 @kindex substr outside of string
-(W) You tried to reference a substr() that pointed outside of a string.
-That is, the absolute value of the offset was larger than the length of
-the string.  See @samp{substr}, @xref{perlfunc,Perlfunc}.
+(S),(W) You tried to reference a substr() that pointed outside of a
+string.  That is, the absolute value of the offset was larger than the
+length of the string.  See @samp{substr}, @xref{perlfunc,Perlfunc}.  This warning is
+mandatory if substr is used in an lvalue context (as the left hand side
+of an assignment or as a subroutine argument for example).
 
 @item suidperl is no longer needed since %s
 @kindex suidperl is no longer needed since %s

@@ -246,7 +246,7 @@ END @{ @}       # module clean-up code here (global destructor)
 
 @unnumberedsubsec How do I create a class?
 See @xref{perltoot,Perltoot}, for an introduction to classes and objects, as well as
-@xref{perlobj,Perlobj}, and @xref{perlbot,Perlbot},.
+@xref{perlobj,Perlobj}, and @xref{perlbot,Perlbot}.
 
 @unnumberedsubsec How can I tell if a variable is tainted?
 See @samp{"Laundering and Detecting Tainted Data"}, @xref{perlsec,Perlsec}.  Here@'s an

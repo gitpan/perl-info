@@ -17,6 +17,7 @@ perl [ -sTuU ] [ -hv ] [ -V[:configvar] ] [ -cw ] [ -d[:debugger] ] [
 -Idir ] [ -m[-]module ] [ -M[-]'module...' ] [ -P ] [ -S ] [ -x[dir] ]
 [ -i[extension] ] [ -e 'command' ] [ - ] [ programfile ] [ argument ]...
 
+This manual generated from pod files included in 5.004_1 distribution.
 For ease of access, the Perl manual has been split up into a number of
 sections:
 

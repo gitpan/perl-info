@@ -241,7 +241,7 @@ How do I create a class?
 ------------------------
 
 See *Note Perltoot: perltoot, for an introduction to classes and
-objects, as well as *Note Perlobj: perlobj, and *Note Perlbot: perlbot,.
+objects, as well as *Note Perlobj: perlobj, and *Note Perlbot: perlbot.
 
 How can I tell if a variable is tainted?
 ----------------------------------------

@@ -498,8 +498,8 @@ Where can I learn about linking C with Perl? [h2xs, xsubpp]
 
 If you want to call C from Perl, start with *Note Perlxstut: perlxstut,
 moving on to *Note Perlxs: perlxs, `xsubpp' in this node, and *Note
-Perlguts: perlguts,.  If you want to call Perl from C, then read *Note
-Perlembed: perlembed, *Note Perlcall: perlcall,, and *Note Perlguts:
+Perlguts: perlguts.  If you want to call Perl from C, then read *Note
+Perlembed: perlembed, *Note Perlcall: perlcall, and *Note Perlguts:
 perlguts.  Don't forget that you can learn a lot from looking at how
 the authors of existing extension modules wrote their code and solved
 their problems.

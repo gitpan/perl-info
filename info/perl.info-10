@@ -849,8 +849,12 @@ AUTHOR AND COPYRIGHT
 
 Copyright (c) 1997 Tom Christiansen and Nathan Torkington.  All rights
 reserved.  See *Note Perlfaq: perlfaq, for distribution information.
- END-of-perlfaq8.pod echo x - perlfaq9.pod sed 's/^X//' >perlfaq9.pod
-<< 'END-of-perlfaq9.pod' =head1 NAME
+
+
+File: perl.info,  Node: perlfaq9,  Next: perldata,  Prev: perlfaq8,  Up: perlfaq
+
+NAME
+====
 
 perlfaq9 - Networking ($Revision: 1.17 $, $Date: 1997/04/24 22:44:29 $)
 

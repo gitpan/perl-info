@@ -443,7 +443,7 @@ java applets on its pages.
 
 @unnumberedsubsec How do I learn about object-oriented Perl programming?
 @xref{perltoot,Perltoot}, (distributed with 5.004 or later) is a good place to start.
-Also, @xref{perlobj,Perlobj}, @xref{perlref,Perlref},, and @xref{perlmod,Perlmod}, are useful references,
+Also, @xref{perlobj,Perlobj}, @xref{perlref,Perlref}, and @xref{perlmod,Perlmod}, are useful references,
 while @xref{perlbot,Perlbot}, has some excellent tips and tricks.
 
 @unnumberedsec AUTHOR AND COPYRIGHT

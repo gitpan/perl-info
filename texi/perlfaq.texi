@@ -136,7 +136,7 @@ question, expanded on the email address answer in @xref{perlfaq9,Perlfaq9}.
 
 @item 25/March/97
 Added more info to the binary distribution section of @xref{perlfaq2,Perlfaq2}.
-Added Net::Telnet to @xref{perlfaq6,Perlfaq6}.  Fixed typos in @xref{perlfaq8,Perlfaq8},.  Added
+Added Net::Telnet to @xref{perlfaq6,Perlfaq6}.  Fixed typos in @xref{perlfaq8,Perlfaq8}.  Added
 mail sending example to @xref{perlfaq9,Perlfaq9}.  Added Merlyn@'s columns to
 @xref{perlfaq2,Perlfaq2}.
 

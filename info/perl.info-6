@@ -404,8 +404,8 @@ book on regular expressions, to handle these for us.  He suggests
 
 If you want to represent quotation marks inside a
 quotation-mark-delimited field, escape them with backslashes (eg,
-C<"like \"this\"").  Unescaping them is a task addressed earlier in
-this section.
+`"like \"this\""'.  Unescaping them is a task addressed earlier in this
+section.
 
 Alternatively, the Text::ParseWords module (part of the standard perl
 distribution) lets you say:
@@ -1078,7 +1078,7 @@ How can I make the Perl equivalent of a C structure/C++ class/hash or array of h
 
 Use references (documented in *Note Perlref: perlref,).  Examples of
 complex data structures are given in *Note Perldsc: perldsc, and *Note
-Perllol: perllol,.  Examples of structures and object-oriented classes
+Perllol: perllol.  Examples of structures and object-oriented classes
 are in *Note Perltoot: perltoot.
 
 How can I use a reference as a hash key?

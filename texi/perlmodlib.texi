@@ -550,7 +550,7 @@ its methods by loading dynamic C or C++ objects, but that should be
 totally transparent to the user of the module.  Likewise, the module
 might set up an AUTOLOAD function to slurp in subroutine definitions on
 demand, but this is also transparent.  Only the @file{.pm} file is required to
-exist.  See @xref{perlsub,Perlsub}, @xref{perltoot,Perltoot},, and @samp{AutoLoader} in this node for details about 
+exist.  See @xref{perlsub,Perlsub}, @xref{perltoot,Perltoot}, and @samp{AutoLoader} in this node for details about 
 the AUTOLOAD mechanism.
 
 @unnumberedsubsec Guidelines for Module Creation

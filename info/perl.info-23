@@ -2,1298 +2,526 @@ This is Info file perl.info, produced by Makeinfo-1.64 from the input
 file Pmaster.texi.
 
 
-File: perl.info,  Node: perlobj,  Next: perltie,  Prev: perltoot,  Up: Top
+File: perl.info,  Node: perlbot,  Next: perlipc,  Prev: perltie,  Up: Top
 
 NAME
 ====
 
-perlobj - Perl objects
+perlbot - Bag'o Object Tricks (the BOT)
 
 DESCRIPTION
 ===========
 
-First of all, you need to understand what references are in Perl.  See
-*Note Perlref: perlref, for that.  Second, if you still find the
-following reference work too complicated, a tutorial on object-oriented
-programming in Perl can be found in *Note Perltoot: perltoot.
-
-If you're still with us, then here are three very simple definitions
-that you should find reassuring.
-
-  1. An object is simply a reference that happens to know which class it
-     belongs to.
-
-  2. A class is simply a package that happens to provide methods to deal
-     with object references.
-
-  3. A method is simply a subroutine that expects an object reference
-     (or a package name, for class methods) as the first argument.
-
-     We'll cover these points now in more depth.
-
-An Object is Simply a Reference
--------------------------------
-
-Unlike say C++, Perl doesn't provide any special syntax for
-constructors.  A constructor is merely a subroutine that returns a
-reference to something "blessed" into a class, generally the class that
-the subroutine is defined in.  Here is a typical constructor:
-
-     package Critter;
-     sub new { bless {} }
-
-The `{}' constructs a reference to an anonymous hash containing no
-key/value pairs.  The bless() takes that reference and tells the object
-it references that it's now a Critter, and returns the reference.  This
-is for convenience, because the referenced object itself knows that it
-has been blessed, and the reference to it could have been returned
-directly, like this:
-
-     sub new {
-             my $self = {};
-             bless $self;
-             return $self;
-     }
-
-In fact, you often see such a thing in more complicated constructors
-that wish to call methods in the class as part of the construction:
-
-     sub new {
-             my $self = {}
-             bless $self;
-             $self->initialize();
-             return $self;
-     }
-
-If you care about inheritance (and you should; see `"Modules: Creation,
-Use, and Abuse"', *Note Perlmod: perlmod,), then you want to use the
-two-arg form of bless so that your constructors may be inherited:
-
-     sub new {
-             my $class = shift;
-             my $self = {};
-             bless $self, $class
-             $self->initialize();
-             return $self;
-     }
-
-Or if you expect people to call not just C<CLASS->new()> but also
-C<$obj->new()>, then use something like this.  The initialize() method
-used will be of whatever $class we blessed the object into:
-
-     sub new {
-             my $this = shift;
-             my $class = ref($this) || $this;
-             my $self = {};
-             bless $self, $class
-             $self->initialize();
-             return $self;
-     }
-
-Within the class package, the methods will typically deal with the
-reference as an ordinary reference.  Outside the class package, the
-reference is generally treated as an opaque value that may be accessed
-only through the class's methods.
-
-A constructor may re-bless a referenced object currently belonging to
-another class, but then the new class is responsible for all cleanup
-later.  The previous blessing is forgotten, as an object may belong to
-only one class at a time.  (Although of course it's free to inherit
-methods from many classes.)
-
-A clarification:  Perl objects are blessed.  References are not.
-Objects know which package they belong to.  References do not.  The
-bless() function uses the reference to find the object.  Consider the
-following example:
-
-     $a = {};
-     $b = $a;
-     bless $a, BLAH;
-     print "\$b is a ", ref($b), "\n";
-
-This reports $b as being a BLAH, so obviously bless() operated on the
-object and not on the reference.
-
-A Class is Simply a Package
----------------------------
-
-Unlike say C++, Perl doesn't provide any special syntax for class
-definitions.  You use a package as a class by putting method
-definitions into the class.
-
-There is a special array within each package called @ISA which says
-where else to look for a method if you can't find it in the current
-package.  This is how Perl implements inheritance.  Each element of the
-@ISA array is just the name of another package that happens to be a
-class package.  The classes are searched (depth first) for missing
-methods in the order that they occur in @ISA.  The classes accessible
-through @ISA are known as base classes of the current class.
-
-If a missing method is found in one of the base classes, it is cached
-in the current class for efficiency.  Changing @ISA or defining new
-subroutines invalidates the cache and causes Perl to do the lookup
-again.
-
-If a method isn't found, but an AUTOLOAD routine is found, then that is
-called on behalf of the missing method.
-
-If neither a method nor an AUTOLOAD routine is found in @ISA, then one
-last try is made for the method (or an AUTOLOAD routine) in a class
-called UNIVERSAL.  (Several commonly used methods are automatically
-supplied in the UNIVERSAL class; see `"Default UNIVERSAL methods"' in
-this node for more details.)  If that doesn't work, Perl finally gives
-up and complains.
-
-Perl classes do only method inheritance.  Data inheritance is left up
-to the class itself.  By and large, this is not a problem in Perl,
-because most classes model the attributes of their object using an
-anonymous hash, which serves as its own little namespace to be carved
-up by the various classes that might want to do something with the
-object.
-
-A Method is Simply a Subroutine
--------------------------------
-
-Unlike say C++, Perl doesn't provide any special syntax for method
-definition.  (It does provide a little syntax for method invocation
-though.  More on that later.)  A method expects its first argument to
-be the object or package it is being invoked on.  There are just two
-types of methods, which we'll call class and instance.  (Sometimes
-you'll hear these called static and virtual, in honor of the two C++
-method types they most closely resemble.)
-
-A class method expects a class name as the first argument.  It provides
-functionality for the class as a whole, not for any individual object
-belonging to the class.  Constructors are typically class methods.
-Many class methods simply ignore their first argument, because they
-already know what package they're in, and don't care what package they
-were invoked via.  (These aren't necessarily the same, because class
-methods follow the inheritance tree just like ordinary instance
-methods.)  Another typical use for class methods is to look up an
-object by name:
-
-     sub find {
-             my ($class, $name) = @_;
-             $objtable{$name};
-     }
-
-An instance method expects an object reference as its first argument.
-Typically it shifts the first argument into a "self" or "this" variable,
-and then uses that as an ordinary reference.
-
-     sub display {
-             my $self = shift;
-             my @keys = @_ ? @_ : sort keys %$self;
-             foreach $key (@keys) {
-                 print "\t$key => $self->{$key}\n";
-             }
-     }
-
-Method Invocation
------------------
-
-There are two ways to invoke a method, one of which you're already
-familiar with, and the other of which will look familiar.  Perl 4
-already had an "indirect object" syntax that you use when you say
-
-     print STDERR "help!!!\n";
-
-This same syntax can be used to call either class or instance methods.
-We'll use the two methods defined above, the class method to lookup an
-object reference and the instance method to print out its attributes.
-
-     $fred = find Critter "Fred";
-     display $fred 'Height', 'Weight';
-
-These could be combined into one statement by using a BLOCK in the
-indirect object slot:
-
-     display {find Critter "Fred"} 'Height', 'Weight';
-
-For C++ fans, there's also a syntax using -> notation that does exactly
-the same thing.  The parentheses are required if there are any
-arguments.
-
-     $fred = Critter->find("Fred");
-     $fred->display('Height', 'Weight');
-
-or in one statement,
-
-     Critter->find("Fred")->display('Height', 'Weight');
-
-There are times when one syntax is more readable, and times when the
-other syntax is more readable.  The indirect object syntax is less
-cluttered, but it has the same ambiguity as ordinary list operators.
-Indirect object method calls are parsed using the same rule as list
-operators: "If it looks like a function, it is a function".  (Presuming
-for the moment that you think two words in a row can look like a
-function name.  C++ programmers seem to think so with some regularity,
-especially when the first word is "new".)  Thus, the parentheses of
-
-     new Critter ('Barney', 1.5, 70)
-
-are assumed to surround ALL the arguments of the method call, regardless
-of what comes after.  Saying
-
-     new Critter ('Bam' x 2), 1.4, 45
-
-would be equivalent to
-
-     Critter->new('Bam' x 2), 1.4, 45
-
-which is unlikely to do what you want.
-
-There are times when you wish to specify which class's method to use.
-In this case, you can call your method as an ordinary subroutine call,
-being sure to pass the requisite first argument explicitly:
-
-     $fred =  MyCritter::find("Critter", "Fred");
-     MyCritter::display($fred, 'Height', 'Weight');
-
-Note however, that this does not do any inheritance.  If you wish
-merely to specify that Perl should *START* looking for a method in a
-particular package, use an ordinary method call, but qualify the method
-name with the package like this:
-
-     $fred = Critter->MyCritter::find("Fred");
-     $fred->MyCritter::display('Height', 'Weight');
-
-If you're trying to control where the method search begins *and* you're
-executing in the class itself, then you may use the SUPER pseudo class,
-which says to start looking in your base class's @ISA list without
-having to name it explicitly:
-
-     $self->SUPER::display('Height', 'Weight');
-
-Please note that the `SUPER::' construct is meaningful *only* within the
-class.
-
-Sometimes you want to call a method when you don't know the method name
-ahead of time.  You can use the arrow form, replacing the method name
-with a simple scalar variable containing the method name:
-
-     $method = $fast ? "findfirst" : "findbest";
-     $fred->$method(@args);
-
-Default UNIVERSAL methods
--------------------------
-
-The UNIVERSAL package automatically contains the following methods that
-are inherited by all other classes:
-
-isa(CLASS)
-     `isa' returns *true* if its object is blessed into a subclass of
-     CLASS
-
-     `isa' is also exportable and can be called as a sub with two
-     arguments. This allows the ability to check what a reference
-     points to. Example
-
-          use UNIVERSAL qw(isa);
-          
-          if(isa($ref, 'ARRAY')) {
-                  ...
-          }
-
-can(METHOD)
-     `can' checks to see if its object has a method called `METHOD', if
-     it does then a reference to the sub is returned, if it does not
-     then undef is returned.
-
-VERSION( [NEED] )
-     VERSION returns the version number of the class (package).  If the
-     NEED argument is given then it will check that the current version
-     (as defined by the $VERSION variable in the given package) not
-     less than NEED; it will die if this is not the case.  This method
-     is normally called as a class method.  This method is called
-     automatically by the VERSION form of use.
-
-          use A 1.2 qw(some imported subs);
-          # implies:
-          A->VERSION(1.2);
-
-*NOTE:* `can' directly uses Perl's internal code for method lookup, and
-`isa' uses a very similar method and cache-ing strategy. This may cause
-strange effects if the Perl code dynamically changes @ISA in any
-package.
-
-You may add other methods to the UNIVERSAL class via Perl or XS code.
-You do not need to `use UNIVERSAL' in order to make these methods
-available to your program.  This is necessary only if you wish to have
-`isa' available as a plain subroutine in the current package.
-
-Destructors
------------
-
-When the last reference to an object goes away, the object is
-automatically destroyed.  (This may even be after you exit, if you've
-stored references in global variables.)  If you want to capture control
-just before the object is freed, you may define a DESTROY method in
-your class.  It will automatically be called at the appropriate moment,
-and you can do any extra cleanup you need to do.
-
-Perl doesn't do nested destruction for you.  If your constructor
-re-blessed a reference from one of your base classes, your DESTROY may
-need to call DESTROY for any base classes that need it.  But this
-applies to only re-blessed objects-an object reference that is merely
-*CONTAINED* in the current object will be freed and destroyed
-automatically when the current object is freed.
-
-WARNING
--------
-
-An indirect object is limited to a name, a scalar variable, or a block,
-because it would have to do too much lookahead otherwise, just like any
-other postfix dereference in the language.  The left side of -> is not
-so limited, because it's an infix operator, not a postfix operator.
-
-That means that in the following, A and B are equivalent to each other,
-and C and D are equivalent, but A/B and C/D are different:
-
-     A: method $obref->{"fieldname"}
-     B: (method $obref)->{"fieldname"}
-     C: $obref->{"fieldname"}->method()
-     D: method {$obref->{"fieldname"}}
-
-Summary
--------
-
-That's about all there is to it.  Now you need just to go off and buy a
-book about object-oriented design methodology, and bang your forehead
-with it for the next six months or so.
-
-Two-Phased Garbage Collection
------------------------------
-
-For most purposes, Perl uses a fast and simple reference-based garbage
-collection system.  For this reason, there's an extra dereference going
-on at some level, so if you haven't built your Perl executable using
-your C compiler's `-O' flag, performance will suffer.  If you *have*
-built Perl with `cc -O', then this probably won't matter.
-
-A more serious concern is that unreachable memory with a non-zero
-reference count will not normally get freed.  Therefore, this is a bad
-idea:
-
-     {
-             my $a;
-             $a = \$a;
-     }
-
-Even thought $a *should* go away, it can't.  When building recursive
-data structures, you'll have to break the self-reference yourself
-explicitly if you don't care to leak.  For example, here's a
-self-referential node such as one might use in a sophisticated tree
-structure:
-
-     sub new_node {
-             my $self = shift;
-             my $class = ref($self) || $self;
-             my $node = {};
-             $node->{LEFT} = $node->{RIGHT} = $node;
-             $node->{DATA} = [ @_ ];
-             return bless $node => $class;
-     }
-
-If you create nodes like that, they (currently) won't go away unless you
-break their self reference yourself.  (In other words, this is not to be
-construed as a feature, and you shouldn't depend on it.)
-
-Almost.
-
-When an interpreter thread finally shuts down (usually when your program
-exits), then a rather costly but complete mark-and-sweep style of
-garbage collection is performed, and everything allocated by that
-thread gets destroyed.  This is essential to support Perl as an
-embedded or a multithreadable language.  For example, this program
-demonstrates Perl's two-phased garbage collection:
-
-     #!/usr/bin/perl
-     package Subtle;
+The following collection of tricks and hints is intended to whet curious
+appetites about such things as the use of instance variables and the
+mechanics of object and class relationships.  The reader is encouraged
+to consult relevant textbooks for discussion of Object Oriented
+definitions and methodology.  This is not intended as a tutorial for
+object-oriented programming or as a comprehensive guide to Perl's
+object oriented features, nor should it be construed as a style guide.
+
+The Perl motto still holds:  There's more than one way to do it.
+
+OO SCALING TIPS
+===============
+
+  1. Do not attempt to verify the type of $self.  That'll break if the
+     class is inherited, when the type of $self is valid but its
+     package isn't what you expect.  See rule 5.
+
+  2. If an object-oriented (OO) or indirect-object (IO) syntax was
+     used, then the object is probably the correct type and there's no
+     need to become paranoid about it.  Perl isn't a paranoid language
+     anyway.  If people subvert the OO or IO syntax then they probably
+     know what they're doing and you should let them do it.  See rule 1.
+
+  3. Use the two-argument form of bless().  Let a subclass use your
+     constructor.  See `INHERITING A CONSTRUCTOR' in this node.
+
+  4. The subclass is allowed to know things about its immediate
+     superclass, the superclass is allowed to know nothing about a
+     subclass.
+
+  5. Don't be trigger happy with inheritance.  A "using", "containing",
+     or "delegation" relationship (some sort of aggregation, at least)
+     is often more appropriate.  See `OBJECT RELATIONSHIPS' in this
+     node, `USING RELATIONSHIP WITH SDBM' in this node, and
+     `"DELEGATION"' in this node.
+
+  6. The object is the namespace.  Make package globals accessible via
+     the object.  This will remove the guess work about the symbol's
+     home package.  See `CLASS CONTEXT AND THE OBJECT' in this node.
+
+  7. IO syntax is certainly less noisy, but it is also prone to
+     ambiguities that can cause difficult-to-find bugs.  Allow people
+     to use the sure-thing OO syntax, even if you don't like it.
+
+  8. Do not use function-call syntax on a method.  You're going to be
+     bitten someday.  Someone might move that method into a superclass
+     and your code will be broken.  On top of that you're feeding the
+     paranoia in rule 2.
+
+  9. Don't assume you know the home package of a method.  You're making
+     it difficult for someone to override that method.  See `THINKING
+     OF CODE REUSE' in this node.
+
+
+INSTANCE VARIABLES
+==================
+
+An anonymous array or anonymous hash can be used to hold instance
+variables.  Named parameters are also demonstrated.
+
+     package Foo;
      
      sub new {
-             my $test;
-             $test = \$test;
-             warn "CREATING " . \$test;
-             return bless \$test;
+             my $type = shift;
+             my %params = @_;
+             my $self = {};
+             $self->{'High'} = $params{'High'};
+             $self->{'Low'}  = $params{'Low'};
+             bless $self, $type;
      }
      
-     sub DESTROY {
-             my $self = shift;
-             warn "DESTROYING $self";
+     package Bar;
+     
+     sub new {
+             my $type = shift;
+             my %params = @_;
+             my $self = [];
+             $self->[0] = $params{'Left'};
+             $self->[1] = $params{'Right'};
+             bless $self, $type;
      }
      
      package main;
      
-     warn "starting program";
-     {
-             my $a = Subtle->new;
-             my $b = Subtle->new;
-             $$a = 0;  # break selfref
-             warn "leaving block";
+     $a = Foo->new( 'High' => 42, 'Low' => 11 );
+     print "High=$a->{'High'}\n";
+     print "Low=$a->{'Low'}\n";
+     
+     $b = Bar->new( 'Left' => 78, 'Right' => 40 );
+     print "Left=$b->[0]\n";
+     print "Right=$b->[1]\n";
+
+SCALAR INSTANCE VARIABLES
+=========================
+
+An anonymous scalar can be used when only one instance variable is
+needed.
+
+     package Foo;
+     
+     sub new {
+             my $type = shift;
+             my $self;
+             $self = shift;
+             bless \$self, $type;
      }
      
-     warn "just exited block";
-     warn "time to die...";
-     exit;
-
-When run as `/tmp/test', the following output is produced:
-
-     starting program at /tmp/test line 18.
-     CREATING SCALAR(0x8e5b8) at /tmp/test line 7.
-     CREATING SCALAR(0x8e57c) at /tmp/test line 7.
-     leaving block at /tmp/test line 23.
-     DESTROYING Subtle=SCALAR(0x8e5b8) at /tmp/test line 13.
-     just exited block at /tmp/test line 26.
-     time to die... at /tmp/test line 27.
-     DESTROYING Subtle=SCALAR(0x8e57c) during global destruction.
-
-Notice that "global destruction" bit there?  That's the thread garbage
-collector reaching the unreachable.
-
-Objects are always destructed, even when regular refs aren't and in fact
-are destructed in a separate pass before ordinary refs just to try to
-prevent object destructors from using refs that have been themselves
-destructed.  Plain refs are only garbage-collected if the destruct level
-is greater than 0.  You can test the higher levels of global destruction
-by setting the PERL_DESTRUCT_LEVEL environment variable, presuming
-`-DDEBUGGING' was enabled during perl build time.
-
-A more complete garbage collection strategy will be implemented at a
-future date.
-
-SEE ALSO
-========
-
-A kinder, gentler tutorial on object-oriented programming in Perl can
-be found in *Note Perltoot: perltoot.  You should also check out *Note
-Perlbot: perlbot, for other object tricks, traps, and tips, as well as
-*Note Perlmodlib: perlmodlib, for some style guides on constructing
-both modules and classes.
-
-
-File: perl.info,  Node: perltie,  Next: perlbot,  Prev: perlobj,  Up: Top
-
-NAME
-====
-
-perltie - how to hide an object class in a simple variable
-
-SYNOPSIS
-========
-
-     tie VARIABLE, CLASSNAME, LIST
+     package main;
      
-     $object = tied VARIABLE
+     $a = Foo->new( 42 );
+     print "a=$$a\n";
+
+INSTANCE VARIABLE INHERITANCE
+=============================
+
+This example demonstrates how one might inherit instance variables from
+a superclass for inclusion in the new class.  This requires calling the
+superclass's constructor and adding one's own instance variables to the
+new object.
+
+     package Bar;
      
-     untie VARIABLE
-
-DESCRIPTION
-===========
-
-Prior to release 5.0 of Perl, a programmer could use dbmopen() to
-connect an on-disk database in the standard Unix dbm(3x) format
-magically to a %HASH in their program.  However, their Perl was either
-built with one particular dbm library or another, but not both, and you
-couldn't extend this mechanism to other packages or types of variables.
-
-Now you can.
-
-The tie() function binds a variable to a class (package) that will
-provide the implementation for access methods for that variable.  Once
-this magic has been performed, accessing a tied variable automatically
-triggers method calls in the proper class.  All of the complexity of
-the class is hidden behind magic methods calls.  The method names are
-in ALL CAPS, which is a convention that Perl uses to indicate that
-they're called implicitly rather than explicitly-just like the BEGIN()
-and END() functions.
-
-In the tie() call, `VARIABLE' is the name of the variable to be
-enchanted.  `CLASSNAME' is the name of a class implementing objects of
-the correct type.  Any additional arguments in the LIST are passed to
-the appropriate constructor method for that class-meaning TIESCALAR(),
-TIEARRAY(), TIEHASH(), or TIEHANDLE().  (Typically these are arguments
-such as might be passed to the dbminit() function of C.) The object
-returned by the "new" method is also returned by the tie() function,
-which would be useful if you wanted to access other methods in
-`CLASSNAME'. (You don't actually have to return a reference to a right
-"type" (e.g., HASH or `CLASSNAME') so long as it's a properly blessed
-object.)  You can also retrieve a reference to the underlying object
-using the tied() function.
-
-Unlike dbmopen(), the tie() function will not use or require a module
-for you-you need to do that explicitly yourself.
-
-Tying Scalars
--------------
-
-A class implementing a tied scalar should define the following methods:
-TIESCALAR, FETCH, STORE, and possibly DESTROY.
-
-Let's look at each in turn, using as an example a tie class for scalars
-that allows the user to do something like:
-
-     tie $his_speed, 'Nice', getppid();
-     tie $my_speed,  'Nice', $$;
-
-And now whenever either of those variables is accessed, its current
-system priority is retrieved and returned.  If those variables are set,
-then the process's priority is changed!
-
-We'll use Jarkko Hietaniemi <`jhi@iki.fi'>'s BSD::Resource class (not
-included) to access the PRIO_PROCESS, PRIO_MIN, and PRIO_MAX constants
-from your system, as well as the getpriority() and setpriority() system
-calls.  Here's the preamble of the class.
-
-     package Nice;
-     use Carp;
-     use BSD::Resource;
-     use strict;
-     $Nice::DEBUG = 0 unless defined $Nice::DEBUG;
-
-TIESCALAR classname, LIST
-     This is the constructor for the class.  That means it is expected
-     to return a blessed reference to a new scalar (probably anonymous)
-     that it's creating.  For example:
-
-          sub TIESCALAR {
-              my $class = shift;
-              my $pid = shift || $$; # 0 means me
-          
-          if ($pid !~ /^\d+$/) {
-              carp "Nice::Tie::Scalar got non-numeric pid $pid" if $^W;
-              return undef;
-          }
-          
-          unless (kill 0, $pid) { # EPERM or ERSCH, no doubt
-              carp "Nice::Tie::Scalar got bad pid $pid: $!" if $^W;
-              return undef;
-          }
-          
-          return bless \$pid, $class;
-              }
-
-     This tie class has chosen to return an error rather than raising an
-     exception if its constructor should fail.  While this is how
-     dbmopen() works, other classes may well not wish to be so
-     forgiving.  It checks the global variable $^W to see whether to
-     emit a bit of noise anyway.
-
-FETCH this
-     This method will be triggered every time the tied variable is
-     accessed (read).  It takes no arguments beyond its self reference,
-     which is the object representing the scalar we're dealing with.
-     Because in this case we're using just a SCALAR ref for the tied
-     scalar object, a simple $$self allows the method to get at the
-     real value stored there.  In our example below, that real value is
-     the process ID to which we've tied our variable.
-
-          sub FETCH {
-              my $self = shift;
-              confess "wrong type" unless ref $self;
-              croak "usage error" if @_;
-              my $nicety;
-              local($!) = 0;
-              $nicety = getpriority(PRIO_PROCESS, $$self);
-              if ($!) { croak "getpriority failed: $!" }
-              return $nicety;
-          }
-
-     This time we've decided to blow up (raise an exception) if the
-     renice fails-there's no place for us to return an error otherwise,
-     and it's probably the right thing to do.
-
-STORE this, value
-     This method will be triggered every time the tied variable is set
-     (assigned).  Beyond its self reference, it also expects one (and
-     only one) argument-the new value the user is trying to assign.
-
-          sub STORE {
-              my $self = shift;
-              confess "wrong type" unless ref $self;
-              my $new_nicety = shift;
-              croak "usage error" if @_;
-          
-          if ($new_nicety < PRIO_MIN) {
-              carp sprintf
-                "WARNING: priority %d less than minimum system priority %d",
-                    $new_nicety, PRIO_MIN if $^W;
-              $new_nicety = PRIO_MIN;
-          }
-          
-          if ($new_nicety > PRIO_MAX) {
-              carp sprintf
-                "WARNING: priority %d greater than maximum system priority %d",
-                    $new_nicety, PRIO_MAX if $^W;
-              $new_nicety = PRIO_MAX;
-          }
-          
-          unless (defined setpriority(PRIO_PROCESS, $$self, $new_nicety)) {
-              confess "setpriority failed: $!";
-          }
-          return $new_nicety;
-              }
-
-DESTROY this
-     This method will be triggered when the tied variable needs to be
-     destructed.  As with other object classes, such a method is seldom
-     necessary, because Perl deallocates its moribund object's memory
-     for you automatically-this isn't C++, you know.  We'll use a
-     DESTROY method here for debugging purposes only.
-
-          sub DESTROY {
-              my $self = shift;
-              confess "wrong type" unless ref $self;
-              carp "[ Nice::DESTROY pid $$self ]" if $Nice::DEBUG;
-          }
-
-That's about all there is to it.  Actually, it's more than all there is
-to it, because we've done a few nice things here for the sake of
-completeness, robustness, and general aesthetics.  Simpler TIESCALAR
-classes are certainly possible.
-
-Tying Arrays
-------------
-
-A class implementing a tied ordinary array should define the following
-methods: TIEARRAY, FETCH, STORE, and perhaps DESTROY.
-
-WARNING: Tied arrays are *incomplete*.  They are also distinctly lacking
-something for the `$#ARRAY' access (which is hard, as it's an lvalue),
-as well as the other obvious array functions, like push(), pop(),
-shift(), unshift(), and splice().
-
-For this discussion, we'll implement an array whose indices are fixed at
-its creation.  If you try to access anything beyond those bounds, you'll
-take an exception.  (Well, if you access an individual element; an
-aggregate assignment would be missed.) For example:
-
-     require Bounded_Array;
-     tie @ary, 'Bounded_Array', 2;
-     $| = 1;
-     for $i (0 .. 10) {
-         print "setting index $i: ";
-         $ary[$i] = 10 * $i;
-         $ary[$i] = 10 * $i;
-         print "value of elt $i now $ary[$i]\n";
+     sub new {
+             my $type = shift;
+             my $self = {};
+             $self->{'buz'} = 42;
+             bless $self, $type;
      }
-
-The preamble code for the class is as follows:
-
-     package Bounded_Array;
-     use Carp;
-     use strict;
-
-TIEARRAY classname, LIST
-     This is the constructor for the class.  That means it is expected
-     to return a blessed reference through which the new array
-     (probably an anonymous ARRAY ref) will be accessed.
-
-     In our example, just to show you that you don't *really* have to
-     return an ARRAY reference, we'll choose a HASH reference to
-     represent our object.  A HASH works out well as a generic record
-     type: the `{BOUND}' field will store the maximum bound allowed,
-     and the `{ARRAY}' field will hold the true ARRAY ref.  If someone
-     outside the class tries to dereference the object returned
-     (doubtless thinking it an ARRAY ref), they'll blow up.  This just
-     goes to show you that you should respect an object's privacy.
-
-          sub TIEARRAY {
-                  my $class = shift;
-                  my $bound = shift;
-                  confess "usage: tie(\@ary, 'Bounded_Array', max_subscript)"
-                      if @_ || $bound =~ /\D/;
-                  return bless {
-                      BOUND => $bound,
-                      ARRAY => [],
-                  }, $class;
-          }
-
-FETCH this, index
-     This method will be triggered every time an individual element the
-     tied array is accessed (read).  It takes one argument beyond its
-     self reference: the index whose value we're trying to fetch.
-
-          sub FETCH {
-            my($self,$idx) = @_;
-            if ($idx > $self->{BOUND}) {
-                  confess "Array OOB: $idx > $self->{BOUND}";
-            }
-            return $self->{ARRAY}[$idx];
-          }
-
-     As you may have noticed, the name of the FETCH method (et al.) is
-     the same for all accesses, even though the constructors differ in
-     names (TIESCALAR vs TIEARRAY).  While in theory you could have the
-     same class servicing several tied types, in practice this becomes
-     cumbersome, and it's easiest to keep them at simply one tie type
-     per class.
-
-STORE this, index, value
-     This method will be triggered every time an element in the tied
-     array is set (written).  It takes two arguments beyond its self
-     reference: the index at which we're trying to store something and
-     the value we're trying to put there.  For example:
-
-          sub STORE {
-            my($self, $idx, $value) = @_;
-            print "[STORE $value at $idx]\n" if _debug;
-            if ($idx > $self->{BOUND} ) {
-              confess "Array OOB: $idx > $self->{BOUND}";
-            }
-            return $self->{ARRAY}[$idx] = $value;
-          }
-
-DESTROY this
-     This method will be triggered when the tied variable needs to be
-     destructed.  As with the scalar tie class, this is almost never
-     needed in a language that does its own garbage collection, so this
-     time we'll just leave it out.
-
-The code we presented at the top of the tied array class accesses many
-elements of the array, far more than we've set the bounds to.
-Therefore, it will blow up once they try to access beyond the 2nd
-element of @ary, as the following output demonstrates:
-
-     setting index 0: value of elt 0 now 0
-     setting index 1: value of elt 1 now 10
-     setting index 2: value of elt 2 now 20
-     setting index 3: Array OOB: 3 > 2 at Bounded_Array.pm line 39
-             Bounded_Array::FETCH called at testba line 12
-
-Tying Hashes
-------------
-
-As the first Perl data type to be tied (see dbmopen()), hashes have the
-most complete and useful tie() implementation.  A class implementing a
-tied hash should define the following methods: TIEHASH is the
-constructor.  FETCH and STORE access the key and value pairs.  EXISTS
-reports whether a key is present in the hash, and DELETE deletes one.
-CLEAR empties the hash by deleting all the key and value pairs.
-FIRSTKEY and NEXTKEY implement the keys() and each() functions to
-iterate over all the keys.  And DESTROY is called when the tied
-variable is garbage collected.
-
-If this seems like a lot, then feel free to inherit from merely the
-standard Tie::Hash module for most of your methods, redefining only the
-interesting ones.  See `Tie::Hash' in this node for details.
-
-Remember that Perl distinguishes between a key not existing in the hash,
-and the key existing in the hash but having a corresponding value of
-undef.  The two possibilities can be tested with the `exists()' and
-`defined()' functions.
-
-Here's an example of a somewhat interesting tied hash class:  it gives
-you a hash representing a particular user's dot files.  You index into
-the hash with the name of the file (minus the dot) and you get back
-that dot file's contents.  For example:
-
-     use DotFiles;
-     tie %dot, 'DotFiles';
-     if ( $dot{profile} =~ /MANPATH/ ||
-          $dot{login}   =~ /MANPATH/ ||
-          $dot{cshrc}   =~ /MANPATH/    )
-     {
-             print "you seem to set your MANPATH\n";
+     
+     package Foo;
+     @ISA = qw( Bar );
+     
+     sub new {
+             my $type = shift;
+             my $self = Bar->new;
+             $self->{'biz'} = 11;
+             bless $self, $type;
      }
+     
+     package main;
+     
+     $a = Foo->new;
+     print "buz = ", $a->{'buz'}, "\n";
+     print "biz = ", $a->{'biz'}, "\n";
 
-Or here's another sample of using our tied class:
+OBJECT RELATIONSHIPS
+====================
 
-     tie %him, 'DotFiles', 'daemon';
-     foreach $f ( keys %him ) {
-             printf "daemon dot file %s is size %d\n",
-                 $f, length $him{$f};
+The following demonstrates how one might implement "containing" and
+"using" relationships between objects.
+
+     package Bar;
+     
+     sub new {
+             my $type = shift;
+             my $self = {};
+             $self->{'buz'} = 42;
+             bless $self, $type;
      }
-
-In our tied hash DotFiles example, we use a regular hash for the object
-containing several important fields, of which only the `{LIST}' field
-will be what the user thinks of as the real hash.
-
-USER
-     whose dot files this object represents
-
-HOME
-     where those dot files live
-
-CLOBBER
-     whether we should try to change or remove those dot files
-
-LIST
-     the hash of dot file names and content mappings
-
-Here's the start of `Dotfiles.pm':
-
-     package DotFiles;
-     use Carp;
-     sub whowasi { (caller(1))[3] . '()' }
-     my $DEBUG = 0;
-     sub debug { $DEBUG = @_ ? shift : 1 }
-
-For our example, we want to be able to emit debugging info to help in
-tracing during development.  We keep also one convenience function
-around internally to help print out warnings; whowasi() returns the
-function name that calls it.
-
-Here are the methods for the DotFiles tied hash.
-
-TIEHASH classname, LIST
-     This is the constructor for the class.  That means it is expected
-     to return a blessed reference through which the new object
-     (probably but not necessarily an anonymous hash) will be accessed.
-
-     Here's the constructor:
-
-          sub TIEHASH {
-                  my $self = shift;
-                  my $user = shift || $>;
-                  my $dotdir = shift || '';
-                  croak "usage: @{[&whowasi]} [USER [DOTDIR]]" if @_;
-                  $user = getpwuid($user) if $user =~ /^\d+$/;
-                  my $dir = (getpwnam($user))[7]
-                          || croak "@{[&whowasi]}: no user $user";
-                  $dir .= "/$dotdir" if $dotdir;
-          
-          my $node = {
-              USER    => $user,
-              HOME    => $dir,
-              LIST    => {},
-              CLOBBER => 0,
-          };
-          
-          opendir(DIR, $dir)
-                  || croak "@{[&whowasi]}: can't opendir $dir: $!";
-          foreach $dot ( grep /^\./ && -f "$dir/$_", readdir(DIR)) {
-              $dot =~ s/^\.//;
-              $node->{LIST}{$dot} = undef;
-          }
-          closedir DIR;
-          return bless $node, $self;
-              }
-
-     It's probably worth mentioning that if you're going to filetest the
-     return values out of a readdir, you'd better prepend the directory
-     in question.  Otherwise, because we didn't chdir() there, it would
-     have been testing the wrong file.
-
-FETCH this, key
-     This method will be triggered every time an element in the tied
-     hash is accessed (read).  It takes one argument beyond its self
-     reference: the key whose value we're trying to fetch.
-
-     Here's the fetch for our DotFiles example.
-
-          sub FETCH {
-                  carp &whowasi if $DEBUG;
-                  my $self = shift;
-                  my $dot = shift;
-                  my $dir = $self->{HOME};
-                  my $file = "$dir/.$dot";
-          
-          unless (exists $self->{LIST}->{$dot} || -f $file) {
-              carp "@{[&whowasi]}: no $dot file" if $DEBUG;
-              return undef;
-          }
-          
-          if (defined $self->{LIST}->{$dot}) {
-              return $self->{LIST}->{$dot};
-          } else {
-              return $self->{LIST}->{$dot} = `cat $dir/.$dot`;
-          }
-              }
-
-     It was easy to write by having it call the Unix cat(1) command,
-     but it would probably be more portable to open the file manually
-     (and somewhat more efficient).  Of course, because dot files are a
-     Unixy concept, we're not that concerned.
-
-STORE this, key, value
-     This method will be triggered every time an element in the tied
-     hash is set (written).  It takes two arguments beyond its self
-     reference: the index at which we're trying to store something, and
-     the value we're trying to put there.
-
-     Here in our DotFiles example, we'll be careful not to let them try
-     to overwrite the file unless they've called the clobber() method
-     on the original object reference returned by tie().
-
-          sub STORE {
-                  carp &whowasi if $DEBUG;
-                  my $self = shift;
-                  my $dot = shift;
-                  my $value = shift;
-                  my $file = $self->{HOME} . "/.$dot";
-                  my $user = $self->{USER};
-          
-          croak "@{[&whowasi]}: $file not clobberable"
-              unless $self->{CLOBBER};
-          
-          open(F, "> $file") || croak "can't open $file: $!";
-          print F $value;
-          close(F);
-              }
-
-     If they wanted to clobber something, they might say:
-
-          $ob = tie %daemon_dots, 'daemon';
-          $ob->clobber(1);
-          $daemon_dots{signature} = "A true daemon\n";
-
-     Another way to lay hands on a reference to the underlying object
-     is to use the tied() function, so they might alternately have set
-     clobber using:
-
-          tie %daemon_dots, 'daemon';
-          tied(%daemon_dots)->clobber(1);
-
-     The clobber method is simply:
-
-          sub clobber {
-                  my $self = shift;
-                  $self->{CLOBBER} = @_ ? shift : 1;
-          }
-
-DELETE this, key
-     This method is triggered when we remove an element from the hash,
-     typically by using the delete() function.  Again, we'll be careful
-     to check whether they really want to clobber files.
-
-          sub DELETE   {
-                  carp &whowasi if $DEBUG;
-          
-          my $self = shift;
-          my $dot = shift;
-          my $file = $self->{HOME} . "/.$dot";
-          croak "@{[&whowasi]}: won't remove file $file"
-              unless $self->{CLOBBER};
-          delete $self->{LIST}->{$dot};
-          my $success = unlink($file);
-          carp "@{[&whowasi]}: can't unlink $file: $!" unless $success;
-          $success;
-              }
-
-     The value returned by DELETE becomes the return value of the call
-     to delete().  If you want to emulate the normal behavior of
-     delete(), you should return whatever FETCH would have returned for
-     this key.  In this example, we have chosen instead to return a
-     value which tells the caller whether the file was successfully
-     deleted.
-
-CLEAR this
-     This method is triggered when the whole hash is to be cleared,
-     usually by assigning the empty list to it.
-
-     In our example, that would remove all the user's dot files!  It's
-     such a dangerous thing that they'll have to set CLOBBER to
-     something higher than 1 to make it happen.
-
-          sub CLEAR    {
-                  carp &whowasi if $DEBUG;
-                  my $self = shift;
-                  croak "@{[&whowasi]}: won't remove all dot files for $self->{USER}"
-                      unless $self->{CLOBBER} > 1;
-                  my $dot;
-                  foreach $dot ( keys %{$self->{LIST}}) {
-                      $self->DELETE($dot);
-                  }
-          }
-
-EXISTS this, key
-     This method is triggered when the user uses the exists() function
-     on a particular hash.  In our example, we'll look at the `{LIST}'
-     hash element for this:
-
-          sub EXISTS   {
-                  carp &whowasi if $DEBUG;
-                  my $self = shift;
-                  my $dot = shift;
-                  return exists $self->{LIST}->{$dot};
-          }
-
-FIRSTKEY this
-     This method will be triggered when the user is going to iterate
-     through the hash, such as via a keys() or each() call.
-
-          sub FIRSTKEY {
-                  carp &whowasi if $DEBUG;
-                  my $self = shift;
-                  my $a = keys %{$self->{LIST}};              # reset each() iterator
-                  each %{$self->{LIST}}
-          }
-
-NEXTKEY this, lastkey
-     This method gets triggered during a keys() or each() iteration.
-     It has a second argument which is the last key that had been
-     accessed.  This is useful if you're carrying about ordering or
-     calling the iterator from more than one sequence, or not really
-     storing things in a hash anywhere.
-
-     For our example, we're using a real hash so we'll do just the
-     simple thing, but we'll have to go through the LIST field
-     indirectly.
-
-          sub NEXTKEY  {
-                  carp &whowasi if $DEBUG;
-                  my $self = shift;
-                  return each %{ $self->{LIST} }
-          }
-
-DESTROY this
-     This method is triggered when a tied hash is about to go out of
-     scope.  You don't really need it unless you're trying to add
-     debugging or have auxiliary state to clean up.  Here's a very
-     simple function:
-
-          sub DESTROY  {
-                  carp &whowasi if $DEBUG;
-          }
-
-Note that functions such as keys() and values() may return huge array
-values when used on large objects, like DBM files.  You may prefer to
-use the each() function to iterate over such.  Example:
-
-     # print out history file offsets
-     use NDBM_File;
-     tie(%HIST, 'NDBM_File', '/usr/lib/news/history', 1, 0);
-     while (($key,$val) = each %HIST) {
-         print $key, ' = ', unpack('L',$val), "\n";
+     
+     package Foo;
+     
+     sub new {
+             my $type = shift;
+             my $self = {};
+             $self->{'Bar'} = Bar->new;
+             $self->{'biz'} = 11;
+             bless $self, $type;
      }
-     untie(%HIST);
-
-Tying FileHandles
------------------
-
-This is partially implemented now.
-
-A class implementing a tied filehandle should define the following
-methods: TIEHANDLE, at least one of PRINT, PRINTF, READLINE, GETC, or
-READ, and possibly DESTROY.
-
-It is especially useful when perl is embedded in some other program,
-where output to STDOUT and STDERR may have to be redirected in some
-special way. See nvi and the Apache module for examples.
-
-In our example we're going to create a shouting handle.
-
-     package Shout;
-
-TIEHANDLE classname, LIST
-     This is the constructor for the class.  That means it is expected
-     to return a blessed reference of some sort. The reference can be
-     used to hold some internal information.
-
-          sub TIEHANDLE { print "<shout>\n"; my $i; bless \$i, shift }
-
-PRINT this, LIST
-     This method will be triggered every time the tied handle is
-     printed to with the `print()' function.  Beyond its self reference
-     it also expects the list that was passed to the print function.
-
-          sub PRINT { $r = shift; $$r++; print join($,,map(uc($_),@_)),$\ }
-
-PRINTF this, LIST
-     This method will be triggered every time the tied handle is
-     printed to with the `printf()' function.  Beyond its self
-     reference it also expects the format and list that was passed to
-     the printf function.
-
-          sub PRINTF {
-              shift;
-              my $fmt = shift;
-              print sprintf($fmt, @_)."\n";
-          }
-
-READ this LIST
-     This method will be called when the handle is read from via the
-     read or sysread functions.
-
-          sub READ {
-                  $r = shift;
-                  my($buf,$len,$offset) = @_;
-                  print "READ called, \$buf=$buf, \$len=$len, \$offset=$offset";
-          }
-
-READLINE this
-     This method will be called when the handle is read from via
-     <HANDLE>.  The method should return undef when there is no more
-     data.
-
-          sub READLINE { $r = shift; "PRINT called $$r times\n"; }
-
-GETC this
-     This method will be called when the getc function is called.
-
-          sub GETC { print "Don't GETC, Get Perl"; return "a"; }
-
-DESTROY this
-     As with the other types of ties, this method will be called when
-     the tied handle is about to be destroyed. This is useful for
-     debugging and possibly cleaning up.
-
-          sub DESTROY { print "</shout>\n" }
-
-Here's how to use our little example:
-
-     tie(*FOO,'Shout');
-     print FOO "hello\n";
-     $a = 4; $b = 6;
-     print FOO $a, " plus ", $b, " equals ", $a + $b, "\n";
-     print <FOO>;
-
-The untie Gotcha
-----------------
-
-If you intend making use of the object returned from either tie() or
-tied(), and if the tie's target class defines a destructor, there is a
-subtle gotcha you *must* guard against.
-
-As setup, consider this (admittedly rather contrived) example of a tie;
-all it does is use a file to keep a log of the values assigned to a
-scalar.
-
-     package Remember;
      
-     use strict;
-     use IO::File;
+     package main;
      
-     sub TIESCALAR {
-         my $class = shift;
-         my $filename = shift;
-         my $handle = new IO::File "> $filename"
-                          or die "Cannot open $filename: $!\n";
+     $a = Foo->new;
+     print "buz = ", $a->{'Bar'}->{'buz'}, "\n";
+     print "biz = ", $a->{'biz'}, "\n";
+
+OVERRIDING SUPERCLASS METHODS
+=============================
+
+The following example demonstrates how to override a superclass method
+and then call the overridden method.  The *SUPER* pseudo-class allows
+the programmer to call an overridden superclass method without actually
+knowing where that method is defined.
+
+     package Buz;
+     sub goo { print "here's the goo\n" }
      
-     print $handle "The Start\n";
-     bless {FH => $handle, Value => 0}, $class;
-         }
+     package Bar; @ISA = qw( Buz );
+     sub google { print "google here\n" }
      
+     package Baz;
+     sub mumble { print "mumbling\n" }
+     
+     package Foo;
+     @ISA = qw( Bar Baz );
+     
+     sub new {
+             my $type = shift;
+             bless [], $type;
+     }
+     sub grr { print "grumble\n" }
+     sub goo {
+             my $self = shift;
+             $self->SUPER::goo();
+     }
+     sub mumble {
+             my $self = shift;
+             $self->SUPER::mumble();
+     }
+     sub google {
+             my $self = shift;
+             $self->SUPER::google();
+     }
+     
+     package main;
+     
+     $foo = Foo->new;
+     $foo->mumble;
+     $foo->grr;
+     $foo->goo;
+     $foo->google;
+
+USING RELATIONSHIP WITH SDBM
+============================
+
+This example demonstrates an interface for the SDBM class.  This
+creates a "using" relationship between the SDBM class and the new class
+Mydbm.
+
+     package Mydbm;
+     
+     require SDBM_File;
+     require Tie::Hash;
+     @ISA = qw( Tie::Hash );
+     
+     sub TIEHASH {
+         my $type = shift;
+         my $ref  = SDBM_File->new(@_);
+         bless {'dbm' => $ref}, $type;
+     }
      sub FETCH {
          my $self = shift;
-         return $self->{Value};
+         my $ref  = $self->{'dbm'};
+         $ref->FETCH(@_);
      }
-     
      sub STORE {
          my $self = shift;
-         my $value = shift;
-         my $handle = $self->{FH};
-         print $handle "$value\n";
-         $self->{Value} = $value;
+         if (defined $_[0]){
+             my $ref = $self->{'dbm'};
+             $ref->STORE(@_);
+         } else {
+             die "Cannot STORE an undefined key in Mydbm\n";
+         }
      }
      
-     sub DESTROY {
-         my $self = shift;
-         my $handle = $self->{FH};
-         print $handle "The End\n";
-         close $handle;
+     package main;
+     use Fcntl qw( O_RDWR O_CREAT );
+     
+     tie %foo, "Mydbm", "Sdbm", O_RDWR|O_CREAT, 0640;
+     $foo{'bar'} = 123;
+     print "foo-bar = $foo{'bar'}\n";
+     
+     tie %bar, "Mydbm", "Sdbm2", O_RDWR|O_CREAT, 0640;
+     $bar{'Cathy'} = 456;
+     print "bar-Cathy = $bar{'Cathy'}\n";
+
+THINKING OF CODE REUSE
+======================
+
+One strength of Object-Oriented languages is the ease with which old
+code can use new code.  The following examples will demonstrate first
+how one can hinder code reuse and then how one can promote code reuse.
+
+This first example illustrates a class which uses a fully-qualified
+method call to access the "private" method BAZ().  The second example
+will show that it is impossible to override the BAZ() method.
+
+     package FOO;
+     
+     sub new {
+             my $type = shift;
+             bless {}, $type;
+     }
+     sub bar {
+             my $self = shift;
+             $self->FOO::private::BAZ;
      }
      
-     1;
-
-Here is an example that makes use of this tie:
-
-     use strict;
-     use Remember;
+     package FOO::private;
      
-     my $fred;
-     tie $fred, 'Remember', 'myfile.txt';
-     $fred = 1;
-     $fred = 4;
-     $fred = 5;
-     untie $fred;
-     system "cat myfile.txt";
-
-This is the output when it is executed:
-
-     The Start
-     1
-     4
-     5
-     The End
-
-So far so good.  Those of you who have been paying attention will have
-spotted that the tied object hasn't been used so far.  So lets add an
-extra method to the Remember class to allow comments to be included in
-the file - say, something like this:
-
-     sub comment {
-         my $self = shift;
-         my $text = shift;
-         my $handle = $self->{FH};
-         print $handle $text, "\n";
+     sub BAZ {
+             print "in BAZ\n";
      }
-
-And here is the previous example modified to use the `comment' method
-(which requires the tied object):
-
-     use strict;
-     use Remember;
      
-     my ($fred, $x);
-     $x = tie $fred, 'Remember', 'myfile.txt';
-     $fred = 1;
-     $fred = 4;
-     comment $x "changing...";
-     $fred = 5;
-     untie $fred;
-     system "cat myfile.txt";
+     package main;
+     
+     $a = FOO->new;
+     $a->bar;
 
-When this code is executed there is no output.  Here's why:
+Now we try to override the BAZ() method.  We would like FOO::bar() to
+call GOOP::BAZ(), but this cannot happen because FOO::bar() explicitly
+calls FOO::private::BAZ().
 
-When a variable is tied, it is associated with the object which is the
-return value of the TIESCALAR, TIEARRAY, or TIEHASH function.  This
-object normally has only one reference, namely, the implicit reference
-from the tied variable.  When untie() is called, that reference is
-destroyed.  Then, as in the first example above, the object's
-destructor (DESTROY) is called, which is normal for objects that have
-no more valid references; and thus the file is closed.
+     package FOO;
+     
+     sub new {
+             my $type = shift;
+             bless {}, $type;
+     }
+     sub bar {
+             my $self = shift;
+             $self->FOO::private::BAZ;
+     }
+     
+     package FOO::private;
+     
+     sub BAZ {
+             print "in BAZ\n";
+     }
+     
+     package GOOP;
+     @ISA = qw( FOO );
+     sub new {
+             my $type = shift;
+             bless {}, $type;
+     }
+     
+     sub BAZ {
+             print "in GOOP::BAZ\n";
+     }
+     
+     package main;
+     
+     $a = GOOP->new;
+     $a->bar;
 
-In the second example, however, we have stored another reference to the
-tied object in `$x'.  That means that when untie() gets called there
-will still be a valid reference to the object in existence, so the
-destructor is not called at that time, and thus the file is not closed.
-The reason there is no output is because the file buffers have not
-been flushed to disk.
+To create reusable code we must modify class FOO, flattening class
+FOO::private.  The next example shows a reusable class FOO which allows
+the method GOOP::BAZ() to be used in place of FOO::BAZ().
 
-Now that you know what the problem is, what can you do to avoid it?
-Well, the good old -w flag will spot any instances where you call
-untie() and there are still valid references to the tied object.  If
-the second script above is run with the -w flag, Perl prints this
-warning message:
+     package FOO;
+     
+     sub new {
+             my $type = shift;
+             bless {}, $type;
+     }
+     sub bar {
+             my $self = shift;
+             $self->BAZ;
+     }
+     
+     sub BAZ {
+             print "in BAZ\n";
+     }
+     
+     package GOOP;
+     @ISA = qw( FOO );
+     
+     sub new {
+             my $type = shift;
+             bless {}, $type;
+     }
+     sub BAZ {
+             print "in GOOP::BAZ\n";
+     }
+     
+     package main;
+     
+     $a = GOOP->new;
+     $a->bar;
 
-     untie attempted while 1 inner references still exist
+CLASS CONTEXT AND THE OBJECT
+============================
 
-To get the script to work properly and silence the warning make sure
-there are no valid references to the tied object *before* untie() is
-called:
+Use the object to solve package and class context problems.  Everything
+a method needs should be available via the object or should be passed
+as a parameter to the method.
 
-     undef $x;
-     untie $fred;
+A class will sometimes have static or global data to be used by the
+methods.  A subclass may want to override that data and replace it with
+new data.  When this happens the superclass may not know how to find
+the new copy of the data.
 
-SEE ALSO
-========
+This problem can be solved by using the object to define the context of
+the method.  Let the method look in the object for a reference to the
+data.  The alternative is to force the method to go hunting for the
+data ("Is it in my class, or in a subclass?  Which subclass?"), and
+this can be inconvenient and will lead to hackery.  It is better just
+to let the object tell the method where that data is located.
 
-See `DB_File' in this node or `Config' in this node for some
-interesting tie() implementations.
+     package Bar;
+     
+     %fizzle = ( 'Password' => 'XYZZY' );
+     
+     sub new {
+             my $type = shift;
+             my $self = {};
+             $self->{'fizzle'} = \%fizzle;
+             bless $self, $type;
+     }
+     
+     sub enter {
+             my $self = shift;
+     
+     # Don't try to guess if we should use %Bar::fizzle
+     # or %Foo::fizzle.  The object already knows which
+     # we should use, so just ask it.
+     #
+     my $fizzle = $self->{'fizzle'};
+     
+     print "The word is ", $fizzle->{'Password'}, "\n";
+             }
+     
+     package Foo;
+     @ISA = qw( Bar );
+     
+     %fizzle = ( 'Password' => 'Rumple' );
+     
+     sub new {
+             my $type = shift;
+             my $self = Bar->new;
+             $self->{'fizzle'} = \%fizzle;
+             bless $self, $type;
+     }
+     
+     package main;
+     
+     $a = Bar->new;
+     $b = Foo->new;
+     $a->enter;
+     $b->enter;
 
-BUGS
-====
+INHERITING A CONSTRUCTOR
+========================
 
-Tied arrays are *incomplete*.  They are also distinctly lacking
-something for the `$#ARRAY' access (which is hard, as it's an lvalue),
-as well as the other obvious array functions, like push(), pop(),
-shift(), unshift(), and splice().
+An inheritable constructor should use the second form of bless() which
+allows blessing directly into a specified class.  Notice in this
+example that the object will be a BAR not a FOO, even though the
+constructor is in class FOO.
 
-You cannot easily tie a multilevel data structure (such as a hash of
-hashes) to a dbm file.  The first problem is that all but GDBM and
-Berkeley DB have size limitations, but beyond that, you also have
-problems with how references are to be represented on disk.  One
-experimental module that does attempt to address this need partially is
-the MLDBM module.  Check your nearest CPAN site as described in *Note
-Perlmodlib: perlmodlib, for source code to MLDBM.
+     package FOO;
+     
+     sub new {
+             my $type = shift;
+             my $self = {};
+             bless $self, $type;
+     }
+     
+     sub baz {
+             print "in FOO::baz()\n";
+     }
+     
+     package BAR;
+     @ISA = qw(FOO);
+     
+     sub baz {
+             print "in BAR::baz()\n";
+     }
+     
+     package main;
+     
+     $a = BAR->new;
+     $a->baz;
 
-AUTHOR
-======
+DELEGATION
+==========
 
-Tom Christiansen
+Some classes, such as SDBM_File, cannot be effectively subclassed
+because they create foreign objects.  Such a class can be extended with
+some sort of aggregation technique such as the "using" relationship
+mentioned earlier or by delegation.
 
-TIEHANDLE by Sven Verdoolaege <`skimo@dns.ufsia.ac.be'> and Doug
-MacEachern <`dougm@osf.org'>
+The following example demonstrates delegation using an AUTOLOAD()
+function to perform message-forwarding.  This will allow the Mydbm
+object to behave exactly like an SDBM_File object.  The Mydbm class
+could now extend the behavior by adding custom FETCH() and STORE()
+methods, if this is desired.
+
+     package Mydbm;
+     
+     require SDBM_File;
+     require Tie::Hash;
+     @ISA = qw(Tie::Hash);
+     
+     sub TIEHASH {
+             my $type = shift;
+             my $ref = SDBM_File->new(@_);
+             bless {'delegate' => $ref};
+     }
+     
+     sub AUTOLOAD {
+             my $self = shift;
+     
+     # The Perl interpreter places the name of the
+     # message in a variable called $AUTOLOAD.
+     
+     # DESTROY messages should never be propagated.
+     return if $AUTOLOAD =~ /::DESTROY$/;
+     
+     # Remove the package name.
+     $AUTOLOAD =~ s/^Mydbm:://;
+     
+     # Pass the message to the delegate.
+     $self->{'delegate'}->$AUTOLOAD(@_);
+             }
+     
+     package main;
+     use Fcntl qw( O_RDWR O_CREAT );
+     
+     tie %foo, "Mydbm", "adbm", O_RDWR|O_CREAT, 0640;
+     $foo{'bar'} = 123;
+     print "foo-bar = $foo{'bar'}\n";
 

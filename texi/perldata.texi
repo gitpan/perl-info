@@ -215,7 +215,7 @@ to it.  The following are equivalent:
 
 @example
 @@whatever = ();
-$#whatever = $[ - 1;
+$#whatever = -1;
 @end example
 
 If you evaluate a named array in a scalar context, it returns the length of
@@ -665,5 +665,5 @@ $fh = newopen(@'/etc/passwd@');
 Another way to create local filehandles is with IO::Handle and its ilk,
 see the bottom of @samp{open()}, @xref{perlfunc,Perlfunc}.
 
-See @xref{perlref,Perlref}, @xref{perlsub,Perlsub},, and @samp{"Symbol Tables"}, @xref{perlmod,Perlmod}, for more
+See @xref{perlref,Perlref}, @xref{perlsub,Perlsub}, and @samp{"Symbol Tables"}, @xref{perlmod,Perlmod}, for more
 discussion on typeglobs.

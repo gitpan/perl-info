@@ -2,359 +2,6 @@ This is Info file perl.info, produced by Makeinfo-1.64 from the input
 file Pmaster.texi.
 
 
-File: perl.info,  Node: perlfaq9,  Next: perldata,  Prev: perlfaq8,  Up: perlfaq
-
-NAME
-====
-
-perlfaq9 - Networking ($Revision: 1.16 $, $Date: 1997/04/23 18:12:06 $)
-
-DESCRIPTION
-===========
-
-This section deals with questions related to networking, the internet,
-and a few on the web.
-
-My CGI script runs from the command line but not the browser.  Can you help me fix it?
---------------------------------------------------------------------------------------
-
-Sure, but you probably can't afford our contracting rates :-)
-
-Seriously, if you can demonstrate that you've read the following FAQs
-and that your problem isn't something simple that can be easily
-answered, you'll probably receive a courteous and useful reply to your
-question if you post it on comp.infosystems.www.authoring.cgi (if it's
-something to do with HTTP, HTML, or the CGI protocols).  Questions that
-appear to be Perl questions but are really CGI ones that are posted to
-comp.lang.perl.misc may not be so well received.
-
-The useful FAQs are:
-
-     http://www.perl.com/perl/faq/idiots-guide.html
-     http://www3.pair.com/webthing/docs/cgi/faqs/cgifaq.shtml
-     http://www.perl.com/perl/faq/perl-cgi-faq.html
-     http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html
-     http://www.boutell.com/faq/
-
-How do I remove HTML from a string?
------------------------------------
-
-The most correct way (albeit not the fastest) is to use HTML::Parse
-from CPAN (part of the libwww-perl distribution, which is a must-have
-module for all web hackers).
-
-Many folks attempt a simple-minded regular expression approach, like
-C<s/<.*?>//g>, but that fails in many cases because the tags may
-continue over line breaks, they may contain quoted angle-brackets, or
-HTML comment may be present.  Plus folks forget to convert entities,
-like `&lt;' for example.
-
-Here's one "simple-minded" approach, that works for most files:
-
-     #!/usr/bin/perl -p0777
-     s/<(?:[^>'"]*|(['"]).*?\1)*>//gs
-
-If you want a more complete solution, see the 3-stage striphtml program
-in
-http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/striphtml.gz .
-
-How do I extract URLs?
-----------------------
-
-A quick but imperfect approach is
-
-     #!/usr/bin/perl -n00
-     # qxurl - tchrist@perl.com
-     print "$2\n" while m{
-             < \s*
-               A \s+ HREF \s* = \s* (["']) (.*?) \1
-             \s* >
-     }gsix;
-
-This version does not adjust relative URLs, understand alternate bases,
-deal with HTML comments, deal with HREF and NAME attributes in the same
-tag, or accept URLs themselves as arguments.  It also runs about 100x
-faster than a more "complete" solution using the LWP suite of modules,
-such as the
-http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/xurl.gz
-program.
-
-How do I download a file from the user's machine?  How do I open a file on another machine?
--------------------------------------------------------------------------------------------
-
-In the context of an HTML form, you can use what's known as
-*multipart/form-data* encoding.  The CGI.pm module (available from
-CPAN) supports this in the start_multipart_form() method, which isn't
-the same as the startform() method.
-
-How do I make a pop-up menu in HTML?
-------------------------------------
-
-Use the B<<SELECT>> and B<<OPTION>> tags.  The CGI.pm module (available
-from CPAN) supports this widget, as well as many others, including some
-that it cleverly synthesizes on its own.
-
-How do I fetch an HTML file?
-----------------------------
-
-One approach, if you have the lynx text-based HTML browser installed on
-your system, is this:
-
-     $html_code = `lynx -source $url`;
-     $text_data = `lynx -dump $url`;
-
-The libwww-perl (LWP) modules from CPAN provide a more powerful way to
-do this.  They work through proxies, and don't require lynx:
-
-     # print HTML from a URL
-     use LWP::Simple;
-     getprint "http://www.sn.no/libwww-perl/";
-     
-     # print ASCII from HTML from a URL
-     use LWP::Simple;
-     use HTML::Parse;
-     use HTML::FormatText;
-     my ($html, $ascii);
-     $html = get("http://www.perl.com/");
-     defined $html
-         or die "Can't fetch HTML from http://www.perl.com/";
-     $ascii = HTML::FormatText->new->format(parse_html($html));
-     print $ascii;
-
-how do I decode or create those %-encodings on the web?
--------------------------------------------------------
-
-Here's an example of decoding:
-
-     $string = "http://altavista.digital.com/cgi-bin/query?pg=q&what=news&fmt=.&q=%2Bcgi-bin+%2Bperl.exe";
-     $string =~ s/%([a-fA-F0-9]{2})/chr(hex($1))/ge;
-
-Encoding is a bit harder, because you can't just blindly change all the
-non-alphanumunder character (`\W') into their hex escapes.  It's
-important that characters with special meaning like `/' and `?' *not*
-be translated.  Probably the easiest way to get this right is to avoid
-reinventing the wheel and just use the URI::Escape module, which is
-part of the libwww-perl package (LWP) available from CPAN.
-
-How do I redirect to another page?
-----------------------------------
-
-Instead of sending back a `Content-Type' as the headers of your reply,
-send back a `Location:' header.  Officially this should be a `URI:'
-header, so the CGI.pm module (available from CPAN) sends back both:
-
-     Location: http://www.domain.com/newpage
-     URI: http://www.domain.com/newpage
-
-Note that relative URLs in these headers can cause strange effects
-because of "optimizations" that servers do.
-
-How do I put a password on my web pages?
-----------------------------------------
-
-That depends.  You'll need to read the documentation for your web
-server, or perhaps check some of the other FAQs referenced above.
-
-How do I edit my .htpasswd and .htgroup files with Perl?
---------------------------------------------------------
-
-The HTTPD::UserAdmin and HTTPD::GroupAdmin modules provide a consistent
-OO interface to these files, regardless of how they're stored.
-Databases may be text, dbm, Berkley DB or any database with a DBI
-compatible driver.  HTTPD::UserAdmin supports files used by the `Basic'
-and `Digest' authentication schemes.  Here's an example:
-
-     use HTTPD::UserAdmin ();
-     HTTPD::UserAdmin
-               ->new(DB => "/foo/.htpasswd")
-               ->add($username => $password);
-
-How do I make sure users can't enter values into a form that cause my CGI script to do bad things?
---------------------------------------------------------------------------------------------------
-
-Read the CGI security FAQ, at
-http://www-genome.wi.mit.edu/WWW/faqs/www-security-faq.html, and the
-Perl/CGI FAQ at http://www.perl.com/CPAN/doc/FAQs/cgi/perl-cgi-faq.html.
-
-In brief: use tainting (see *Note Perlsec: perlsec,), which makes sure
-that data from outside your script (eg, CGI parameters) are never used
-in eval or system calls.  In addition to tainting, never use the
-single-argument form of system() or exec().  Instead, supply the
-command and arguments as a list, which prevents shell globbing.
-
-How do I parse an email header?
--------------------------------
-
-For a quick-and-dirty solution, try this solution derived from page 222
-of the 2nd edition of "Programming Perl":
-
-     $/ = '';
-     $header = <MSG>;
-     $header =~ s/\n\s+/ /g;  # merge continuation lines
-     %head = ( UNIX_FROM_LINE, split /^([-\w]+):\s*/m, $header );
-
-That solution doesn't do well if, for example, you're trying to
-maintain all the Received lines.  A more complete approach is to use
-the Mail::Header module from CPAN (part of the MailTools package).
-
-How do I decode a CGI form?
----------------------------
-
-A lot of people are tempted to code this up themselves, so you've
-probably all seen a lot of code involving `$ENV{CONTENT_LENGTH}' and
-`$ENV{QUERY_STRING}'.  It's true that this can work, but there are also
-a lot of versions of this floating around that are quite simply broken!
-
-Please do not be tempted to reinvent the wheel.  Instead, use the
-CGI.pm or CGI_Lite.pm (available from CPAN), or if you're trapped in
-the module-free land of perl1 .. perl4, you might look into cgi-lib.pl
-(available from http://www.bio.cam.ac.uk/web/form.html).
-
-How do I check a valid email address?
--------------------------------------
-
-You can't.
-
-Without sending mail to the address and seeing whether it bounces (and
-even then you face the halting problem), you cannot determine whether
-an email address is valid.  Even if you apply the email header
-standard, you can have problems, because there are deliverable
-addresses that aren't RFC-822 (the mail header standard) compliant, and
-addresses that aren't deliverable which are compliant.
-
-Many are tempted to try to eliminate many frequently-invalid email
-addresses with a simple regexp, such as `/^[\w.-]+\@([\w.-]\.)+\w+$/'.
-However, this also throws out many valid ones, and says nothing about
-potential deliverability, so is not suggested.  Instead, see
-http://www.perl.com/CPAN/authors/Tom_Christiansen/scripts/ckaddr.gz ,
-which actually checks against the full RFC spec (except for nested
-comments), looks for addresses you may not wish to accept email to
-(say, Bill Clinton or your postmaster), and then makes sure that the
-hostname given can be looked up in DNS.  It's not fast, but it works.
-
-Here's an alternative strategy used by many CGI script authors: Check
-the email address with a simple regexp (such as the one above).  If the
-regexp matched the address, accept the address.  If the regexp didn't
-match the address, request confirmation from the user that the email
-address they entered was correct.
-
-How do I decode a MIME/BASE64 string?
--------------------------------------
-
-The MIME-tools package (available from CPAN) handles this and a lot
-more.  Decoding BASE64 becomes as simple as:
-
-     use MIME::base64;
-     $decoded = decode_base64($encoded);
-
-A more direct approach is to use the unpack() function's "u" format
-after minor transliterations:
-
-     tr#A-Za-z0-9+/##cd;                   # remove non-base64 chars
-     tr#A-Za-z0-9+/# -_#;                  # convert to uuencoded format
-     $len = pack("c", 32 + 0.75*length);   # compute length byte
-     print unpack("u", $len . $_);         # uudecode and print
-
-How do I return the user's email address?
------------------------------------------
-
-On systems that support getpwuid, the $< variable and the Sys::Hostname
-module (which is part of the standard perl distribution), you can
-probably try using something like this:
-
-     use Sys::Hostname;
-     $address = sprintf('%s@%s', getpwuid($<), hostname);
-
-Company policies on email address can mean that this generates addresses
-that the company's email system will not accept, so you should ask for
-users' email addresses when this matters.  Furthermore, not all systems
-on which Perl runs are so forthcoming with this information as is Unix.
-
-The Mail::Util module from CPAN (part of the MailTools package)
-provides a mailaddress() function that tries to guess the mail address
-of the user.  It makes a more intelligent guess than the code above,
-using information given when the module was installed, but it could
-still be incorrect.  Again, the best way is often just to ask the user.
-
-How do I send/read mail?
-------------------------
-
-Sending mail: the Mail::Mailer module from CPAN (part of the MailTools
-package) is UNIX-centric, while Mail::Internet uses Net::SMTP which is
-not UNIX-centric.  Reading mail: use the Mail::Folder module from CPAN
-(part of the MailFolder package) or the Mail::Internet module from CPAN
-(also part of the MailTools package).
-
-     # sending mail
-      use Mail::Internet;
-      use Mail::Header;
-      # say which mail host to use
-      $ENV{SMTPHOSTS} = 'mail.frii.com';
-      # create headers
-      $header = new Mail::Header;
-      $header->add('From', 'gnat@frii.com');
-      $header->add('Subject', 'Testing');
-      $header->add('To', 'gnat@frii.com');
-      # create body
-      $body = 'This is a test, ignore';
-      # create mail object
-      $mail = new Mail::Internet(undef, Header => $header, Body => \[$body]);
-      # send it
-      $mail->smtpsend or die;
-
-How do I find out my hostname/domainname/IP address?
-----------------------------------------------------
-
-A lot of code has historically cavalierly called the ``hostname`'
-program.  While sometimes expedient, this isn't very portable.  It's
-one of those tradeoffs of convenience versus portability.
-
-The Sys::Hostname module (part of the standard perl distribution) will
-give you the hostname after which you can find out the IP address
-(assuming you have working DNS) with a gethostbyname() call.
-
-     use Socket;
-     use Sys::Hostname;
-     my $host = hostname();
-     my $addr = inet_ntoa(scalar(gethostbyname($host || 'localhost')));
-
-Probably the simplest way to learn your DNS domain name is to grok it
-out of /etc/resolv.conf, at least under Unix.  Of course, this assumes
-several things about your resolv.conf configuration, including that it
-exists.
-
-(We still need a good DNS domain name-learning method for non-Unix
-systems.)
-
-How do I fetch a news article or the active newsgroups?
--------------------------------------------------------
-
-Use the Net::NNTP or News::NNTPClient modules, both available from CPAN.
-This can make tasks like fetching the newsgroup list as simple as:
-
-     perl -MNews::NNTPClient
-       -e 'print News::NNTPClient->new->list("newsgroups")'
-
-How do I fetch/put an FTP file?
--------------------------------
-
-LWP::Simple (available from CPAN) can fetch but not put.  Net::FTP (also
-available from CPAN) is more complex but can put as well as fetch.
-
-How can I do RPC in Perl?
--------------------------
-
-A DCE::RPC module is being developed (but is not yet available), and
-will be released as part of the DCE-Perl package (available from CPAN).
-No ONC::RPC module is known.
-
-AUTHOR AND COPYRIGHT
-====================
-
-Copyright (c) 1997 Tom Christiansen and Nathan Torkington.  All rights
-reserved.  See *Note Perlfaq: perlfaq, for distribution information.
-
-
 File: perl.info,  Node: perldata,  Next: perlsyn,  Prev: perlfaq9,  Up: Top
 
 NAME
@@ -561,7 +208,7 @@ You can truncate an array down to nothing by assigning the null list ()
 to it.  The following are equivalent:
 
      @whatever = ();
-     $#whatever = $[ - 1;
+     $#whatever = -1;
 
 If you evaluate a named array in a scalar context, it returns the
 length of the array.  (Note that this is not true of lists, which
@@ -928,6 +575,575 @@ This is also a way to create a local filehandle.  For example:
 Another way to create local filehandles is with IO::Handle and its ilk,
 see the bottom of `open()', *Note Perlfunc: perlfunc.
 
-See *Note Perlref: perlref, *Note Perlsub: perlsub,, and `"Symbol
+See *Note Perlref: perlref, *Note Perlsub: perlsub, and `"Symbol
 Tables"', *Note Perlmod: perlmod, for more discussion on typeglobs.
+
+
+File: perl.info,  Node: perlsyn,  Next: perlop,  Prev: perldata,  Up: Top
+
+NAME
+====
+
+perlsyn - Perl syntax
+
+DESCRIPTION
+===========
+
+A Perl script consists of a sequence of declarations and statements.
+The only things that need to be declared in Perl are report formats and
+subroutines.  See the sections below for more information on those
+declarations.  All uninitialized user-created objects are assumed to
+start with a null or 0 value until they are defined by some explicit
+operation such as assignment.  (Though you can get warnings about the
+use of undefined values if you like.)  The sequence of statements is
+executed just once, unlike in *sed* and *awk* scripts, where the
+sequence of statements is executed for each input line.  While this
+means that you must explicitly loop over the lines of your input file
+(or files), it also means you have much more control over which files
+and which lines you look at.  (Actually, I'm lying-it is possible to do
+an implicit loop with either the -n or -p switch.  It's just not the
+mandatory default like it is in *sed* and *awk*.)
+
+Declarations
+------------
+
+Perl is, for the most part, a free-form language.  (The only exception
+to this is format declarations, for obvious reasons.) Comments are
+indicated by the "#" character, and extend to the end of the line.  If
+you attempt to use `/* */' C-style comments, it will be interpreted
+either as division or pattern matching, depending on the context, and
+C++ `//' comments just look like a null regular expression, so don't do
+that.
+
+A declaration can be put anywhere a statement can, but has no effect on
+the execution of the primary sequence of statements-declarations all
+take effect at compile time.  Typically all the declarations are put at
+the beginning or the end of the script.  However, if you're using
+lexically-scoped private variables created with my(), you'll have to
+make sure your format or subroutine definition is within the same block
+scope as the my if you expect to be able to access those private
+variables.
+
+Declaring a subroutine allows a subroutine name to be used as if it
+were a list operator from that point forward in the program.  You can
+declare a subroutine without defining it by saying `sub name', thus:
+
+     sub myname;
+     $me = myname $0                 or die "can't get myname";
+
+Note that it functions as a list operator, not as a unary operator; so
+be careful to use `or' instead of `||' in this case.  However, if you
+were to declare the subroutine as `sub myname ($)', then `myname' would
+functonion as a unary operator, so either `or' or `||' would work.
+
+Subroutines declarations can also be loaded up with the require
+statement or both loaded and imported into your namespace with a use
+statement.  See *Note Perlmod: perlmod, for details on this.
+
+A statement sequence may contain declarations of lexically-scoped
+variables, but apart from declaring a variable name, the declaration
+acts like an ordinary statement, and is elaborated within the sequence
+of statements as if it were an ordinary statement.  That means it
+actually has both compile-time and run-time effects.
+
+Simple statements
+-----------------
+
+The only kind of simple statement is an expression evaluated for its
+side effects.  Every simple statement must be terminated with a
+semicolon, unless it is the final statement in a block, in which case
+the semicolon is optional.  (A semicolon is still encouraged there if
+the block takes up more than one line, because you may eventually add
+another line.) Note that there are some operators like `eval {}' and
+`do {}' that look like compound statements, but aren't (they're just
+TERMs in an expression), and thus need an explicit termination if used
+as the last item in a statement.
+
+Any simple statement may optionally be followed by a *SINGLE* modifier,
+just before the terminating semicolon (or block ending).  The possible
+modifiers are:
+
+     if EXPR
+     unless EXPR
+     while EXPR
+     until EXPR
+
+The `if' and `unless' modifiers have the expected semantics, presuming
+you're a speaker of English.  The `while' and `until' modifiers also
+have the usual "while loop" semantics (conditional evaluated first),
+except when applied to a do-BLOCK (or to the now-deprecated
+do-SUBROUTINE statement), in which case the block executes once before
+the conditional is evaluated.  This is so that you can write loops like:
+
+     do {
+             $line = <STDIN>;
+             ...
+     } until $line  eq ".\n";
+
+See `do', *Note Perlfunc: perlfunc.  Note also that the loop control
+statements described later will *NOT* work in this construct, because
+modifiers don't take loop labels.  Sorry.  You can always wrap another
+block around it to do that sort of thing.
+
+Compound statements
+-------------------
+
+In Perl, a sequence of statements that defines a scope is called a
+block.  Sometimes a block is delimited by the file containing it (in
+the case of a required file, or the program as a whole), and sometimes
+a block is delimited by the extent of a string (in the case of an eval).
+
+But generally, a block is delimited by curly brackets, also known as
+braces.  We will call this syntactic construct a BLOCK.
+
+The following compound statements may be used to control flow:
+
+     if (EXPR) BLOCK
+     if (EXPR) BLOCK else BLOCK
+     if (EXPR) BLOCK elsif (EXPR) BLOCK ... else BLOCK
+     LABEL while (EXPR) BLOCK
+     LABEL while (EXPR) BLOCK continue BLOCK
+     LABEL for (EXPR; EXPR; EXPR) BLOCK
+     LABEL foreach VAR (LIST) BLOCK
+     LABEL BLOCK continue BLOCK
+
+Note that, unlike C and Pascal, these are defined in terms of BLOCKs,
+not statements.  This means that the curly brackets are *required*-no
+dangling statements allowed.  If you want to write conditionals without
+curly brackets there are several other ways to do it.  The following
+all do the same thing:
+
+     if (!open(FOO)) { die "Can't open $FOO: $!"; }
+     die "Can't open $FOO: $!" unless open(FOO);
+     open(FOO) or die "Can't open $FOO: $!";        # FOO or bust!
+     open(FOO) ? 'hi mom' : die "Can't open $FOO: $!";
+                             # a bit exotic, that last one
+
+The `if' statement is straightforward.  Because BLOCKs are always
+bounded by curly brackets, there is never any ambiguity about which
+`if' an `else' goes with.  If you use `unless' in place of `if', the
+sense of the test is reversed.
+
+The `while' statement executes the block as long as the expression is
+true (does not evaluate to the null string or 0 or "0").  The LABEL is
+optional, and if present, consists of an identifier followed by a colon.
+The LABEL identifies the loop for the loop control statements next,
+last, and redo.  If the LABEL is omitted, the loop control statement
+refers to the innermost enclosing loop.  This may include dynamically
+looking back your call-stack at run time to find the LABEL.  Such
+desperate behavior triggers a warning if you use the -w flag.
+
+If there is a continue BLOCK, it is always executed just before the
+conditional is about to be evaluated again, just like the third part of
+a `for' loop in C.  Thus it can be used to increment a loop variable,
+even when the loop has been continued via the next statement (which is
+similar to the C continue statement).
+
+Loop Control
+------------
+
+The next command is like the continue statement in C; it starts the
+next iteration of the loop:
+
+     LINE: while (<STDIN>) {
+             next LINE if /^#/;      # discard comments
+             ...
+     }
+
+The last command is like the `break' statement in C (as used in loops);
+it immediately exits the loop in question.  The continue block, if any,
+is not executed:
+
+     LINE: while (<STDIN>) {
+             last LINE if /^$/;      # exit when done with header
+             ...
+     }
+
+The redo command restarts the loop block without evaluating the
+conditional again.  The continue block, if any, is *not* executed.
+This command is normally used by programs that want to lie to themselves
+about what was just input.
+
+For example, when processing a file like `/etc/termcap'.  If your input
+lines might end in backslashes to indicate continuation, you want to
+skip ahead and get the next record.
+
+     while (<>) {
+             chomp;
+             if (s/\\$//) {
+                 $_ .= <>;
+                 redo unless eof();
+             }
+             # now process $_
+     }
+
+which is Perl short-hand for the more explicitly written version:
+
+     LINE: while (defined($line = <ARGV>)) {
+             chomp($line);
+             if ($line =~ s/\\$//) {
+                 $line .= <ARGV>;
+                 redo LINE unless eof(); # not eof(ARGV)!
+             }
+             # now process $line
+     }
+
+Or here's a simpleminded Pascal comment stripper (warning: assumes no {
+or } in strings).
+
+     LINE: while (<STDIN>) {
+             while (s|({.*}.*){.*}|$1 |) {}
+             s|{.*}| |;
+             if (s|{.*| |) {
+                 $front = $_;
+                 while (<STDIN>) {
+                     if (/}/) {    # end of comment?
+                         s|^|$front{|;
+                         redo LINE;
+                     }
+                 }
+             }
+             print;
+     }
+
+Note that if there were a continue block on the above code, it would get
+executed even on discarded lines.
+
+If the word `while' is replaced by the word `until', the sense of the
+test is reversed, but the conditional is still tested before the first
+iteration.
+
+The form `while/if BLOCK BLOCK', available in Perl 4, is no longer
+available.   Replace any occurrence of `if BLOCK' by `if (do BLOCK)'.
+
+For Loops
+---------
+
+Perl's C-style `for' loop works exactly like the corresponding `while'
+loop; that means that this:
+
+     for ($i = 1; $i < 10; $i++) {
+             ...
+     }
+
+is the same as this:
+
+     $i = 1;
+     while ($i < 10) {
+             ...
+     } continue {
+             $i++;
+     }
+
+(There is one minor difference: The first form implies a lexical scope
+for variables declared with my in the initialization expression.)
+
+Besides the normal array index looping, `for' can lend itself to many
+other interesting applications.  Here's one that avoids the problem you
+get into if you explicitly test for end-of-file on an interactive file
+descriptor causing your program to appear to hang.
+
+     $on_a_tty = -t STDIN && -t STDOUT;
+     sub prompt { print "yes? " if $on_a_tty }
+     for ( prompt(); <STDIN>; prompt() ) {
+             # do something
+     }
+
+Foreach Loops
+-------------
+
+The `foreach' loop iterates over a normal list value and sets the
+variable VAR to be each element of the list in turn.  If the variable
+is preceded with the keyword my, then it is lexically scoped, and is
+therefore visible only within the loop.  Otherwise, the variable is
+implicitly local to the loop and regains its former value upon exiting
+the loop.  If the variable was previously declared with my, it uses
+that variable instead of the global one, but it's still localized to
+the loop.  (Note that a lexically scoped variable can cause problems
+with you have subroutine or format declarations.)
+
+The `foreach' keyword is actually a synonym for the `for' keyword, so
+you can use `foreach' for readability or `for' for brevity.  If VAR is
+omitted, $_ is set to each value.  If LIST is an actual array (as
+opposed to an expression returning a list value), you can modify each
+element of the array by modifying VAR inside the loop.  That's because
+the `foreach' loop index variable is an implicit alias for each item in
+the list that you're looping over.
+
+Examples:
+
+     for (@ary) { s/foo/bar/ }
+     
+     foreach my $elem (@elements) {
+             $elem *= 2;
+     }
+     
+     for $count (10,9,8,7,6,5,4,3,2,1,'BOOM') {
+             print $count, "\n"; sleep(1);
+     }
+     
+     for (1..15) { print "Merry Christmas\n"; }
+     
+     foreach $item (split(/:[\\\n:]*/, $ENV{TERMCAP})) {
+             print "Item: $item\n";
+     }
+
+Here's how a C programmer might code up a particular algorithm in Perl:
+
+     for (my $i = 0; $i < @ary1; $i++) {
+             for (my $j = 0; $j < @ary2; $j++) {
+                 if ($ary1[$i] > $ary2[$j]) {
+                     last; # can't go to outer :-(
+                 }
+                 $ary1[$i] += $ary2[$j];
+             }
+             # this is where that last takes me
+     }
+
+Whereas here's how a Perl programmer more comfortable with the idiom
+might do it:
+
+     OUTER: foreach my $wid (@ary1) {
+     INNER:   foreach my $jet (@ary2) {
+                     next OUTER if $wid > $jet;
+                     $wid += $jet;
+                  }
+               }
+
+See how much easier this is?  It's cleaner, safer, and faster.  It's
+cleaner because it's less noisy.  It's safer because if code gets added
+between the inner and outer loops later on, the new code won't be
+accidentally executed.  The next explicitly iterates the other loop
+rather than merely terminating the inner one.  And it's faster because
+Perl executes a `foreach' statement more rapidly than it would the
+equivalent `for' loop.
+
+Basic BLOCKs and Switch Statements
+----------------------------------
+
+A BLOCK by itself (labeled or not) is semantically equivalent to a loop
+that executes once.  Thus you can use any of the loop control
+statements in it to leave or restart the block.  (Note that this is
+*NOT* true in `eval{}', `sub{}', or contrary to popular belief `do{}'
+blocks, which do *NOT* count as loops.)  The continue block is optional.
+
+The BLOCK construct is particularly nice for doing case structures.
+
+     SWITCH: {
+             if (/^abc/) { $abc = 1; last SWITCH; }
+             if (/^def/) { $def = 1; last SWITCH; }
+             if (/^xyz/) { $xyz = 1; last SWITCH; }
+             $nothing = 1;
+     }
+
+There is no official switch statement in Perl, because there are
+already several ways to write the equivalent.  In addition to the
+above, you could write
+
+     SWITCH: {
+             $abc = 1, last SWITCH  if /^abc/;
+             $def = 1, last SWITCH  if /^def/;
+             $xyz = 1, last SWITCH  if /^xyz/;
+             $nothing = 1;
+     }
+
+(That's actually not as strange as it looks once you realize that you
+can use loop control "operators" within an expression,  That's just the
+normal C comma operator.)
+
+or
+
+     SWITCH: {
+             /^abc/ && do { $abc = 1; last SWITCH; };
+             /^def/ && do { $def = 1; last SWITCH; };
+             /^xyz/ && do { $xyz = 1; last SWITCH; };
+             $nothing = 1;
+     }
+
+or formatted so it stands out more as a "proper" switch statement:
+
+     SWITCH: {
+             /^abc/      && do {
+                                 $abc = 1;
+                                 last SWITCH;
+                            };
+     
+     /^def/      && do {
+                         $def = 1;
+                         last SWITCH;
+                    };
+     
+     /^xyz/      && do {
+                         $xyz = 1;
+                         last SWITCH;
+                     };
+     $nothing = 1;
+         }
+
+or
+
+     SWITCH: {
+             /^abc/ and $abc = 1, last SWITCH;
+             /^def/ and $def = 1, last SWITCH;
+             /^xyz/ and $xyz = 1, last SWITCH;
+             $nothing = 1;
+     }
+
+or even, horrors,
+
+     if (/^abc/)
+             { $abc = 1 }
+     elsif (/^def/)
+             { $def = 1 }
+     elsif (/^xyz/)
+             { $xyz = 1 }
+     else
+             { $nothing = 1 }
+
+A common idiom for a switch statement is to use `foreach''s aliasing to
+make a temporary assignment to $_ for convenient matching:
+
+     SWITCH: for ($where) {
+                     /In Card Names/     && do { push @flags, '-e'; last; };
+                     /Anywhere/          && do { push @flags, '-h'; last; };
+                     /In Rulings/        && do {                    last; };
+                     die "unknown value for form variable where: `$where'";
+                 }
+
+Another interesting approach to a switch statement is arrange for a do
+block to return the proper value:
+
+     $amode = do {
+             if     ($flag & O_RDONLY) { "r" }
+             elsif  ($flag & O_WRONLY) { ($flag & O_APPEND) ? "a" : "w" }
+             elsif  ($flag & O_RDWR)   {
+                 if ($flag & O_CREAT)  { "w+" }
+                 else                  { ($flag & O_APPEND) ? "a+" : "r+" }
+             }
+     };
+
+Goto
+----
+
+Although not for the faint of heart, Perl does support a goto statement.
+A loop's LABEL is not actually a valid target for a goto; it's just the
+name of the loop.  There are three forms: goto-LABEL, goto-EXPR, and
+goto-&NAME.
+
+The goto-LABEL form finds the statement labeled with LABEL and resumes
+execution there.  It may not be used to go into any construct that
+requires initialization, such as a subroutine or a foreach loop.  It
+also can't be used to go into a construct that is optimized away.  It
+can be used to go almost anywhere else within the dynamic scope,
+including out of subroutines, but it's usually better to use some other
+construct such as last or die.  The author of Perl has never felt the
+need to use this form of goto (in Perl, that is-C is another matter).
+
+The goto-EXPR form expects a label name, whose scope will be resolved
+dynamically.  This allows for computed gotos per FORTRAN, but isn't
+necessarily recommended if you're optimizing for maintainability:
+
+     goto ("FOO", "BAR", "GLARCH")[$i];
+
+The goto-&NAME form is highly magical, and substitutes a call to the
+named subroutine for the currently running subroutine.  This is used by
+AUTOLOAD() subroutines that wish to load another subroutine and then
+pretend that the other subroutine had been called in the first place
+(except that any modifications to @_ in the current subroutine are
+propagated to the other subroutine.)  After the goto, not even caller()
+will be able to tell that this routine was called first.
+
+In almost all cases like this, it's usually a far, far better idea to
+use the structured control flow mechanisms of next, last, or redo
+instead of resorting to a goto.  For certain applications, the catch
+and throw pair of `eval{}' and die() for exception processing can also
+be a prudent approach.
+
+PODs: Embedded Documentation
+----------------------------
+
+Perl has a mechanism for intermixing documentation with source code.
+While it's expecting the beginning of a new statement, if the compiler
+encounters a line that begins with an equal sign and a word, like this
+
+     =head1 Here There Be Pods!
+
+Then that text and all remaining text up through and including a line
+beginning with `=cut' will be ignored.  The format of the intervening
+text is described in *Note Perlpod: perlpod.
+
+This allows you to intermix your source code and your documentation
+text freely, as in
+
+     =item snazzle($)
+     
+     The snazzle() function will behave in the most spectacular
+     form that you can possibly imagine, not even excepting
+     cybernetic pyrotechnics.
+     
+     =cut back to the compiler, nuff of this pod stuff!
+     
+     sub snazzle($) {
+             my $thingie = shift;
+             .........
+     }
+
+Note that pod translators should look at only paragraphs beginning with
+a pod directive (it makes parsing easier), whereas the compiler
+actually knows to look for pod escapes even in the middle of a
+paragraph.  This means that the following secret stuff will be ignored
+by both the compiler and the translators.
+
+     $a=3;
+     =secret stuff
+      warn "Neither POD nor CODE!?"
+     =cut back
+     print "got $a\n";
+
+You probably shouldn't rely upon the warn() being podded out forever.
+Not all pod translators are well-behaved in this regard, and perhaps
+the compiler will become pickier.
+
+One may also use pod directives to quickly comment out a section of
+code.
+
+Plain Old Comments (Not!)
+-------------------------
+
+Much like the C preprocessor, perl can process line directives.  Using
+this, one can control perl's idea of filenames and line numbers in
+error or warning messages (especially for strings that are processed
+with eval()).  The syntax for this mechanism is the same as for most C
+preprocessors: it matches the regular expression
+`/^#\s*line\s+(\d+)\s*(?:\s"([^"]*)")?/' with `$1' being the line
+number for the next line, and `$2' being the optional filename
+(specified within quotes).
+
+Here are some examples that you should be able to type into your command
+shell:
+
+     % perl
+     # line 200 "bzzzt"
+     # the `#' on the previous line must be the first char on line
+     die 'foo';
+     __END__
+     foo at bzzzt line 201.
+     
+     % perl
+     # line 200 "bzzzt"
+     eval qq[\n#line 2001 ""\ndie 'foo']; print $@;
+     __END__
+     foo at - line 2001.
+     
+     % perl
+     eval qq[\n#line 200 "foo bar"\ndie 'foo']; print $@;
+     __END__
+     foo at foo bar line 200.
+     
+     % perl
+     # line 345 "goop"
+     eval "\n#line " . __LINE__ . ' "' . __FILE__ ."\"\ndie 'foo'";
+     print $@;
+     __END__
+     foo at goop line 345.
 

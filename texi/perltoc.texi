@@ -27,6 +27,7 @@ expression enhancements, Innumerable Unbundled Modules, Compilability
 @itemx BUGS
 @itemx NOTES
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq - frequently asked questions about Perl ($Date: 1997/04/24 22:46:06 $)
 @table @asis
 @itemx DESCRIPTION
@@ -53,6 +54,7 @@ Formats, @xref{perlfaq6,Perlfaq6},: Regexps, @xref{perlfaq7,Perlfaq7},: General 
 Initial Release: 11/March/97
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq1 - General Questions About Perl ($Revision: 1.12 $, $Date: 1997/04/24 22:43:34 $)
 @table @asis
 @item DESCRIPTION
@@ -74,6 +76,7 @@ Initial Release: 11/March/97
 @table @asis
 @itemx AUTHOR AND COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq2 - Obtaining and Learning about Perl ($Revision: 1.16 $, $Date: 1997/04/23 18:04:09 $)
 @table @asis
 @itemx DESCRIPTION
@@ -103,6 +106,7 @@ MacPerl, Perl5-Porters, NTPerl, Perl-Packrats
 @table @asis
 @itemx AUTHOR AND COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq3 - Programming Tools ($Revision: 1.22 $, $Date: 1997/04/24 22:43:42 $)
 @table @asis
 @itemx DESCRIPTION
@@ -141,6 +145,7 @@ MacPerl, Perl5-Porters, NTPerl, Perl-Packrats
 @table @asis
 @itemx AUTHOR AND COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq4 - Data Manipulation ($Revision: 1.19 $, $Date: 1997/04/24 22:43:57 $)
 @table @asis
 @itemx DESCRIPTION
@@ -240,6 +245,7 @@ contains only small positive integers:
 @table @asis
 @itemx AUTHOR AND COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq5 - Files and Formats ($Revision: 1.22 $, $Date: 1997/04/24 22:44:02 $)
 @table @asis
 @itemx DESCRIPTION
@@ -281,6 +287,7 @@ contains only small positive integers:
 @table @asis
 @itemx AUTHOR AND COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq6 - Regexps ($Revision: 1.17 $, $Date: 1997/04/24 22:44:10 $)
 @table @asis
 @itemx DESCRIPTION
@@ -313,6 +320,7 @@ Delimiters
 @table @asis
 @itemx AUTHOR AND COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq7 - Perl Language Issues ($Revision: 1.18 $, $Date: 1997/04/24 22:44:14 $)
 @table @asis
 @itemx DESCRIPTION
@@ -349,6 +357,7 @@ Passing Methods
 @table @asis
 @itemx AUTHOR AND COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfaq8 - System Interaction ($Revision: 1.21 $, $Date: 1997/04/24 22:44:19 $)
 @table @asis
 @itemx DESCRIPTION
@@ -407,33 +416,9 @@ Unix, VMS
 @table @asis
 @itemx How do I get one key from the terminal at a time, under POSIX?
 @itemx AUTHOR AND COPYRIGHT
-@itemx DESCRIPTION
-@itemx My CGI script runs from the command line but not the browser.  Can you help me fix it?
-@itemx How do I remove HTML from a string?
-@itemx How do I extract URLs?
-@itemx How do I download a file from the user@'s machine?  How do I open a file on another machine?
-@itemx How do I make a pop-up menu in HTML?
-@itemx How do I fetch an HTML file?
-@itemx how do I decode or create those %-encodings on the web?
-@itemx How do I redirect to another page?
-@itemx How do I put a password on my web pages?
-@itemx How do I edit my .htpasswd and .htgroup files with Perl?
-@itemx How do I make sure users can@'t enter values into a form that cause my CGI script to do bad things?
-@itemx How do I parse an email header?
-@itemx How do I decode a CGI form?
-@itemx How do I check a valid email address?
-@itemx How do I decode a MIME/BASE64 string?
-@itemx How do I return the user@'s email address?
-@itemx How do I send/read mail?
-@itemx How do I find out my hostname/domainname/IP address?
-@itemx How do I fetch a news article or the active newsgroups?
-@itemx How do I fetch/put an FTP file?
-@itemx How can I do RPC in Perl?
 @end table
-@table @asis
-@itemx AUTHOR AND COPYRIGHT
-@end table
-@unnumberedsubsec perlfaq9 - Networking ($Revision: 1.16 $, $Date: 1997/04/23 18:12:06 $)
+@unnumberedsubsec
+@unnumberedsubsec perlfaq9 - Networking ($Revision: 1.17 $, $Date: 1997/04/24 22:44:29 $)
 @table @asis
 @itemx DESCRIPTION
 @itemx My CGI script runs from the command line but not the browser.  Can you help me fix it?
@@ -461,16 +446,20 @@ Unix, VMS
 @table @asis
 @itemx AUTHOR AND COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perldelta - what@'s new for perl5.004
 @table @asis
 @itemx DESCRIPTION
 @itemx Supported Environments
 @itemx Core Changes
+@itemx List assignment to %ENV works
+@itemx "Can@'t locate Foo.pm in @@INC" error now lists @@INC
 @itemx Compilation option: Binary compatibility with 5.003
 @itemx $PERL5OPT environment variable
 @itemx Limitations on -M, -m, and -T options
 @itemx More precise warnings
 @itemx Deprecated: Inherited @code{AUTOLOAD} for non-methods
+@itemx Previously deprecated %OVERLOAD is no longer usable
 @itemx Subroutine arguments created only when they@'re modified
 @itemx Group vector changeable with $)
 @itemx Fixed parsing of $$<digit>, &$<digit>, etc.
@@ -551,8 +540,8 @@ gv_fetchmethod and perl_call_sv, perl_eval_pv, Extended API for
 manipulating hashes
 
 @item Documentation Changes
-@xref{perldelta,Perldelta}, @xref{perlfaq,Perlfaq},, @xref{perllocale,Perllocale},, @xref{perltoot,Perltoot},, @xref{perlapio,Perlapio},,
-@xref{perlmodlib,Perlmodlib}, @xref{perldebug,Perldebug},, @xref{perlsec,Perlsec},
+@xref{perldelta,Perldelta}, @xref{perlfaq,Perlfaq}, @xref{perllocale,Perllocale}, @xref{perltoot,Perltoot}, @xref{perlapio,Perlapio},,
+@xref{perlmodlib,Perlmodlib}, @xref{perldebug,Perldebug}, @xref{perlsec,Perlsec},
 
 @item New Diagnostics
 "my" variable %s masks earlier declaration in same scope, %s argument is
@@ -585,6 +574,7 @@ terminated by SIG%s
 @itemx SEE ALSO
 @itemx HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perldata - Perl data types
 @table @asis
 @itemx DESCRIPTION
@@ -595,6 +585,7 @@ terminated by SIG%s
 @itemx List value constructors
 @itemx Typeglobs and Filehandles
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlsyn - Perl syntax
 @table @asis
 @itemx DESCRIPTION
@@ -609,6 +600,7 @@ terminated by SIG%s
 @itemx PODs: Embedded Documentation
 @itemx Plain Old Comments (Not!)
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlop - Perl operators and precedence
 @table @asis
 @itemx SYNOPSIS
@@ -642,7 +634,7 @@ unary &, unary *, (TYPE)
 
 @item Quote and Quote-like Operators
 @itemx Regexp Quote-Like Operators
-?PATTERN?, m/PATTERN/gimosx, /PATTERN/gimosx, q/STRING/, @code{@'STRING@'},
+?PATTERN?, m/PATTERN/gimosx, /PATTERN/gimosx, q/STRING/, @code{'STRING'},
 qq/STRING/, "STRING", qx/STRING/, @`STRING@`, qw/STRING/,
 s/PATTERN/REPLACEMENT/egimosx, tr/SEARCHLIST/REPLACEMENTLIST/cds,
 y/SEARCHLIST/REPLACEMENTLIST/cds
@@ -652,6 +644,7 @@ y/SEARCHLIST/REPLACEMENTLIST/cds
 @itemx Integer Arithmetic
 @itemx Floating-point Arithmetic
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlre - Perl regular expressions
 @table @asis
 @itemx DESCRIPTION
@@ -665,6 +658,7 @@ i, m, s, x
 @itemx WARNING on \1 vs $1
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlrun - how to execute the Perl interpreter
 @table @asis
 @itemx SYNOPSIS
@@ -685,7 +679,7 @@ OS/2, MS-DOS, Win95/NT, Macintosh
 -0[@emph{digits}], -a, -c, -d, @strong{-d:}@emph{foo}, -D@emph{number},
 -D@emph{list}, -e @emph{commandline}, -F@emph{pattern}, -h,
 -i[@emph{extension}], -I@emph{directory}, -l[@emph{octnum}],
--m[-]@emph{module}, -M[-]@emph{module}, -M[-]@emph{@'module @dots{}@'},
+-m[-]@emph{module}, -M[-]@emph{module}, -M[-]@emph{'module @dots{}'},
 @strong{-[mM]}[-]@emph{module=arg[,arg]@dots{}}, -n, -p, -P, -s, -S,
 -T, -u, -U, -v, -V, @strong{-V:}@emph{name}, -w, -x @emph{directory}
 @end iftex
@@ -693,10 +687,11 @@ OS/2, MS-DOS, Win95/NT, Macintosh
 @end table
 @table @asis
 @item ENVIRONMENT
-HOME, LOGDIR, PATH, PERL5LIB, PERL5OPT, PERLLIB, PERL5DB,
-PERL_DEBUG_MSTATS, PERL_DESTRUCT_LEVEL
+HOME, LOGDIR, PATH, PERL5LIB, PERL5OPT, PERLLIB, PERL5DB, PERL5SHELL
+(specific to WIN32 port), PERL_DEBUG_MSTATS, PERL_DESTRUCT_LEVEL
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlfunc - Perl builtin functions
 @table @asis
 @item DESCRIPTION
@@ -788,6 +783,7 @@ use VERSION, utime LIST, values HASH, vec EXPR,OFFSET,BITS, wait, waitpid
 PID,FLAGS, wantarray, warn LIST, write FILEHANDLE, write EXPR, write, y///
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlvar - Perl predefined variables
 @table @asis
 @item DESCRIPTION
@@ -814,6 +810,7 @@ $^O, $PERLDB, $^P, $BASETIME, $^T, $WARNING, $^W, $EXECUTABLE_NAME, $^X,
 $ARGV, @@ARGV, @@INC, %INC, $ENV@{expr@}, $SIG@{expr@}, $^M
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlsub - Perl subroutines
 @table @asis
 @item SYNOPSIS
@@ -830,6 +827,7 @@ $ARGV, @@ARGV, @@INC, %INC, $ENV@{expr@}, $SIG@{expr@}, $^M
 @table @asis
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlmod - Perl modules (packages and symbol tables)
 @table @asis
 @itemx DESCRIPTION
@@ -842,8 +840,8 @@ $ARGV, @@ARGV, @@INC, %INC, $ENV@{expr@}, $SIG@{expr@}, $^M
 @table @asis
 @itemx SEE ALSO
 @end table
-@unnumberedsubsec perlmodlib - constructing new Perl modules and finding
-existing ones
+@unnumberedsubsec
+@unnumberedsubsec perlmodlib - constructing new Perl modules and finding existing ones
 @table @asis
 @itemx DESCRIPTION
 @itemx THE PERL MODULE LIBRARY
@@ -921,6 +919,7 @@ can then be reduced to a small
 @table @asis
 @item NOTE
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlform - Perl formats
 @table @asis
 @itemx DESCRIPTION
@@ -934,6 +933,7 @@ can then be reduced to a small
 @table @asis
 @itemx WARNINGS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perllocale - Perl locale handling (internationalization and localization)
 @table @asis
 @itemx DESCRIPTION
@@ -986,6 +986,7 @@ LC_TIME, LANG
 @itemx SEE ALSO
 @itemx HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlref - Perl references and nested data structures
 @table @asis
 @itemx DESCRIPTION
@@ -996,6 +997,7 @@ LC_TIME, LANG
 @itemx WARNING
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perldsc - Perl Data Structures Cookbook
 @table @asis
 @itemx DESCRIPTION
@@ -1042,6 +1044,7 @@ more elaborate constructs
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perllol, perlLoL - Manipulating Lists of Lists in Perl
 @table @asis
 @itemx DESCRIPTION
@@ -1052,6 +1055,7 @@ more elaborate constructs
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perltoot - Tom@'s object-oriented tutorial for perl
 @table @asis
 @itemx DESCRIPTION
@@ -1099,6 +1103,7 @@ more elaborate constructs
 @itemx COPYRIGHT
 @itemx Acknowledgments
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlobj - Perl objects
 @table @asis
 @itemx DESCRIPTION
@@ -1117,6 +1122,7 @@ isa(CLASS), can(METHOD), VERSION( [NEED] )
 @table @asis
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perltie - how to hide an object class in a simple variable
 @table @asis
 @itemx SYNOPSIS
@@ -1144,6 +1150,7 @@ LIST, READLINE this, GETC this, DESTROY this
 @itemx BUGS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlbot - Bag@'o Object Tricks (the BOT)
 @table @asis
 @itemx DESCRIPTION
@@ -1159,6 +1166,7 @@ LIST, READLINE this, GETC this, DESTROY this
 @itemx INHERITING A CONSTRUCTOR
 @itemx DELEGATION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlipc - Perl interprocess communication (signals, fifos, pipes, safe subprocesses, sockets, and semaphores)
 @table @asis
 @itemx DESCRIPTION
@@ -1195,6 +1203,7 @@ Proto, LocalPort, Listen, Reuse
 @itemx AUTHOR
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perldebug - Perl debugging
 @table @asis
 @itemx DESCRIPTION
@@ -1231,10 +1240,12 @@ Prompt, Multiline commands, Stack backtrace, Listing, Frame listing
 @table @asis
 @itemx BUGS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perldiag - various Perl diagnostics
 @table @asis
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlsec - Perl security
 @table @asis
 @itemx DESCRIPTION
@@ -1244,6 +1255,7 @@ Prompt, Multiline commands, Stack backtrace, Listing, Frame listing
 @itemx Security Bugs
 @itemx Protecting Your Programs
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perltrap - Perl traps for the unwary
 @table @asis
 @itemx DESCRIPTION
@@ -1302,10 +1314,12 @@ DBM, DBM
 Unclassified
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlstyle - Perl style guide
 @table @asis
 @item DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlpod - plain old documentation
 @table @asis
 @itemx DESCRIPTION
@@ -1314,10 +1328,12 @@ Unclassified
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlbook - Perl book information
 @table @asis
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlembed - how to embed perl in your C program
 @table @asis
 @itemx DESCRIPTION
@@ -1337,10 +1353,12 @@ Perl?}, @strong{Use C from C?}, @strong{Use Perl from C?}
 @itemx Using Perl modules, which themselves use C libraries, from your C program
 @end table
 @table @asis
+@itemx Embedding Perl under Win32
 @itemx MORAL
 @itemx AUTHOR
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlapio - perl@'s IO abstraction interface.
 @table @asis
 @itemx SYNOPSIS
@@ -1365,6 +1383,7 @@ PerlIO_set_ptrcnt(f,p,c), PerlIO_set_cnt(f,c), PerlIO_has_base(f),
 PerlIO_get_base(f), PerlIO_get_bufsiz(f)
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlxs - XS language reference manual
 @table @asis
 @item DESCRIPTION
@@ -1409,6 +1428,7 @@ PerlIO_get_base(f), PerlIO_get_bufsiz(f)
 @itemx XS VERSION
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlxstut, perlXStut - Tutorial for XSUBs
 @table @asis
 @itemx DESCRIPTION
@@ -1435,6 +1455,7 @@ PerlIO_get_base(f), PerlIO_get_bufsiz(f)
 @itemx Author
 @itemx Last Changed
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlguts - Perl@'s Internal Functions
 @table @asis
 @itemx DESCRIPTION
@@ -1456,6 +1477,7 @@ PerlIO_get_base(f), PerlIO_get_bufsiz(f)
 @itemx Assigning Magic
 @itemx Magic Virtual Tables
 @itemx Finding Magic
+@itemx Understanding the Magic of Tied Hashes and Arrays
 @end table
 @table @asis
 @itemx Subroutines
@@ -1520,6 +1542,7 @@ Zero
 @item EDITOR
 @itemx DATE
 @end table
+@unnumberedsubsec
 @unnumberedsubsec perlcall - Perl calling conventions from C
 @table @asis
 @itemx DESCRIPTION
@@ -1567,6 +1590,7 @@ callback
 @itemx AUTHOR
 @itemx DATE
 @end table
+@unnumberedsubsec
 @unnumberedsec PRAGMA DOCUMENTATION
 @unnumberedsubsec autouse - postpone load of modules until a function is used
 @table @asis
@@ -1577,6 +1601,7 @@ callback
 @itemx AUTHOR
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec blib - Use MakeMaker@'s uninstalled version of a package
 @table @asis
 @itemx SYNOPSIS
@@ -1584,6 +1609,7 @@ callback
 @itemx BUGS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec constant - Perl pragma to declare constants
 @table @asis
 @itemx SYNOPSIS
@@ -1594,6 +1620,7 @@ callback
 @itemx AUTHOR
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec diagnostics - Perl compiler pragma to force verbose warning diagnostics
 @table @asis
 @itemx SYNOPSIS
@@ -1607,16 +1634,19 @@ callback
 @itemx BUGS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec integer - Perl pragma to compute arithmetic in integer instead of double
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec less - perl pragma to request less of something from the compiler
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec lib - manipulate @@INC at compile time
 @table @asis
 @itemx SYNOPSIS
@@ -1629,17 +1659,20 @@ callback
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec locale - Perl pragma to use and avoid POSIX locales for built-in operations
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ops - Perl pragma to restrict unsafe operations when compiling
 @table @asis
 @itemx SYNOPSIS 
 @itemx DESCRIPTION
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec overload - Package for overloading perl operations
 @table @asis
 @itemx SYNOPSIS
@@ -1686,6 +1719,7 @@ overload::StrVal(arg), overload::Overloaded(arg), overload::Method(obj,op)
 @itemx DIAGNOSTICS
 @itemx BUGS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec sigtrap - Perl pragma to enable simple signal handling
 @table @asis
 @itemx SYNOPSIS
@@ -1704,6 +1738,7 @@ overload::StrVal(arg), overload::Overloaded(arg), overload::Method(obj,op)
 @table @asis
 @item EXAMPLES
 @end table
+@unnumberedsubsec
 @unnumberedsubsec strict - Perl pragma to restrict unsafe constructs
 @table @asis
 @itemx SYNOPSIS
@@ -1711,19 +1746,24 @@ overload::StrVal(arg), overload::Overloaded(arg), overload::Method(obj,op)
 @code{strict refs}, @code{strict vars}, @code{strict subs}
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec subs - Perl pragma to predeclare sub names
 @table @asis
 @item SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec vars - Perl pragma to predeclare global variable names
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
-
-@ignore
+@unnumberedsubsec
 @unnumberedsec MODULE DOCUMENTATION
+
+Module documentation was not convertedi, in this set, to texinfo format
+and is available as pods and manual pages.
+
 @unnumberedsubsec AnyDBM_File - provide framework for multiple DBMs
 @table @asis
 @itemx SYNOPSIS
@@ -1735,6 +1775,7 @@ overload::StrVal(arg), overload::Overloaded(arg), overload::Method(obj,op)
 @table @asis
 @item SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec AutoLoader - load subroutines only on demand
 @table @asis
 @itemx SYNOPSIS
@@ -1749,6 +1790,7 @@ overload::StrVal(arg), overload::Overloaded(arg), overload::Method(obj,op)
 @itemx CAVEATS
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec AutoSplit - split a package for autoloading
 @table @asis
 @itemx SYNOPSIS
@@ -1756,6 +1798,7 @@ overload::StrVal(arg), overload::Overloaded(arg), overload::Method(obj,op)
 @itemx CAVEATS
 @itemx DIAGNOSTICS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Benchmark - benchmark running times of code
 @table @asis
 @itemx SYNOPSIS
@@ -1779,6 +1822,7 @@ clearcache ( COUNT ), clearallcache ( ), disablecache ( ), enablecache ( )
 @itemx AUTHORS
 @itemx MODIFICATION HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Bundle::CPAN - A bundle to play with all the other modules on CPAN
 @table @asis
 @itemx SYNOPSIS
@@ -1786,6 +1830,7 @@ clearcache ( COUNT ), clearallcache ( ), disablecache ( ), enablecache ( )
 @itemx DESCRIPTION
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CGI - Simple Common Gateway Interface Class
 @table @asis
 @itemx SYNOPSIS
@@ -1910,6 +1955,7 @@ Kevin B. Hendricks (kbhend@@dogwood.tyler.wm.edu), Stephen Dahmen
 @itemx BUGS
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CGI::Apache - Make things work with CGI.pm against Perl-Apache API
 @table @asis
 @itemx SYNOPSIS
@@ -1919,6 +1965,7 @@ Kevin B. Hendricks (kbhend@@dogwood.tyler.wm.edu), Stephen Dahmen
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CGI::Carp, @strong{CGI::Carp} - CGI routines for writing to the HTTPD (or other) error log
 @table @asis
 @itemx SYNOPSIS
@@ -1929,6 +1976,7 @@ Kevin B. Hendricks (kbhend@@dogwood.tyler.wm.edu), Stephen Dahmen
 @itemx AUTHORS
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CGI::Fast - CGI Interface for Fast CGI
 @table @asis
 @itemx SYNOPSIS
@@ -1942,6 +1990,7 @@ Kevin B. Hendricks (kbhend@@dogwood.tyler.wm.edu), Stephen Dahmen
 @itemx BUGS
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CGI::Push - Simple Interface to Server Push
 @table @asis
 @itemx SYNOPSIS
@@ -1955,6 +2004,7 @@ Kevin B. Hendricks (kbhend@@dogwood.tyler.wm.edu), Stephen Dahmen
 @itemx BUGS
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CGI::Switch - Try more than one constructors and return the first object available
 @table @asis
 @itemx SYNOPSIS
@@ -1962,6 +2012,7 @@ Kevin B. Hendricks (kbhend@@dogwood.tyler.wm.edu), Stephen Dahmen
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CPAN - query, download and build perl modules from CPAN sites
 @table @asis
 @itemx SYNOPSIS
@@ -1997,30 +2048,34 @@ o conf <scalar option>, o conf <scalar option>
 @itemx AUTHOR
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CPAN::FirstTime - Utility for CPAN::Config file Initialization
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec CPANox, CPAN::Nox - Wrapper around CPAN.pm without using any XS module
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Carp, carp - warn of errors (from perspective of caller)
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Class::Struct - declare struct-like datatypes as Perl classes
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx The @code{struct()} function
 @itemx Element Types and Accessor Methods
-Scalar (@code{@'$@'} or @code{@'*$@'}), Array (@code{@'@@@'} or @code{@'*@@@'}), Hash (@code{@'%@'} or
-@code{@'*%@'}), Class (@code{@'Class_Name@'} or @code{@'*Class_Name@'})
+Scalar (@code{'$'} or @code{'*$'}), Array (@code{''} or @code{'*@{@}'}), Hash (@code{'%'} or
+@code{'*%'}), Class (@code{'Class_Name'} or @code{'*Class_Name'})
 
 @end table
 @table @asis
@@ -2029,6 +2084,7 @@ Example 1, Example 2
 
 @item Author and Modification History
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Config - access Perl configuration information
 @table @asis
 @itemx SYNOPSIS
@@ -2039,11 +2095,13 @@ myconfig(), config_sh(), config_vars(@@names)
 @itemx WARNING
 @itemx NOTE
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Cwd, getcwd - get pathname of current working directory
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec DB_File - Perl5 access to Berkeley DB
 @table @asis
 @itemx SYNOPSIS
@@ -2102,16 +2160,19 @@ $value, $flags) ;>, B<$status = $X->sync([$flags]) ;>
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Devel::SelfStubber - generate stubs for a SelfLoading module
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec DirHandle - supply object methods for directory handles
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec DynaLoader - Dynamically load C libraries into Perl code
 @table @asis
 @itemx SYNOPSIS
@@ -2124,17 +2185,20 @@ bootstrap()
 
 @item AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec English - use nice English (or awk) names for ugly punctuation variables
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Env - perl module that imports environment variables
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Exporter - Implements default import method for modules
 @table @asis
 @itemx SYNOPSIS
@@ -2145,6 +2209,7 @@ bootstrap()
 @itemx Managing Unknown Symbols
 @itemx Tag Handling Utility Functions
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::Command - utilities to replace common UNIX commands in Makefiles etc.
 @table @asis
 @itemx SYNOPSIS
@@ -2157,6 +2222,7 @@ directory.., test_f file
 @itemx SEE ALSO 
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::Embed - Utilities for embedding Perl in C/C++ applications
 @table @asis
 @itemx SYNOPSIS
@@ -2170,11 +2236,13 @@ ccopts(), xsi_header(), xsi_protos(@@modules), xsi_body(@@modules)
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::Install - install files from here to there
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::Liblist - determine libraries to use and how to use them
 @table @asis
 @itemx SYNOPSIS
@@ -2188,15 +2256,18 @@ For static extensions, For dynamic extensions, For dynamic extensions
 @table @asis
 @itemx PORTABILITY
 @itemx VMS implementation
+@itemx Win32 implementation
 @end table
 @table @asis
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::MM_OS2 - methods to override UN*X behaviour in ExtUtils::MakeMaker
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::MM_Unix - methods used by ExtUtils::MakeMaker
 @table @asis
 @itemx SYNOPSIS
@@ -2228,6 +2299,7 @@ writedoc, xs_c (o), xs_o (o), perl_archive, export_list
 @table @asis
 @item SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::MM_VMS - methods to override UN*X behaviour in ExtUtils::MakeMaker
 @table @asis
 @itemx SYNOPSIS
@@ -2254,15 +2326,18 @@ dist_dir (override), dist_test (override), install (override), perldepend
 (override)
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::MM_Win32 - methods to override UN*X behaviour in ExtUtils::MakeMaker
 @table @asis
 @item SYNOPSIS
 @itemx DESCRIPTION
-catfile, static_lib (o), dynamic_lib (o), canonpath, perl_script,
-pm_to_blib, test_via_harness (o), tool_autosplit (override), tools_other
-(o), manifypods (o), dist_ci (o), dist_core (o), pasthru (o)
+catfile, constants (o), static_lib (o), dynamic_bs (o), dynamic_lib (o),
+canonpath, perl_script, pm_to_blib, test_via_harness (o), tool_autosplit
+(override), tools_other (o), xs_o (o), top_targets (o), manifypods (o),
+dist_ci (o), dist_core (o), pasthru (o)
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::MakeMaker - create an extension Makefile
 @table @asis
 @item SYNOPSIS
@@ -2309,6 +2384,7 @@ shdist,    make zipdist,    make ci
 @itemx SEE ALSO
 @itemx AUTHORS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::Manifest - utilities to write and check a MANIFEST file
 @table @asis
 @itemx SYNOPSIS
@@ -2323,17 +2399,20 @@ shdist,    make zipdist,    make ci
 @item SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::Miniperl, writemain - write the C code for perlmain.c
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::Mkbootstrap - make a bootstrap file for use by DynaLoader
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::Mksymlists - write linker options files for dynamic extension
 @table @asis
 @itemx SYNOPSIS
@@ -2343,11 +2422,13 @@ NAME, DL_FUNCS, DL_VARS, FILE, FUNCLIST, DLBASE
 @item AUTHOR
 @itemx REVISION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ExtUtils::testlib - add blib/* directories to @@INC
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Fcntl - load the C Fcntl.h defines
 @table @asis
 @itemx SYNOPSIS
@@ -2355,6 +2436,7 @@ NAME, DL_FUNCS, DL_VARS, FILE, FUNCLIST, DLBASE
 @itemx NOTE
 @itemx EXPORTED SYMBOLS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec File::Basename, fileparse - split a pathname into pieces
 @table @asis
 @itemx SYNOPSIS
@@ -2365,11 +2447,13 @@ fileparse_set_fstype, fileparse
 @code{basename}, @code{dirname}
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec File::CheckTree, validate - run many filetest checks on a tree
 @table @asis
 @item SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec File::Compare - Compare files or filehandles
 @table @asis
 @itemx SYNOPSIS
@@ -2377,6 +2461,7 @@ fileparse_set_fstype, fileparse
 @itemx RETURN
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec File::Copy - Copy files or filehandles
 @table @asis
 @itemx SYNOPSIS
@@ -2389,11 +2474,24 @@ rmscopy($from,$to[,$date_flag])
 @item RETURN
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
+@unnumberedsubsec File::DosGlob - DOS like globbing and then some
+@table @asis
+@itemx SYNOPSIS
+@itemx DESCRIPTION
+@itemx EXPORTS (by request only)
+@itemx BUGS
+@itemx AUTHOR
+@itemx HISTORY
+@itemx SEE ALSO
+@end table
+@unnumberedsubsec
 @unnumberedsubsec File::Find, find - traverse a file tree
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec File::Path - create or remove a series of directories
 @table @asis
 @itemx SYNOPSIS
@@ -2401,6 +2499,7 @@ rmscopy($from,$to[,$date_flag])
 @itemx AUTHORS
 @itemx REVISION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec File::stat - by-name interface to Perl@'s built-in stat() functions
 @table @asis
 @itemx SYNOPSIS
@@ -2408,12 +2507,14 @@ rmscopy($from,$to[,$date_flag])
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec FileCache - keep more files open than the system permits
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx BUGS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec FileHandle - supply object methods for filehandles
 @table @asis
 @itemx SYNOPSIS
@@ -2422,6 +2523,7 @@ $fh->print, $fh->printf, $fh->getline, $fh->getlines
 
 @item SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec FindBin - Locate directory of original perl script
 @table @asis
 @itemx SYNOPSIS
@@ -2432,6 +2534,7 @@ $fh->print, $fh->printf, $fh->getline, $fh->getlines
 @itemx COPYRIGHT
 @itemx REVISION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec GDBM_File - Perl5 access to the gdbm library.
 @table @asis
 @itemx SYNOPSIS
@@ -2440,6 +2543,7 @@ $fh->print, $fh->printf, $fh->getline, $fh->getlines
 @itemx BUGS
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Getopt::Long, GetOptions - extended processing of command line options
 @table @asis
 @itemx SYNOPSIS
@@ -2465,21 +2569,25 @@ reset), debug (default: reset)
 $Getopt::Long::VERSION, $Getopt::Long::error
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Getopt::Std, getopt - Process single-character switches with switch clustering
 @table @asis
 @item SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec I18N::Collate - compare 8-bit scalar data according to the current locale
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO - load various IO modules
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::File - supply object methods for filehandles
 @table @asis
 @itemx SYNOPSIS
@@ -2493,6 +2601,7 @@ open( FILENAME [,MODE [,PERMS]] )
 @item SEE ALSO
 @itemx HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::Handle - supply object methods for I/O handles
 @table @asis
 @itemx SYNOPSIS
@@ -2510,6 +2619,7 @@ $fh->error, $fh->clearerr, $fh->untaint
 @itemx BUGS
 @itemx HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::Pipe, IO::pipe - supply object methods for pipes
 @table @asis
 @itemx SYNOPSIS
@@ -2524,6 +2634,7 @@ reader ([ARGS]), writer ([ARGS]), handles ()
 @itemx AUTHOR
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::Seekable - supply seek based methods for I/O objects
 @table @asis
 @itemx SYNOPSIS
@@ -2531,6 +2642,7 @@ reader ([ARGS]), writer ([ARGS]), handles ()
 @itemx SEE ALSO
 @itemx HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::Select - OO interface to the select system call
 @table @asis
 @itemx SYNOPSIS
@@ -2547,6 +2659,7 @@ add ( HANDLES ), remove ( HANDLES ), exists ( HANDLE ), handles, can_read (
 @itemx AUTHOR
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::Socket - Object interface to socket communications
 @table @asis
 @itemx SYNOPSIS
@@ -2574,6 +2687,7 @@ hostpath(), peerpath()
 @itemx AUTHOR
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::lib::IO::File, IO::File - supply object methods for filehandles
 @table @asis
 @itemx SYNOPSIS
@@ -2587,6 +2701,7 @@ open( FILENAME [,MODE [,PERMS]] )
 @item SEE ALSO
 @itemx HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::lib::IO::Handle, IO::Handle - supply object methods for I/O handles
 @table @asis
 @itemx SYNOPSIS
@@ -2604,6 +2719,7 @@ $fh->error, $fh->clearerr, $fh->untaint
 @itemx BUGS
 @itemx HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::lib::IO::Pipe, IO::pipe - supply object methods for pipes
 @table @asis
 @itemx SYNOPSIS
@@ -2618,6 +2734,7 @@ reader ([ARGS]), writer ([ARGS]), handles ()
 @itemx AUTHOR
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::lib::IO::Seekable, IO::Seekable - supply seek based methods for I/O objects
 @table @asis
 @itemx SYNOPSIS
@@ -2625,6 +2742,7 @@ reader ([ARGS]), writer ([ARGS]), handles ()
 @itemx SEE ALSO
 @itemx HISTORY
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::lib::IO::Select, IO::Select - OO interface to the select system call
 @table @asis
 @itemx SYNOPSIS
@@ -2641,6 +2759,7 @@ add ( HANDLES ), remove ( HANDLES ), exists ( HANDLE ), handles, can_read (
 @itemx AUTHOR
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IO::lib::IO::Socket, IO::Socket - Object interface to socket communications
 @table @asis
 @itemx SYNOPSIS
@@ -2668,6 +2787,7 @@ hostpath(), peerpath()
 @itemx AUTHOR
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IPC::Open2, open2 - open a process for both reading and writing
 @table @asis
 @itemx SYNOPSIS
@@ -2675,12 +2795,14 @@ hostpath(), peerpath()
 @itemx WARNING 
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec IPC::Open3, open3 - open a process for reading, writing, and error handling
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx WARNING
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Math::BigFloat - Arbitrary length float math package
 @table @asis
 @itemx SYNOPSIS
@@ -2690,6 +2812,7 @@ number format, Error returns @'NaN@', Division is computed to
 @item BUGS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Math::BigInt - Arbitrary size integer math package
 @table @asis
 @itemx SYNOPSIS
@@ -2700,6 +2823,7 @@ Canonical notation, Input, Output
 @itemx BUGS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Math::Complex - complex numbers and associated mathematical functions
 @table @asis
 @itemx SYNOPSIS
@@ -2712,6 +2836,7 @@ Canonical notation, Input, Output
 @itemx BUGS
 @itemx AUTHORS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Math::Trig - trigonometric functions
 @table @asis
 @itemx SYNOPSIS
@@ -2725,11 +2850,13 @@ Canonical notation, Input, Output
 @itemx BUGS
 @itemx AUTHORS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec NDBM_File - Tied access to ndbm files
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Net::Ping - check a remote host for reachability
 @table @asis
 @itemx SYNOPSIS
@@ -2743,6 +2870,7 @@ $timeout]);, $p->close();, pingecho($host [, $timeout]);
 @item WARNING
 @itemx NOTES
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Net::hostent - by-name interface to Perl@'s built-in gethost*() functions
 @table @asis
 @itemx SYNOPSIS
@@ -2751,6 +2879,7 @@ $timeout]);, $p->close();, pingecho($host [, $timeout]);
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Net::netent - by-name interface to Perl@'s built-in getnet*() functions
 @table @asis
 @itemx SYNOPSIS
@@ -2759,6 +2888,7 @@ $timeout]);, $p->close();, pingecho($host [, $timeout]);
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Net::protoent - by-name interface to Perl@'s built-in getproto*() functions
 @table @asis
 @itemx SYNOPSIS
@@ -2766,6 +2896,7 @@ $timeout]);, $p->close();, pingecho($host [, $timeout]);
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Net::servent - by-name interface to Perl@'s built-in getserv*() functions
 @table @asis
 @itemx SYNOPSIS
@@ -2774,11 +2905,13 @@ $timeout]);, $p->close();, pingecho($host [, $timeout]);
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec ODBM_File - Tied access to odbm files
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Opcode - Disable named opcodes when compiling perl code
 @table @asis
 @itemx SYNOPSIS
@@ -2805,6 +2938,7 @@ opdump (PAT)
 @item SEE ALSO
 @itemx AUTHORS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Opcode::Safe, Safe - Compile and execute code in restricted compartments
 @table @asis
 @itemx SYNOPSIS
@@ -2824,12 +2958,14 @@ Memory, CPU, Snooping, Signals, State Changes
 
 @item AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Opcode::ops, ops - Perl pragma to restrict unsafe operations when compiling
 @table @asis
 @itemx SYNOPSIS 
 @itemx DESCRIPTION
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec POSIX - Perl interface to IEEE Std 1003.1
 @table @asis
 @itemx SYNOPSIS
@@ -2930,6 +3066,7 @@ Constants, Macros
 
 @item CREATION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Pod::Html, Pod::HTML - module to convert pod files to HTML
 @table @asis
 @itemx SYNOPSIS
@@ -2944,6 +3081,7 @@ nonetscape, index, noindex, recurse, norecurse, title, verbose
 @itemx SEE ALSO
 @itemx COPYRIGHT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Pod::Text - convert POD data to formatted ASCII text
 @table @asis
 @itemx SYNOPSIS
@@ -2951,11 +3089,13 @@ nonetscape, index, noindex, recurse, norecurse, title, verbose
 @itemx AUTHOR
 @itemx TODO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec SDBM_File - Tied access to sdbm files
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Safe - Compile and execute code in restricted compartments
 @table @asis
 @itemx SYNOPSIS
@@ -2975,16 +3115,19 @@ Memory, CPU, Snooping, Signals, State Changes
 
 @item AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Search::Dict, look - search for key in dictionary file
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec SelectSaver - save and restore selected file handle
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec SelfLoader - load functions only on demand
 @table @asis
 @itemx SYNOPSIS
@@ -2999,12 +3142,14 @@ Memory, CPU, Snooping, Signals, State Changes
 @table @asis
 @itemx Multiple packages and fully qualified subroutine names
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Shell - run shell commands transparently within perl
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Socket, sockaddr_in, sockaddr_un, inet_aton, inet_ntoa - load the C socket.h defines and structure manipulators 
 @table @asis
 @itemx SYNOPSIS
@@ -3016,17 +3161,20 @@ SOCKADDR_IN, sockaddr_un PATHNAME, sockaddr_un SOCKADDR_UN,
 pack_sockaddr_un PATH, unpack_sockaddr_un SOCKADDR_UN
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Symbol - manipulate Perl symbols and their names
 @table @asis
 @item SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Sys::Hostname - Try every conceivable way to get hostname
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Syslog, Sys::Syslog, openlog, closelog, setlogmask, syslog - Perl interface to the UNIX syslog(3) calls
 @table @asis
 @itemx SYNOPSIS
@@ -3039,12 +3187,14 @@ setlogmask $mask_priority, closelog
 @itemx SEE ALSO
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Term::Cap - Perl termcap interface
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx EXAMPLES
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Term::Complete - Perl word completion module
 @table @asis
 @itemx SYNOPSIS
@@ -3055,6 +3205,7 @@ setlogmask $mask_priority, closelog
 @itemx BUGS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Term::ReadLine - Perl interface to various @code{readline} packages. If no real package is found, substitutes stubs instead of basic functions.
 @table @asis
 @itemx SYNOPSIS
@@ -3067,6 +3218,7 @@ setlogmask $mask_priority, closelog
 @itemx EXPORTS
 @itemx ENVIRONMENT
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Test::Harness - run perl standard test scripts with statistics
 @table @asis
 @itemx SYNOPSIS
@@ -3085,18 +3237,21 @@ setlogmask $mask_priority, closelog
 @itemx AUTHORS
 @itemx BUGS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Text::Abbrev, abbrev - create an abbreviation table from a list
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx EXAMPLE
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Text::ParseWords - parse text into an array of tokens
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx AUTHORS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Text::Soundex - Implementation of the Soundex Algorithm as Described by Knuth
 @table @asis
 @itemx SYNOPSIS
@@ -3105,6 +3260,7 @@ setlogmask $mask_priority, closelog
 @itemx LIMITATIONS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Text::Tabs -- expand and unexpand tabs per the unix expand(1) and unexpand(1)
 @table @asis
 @itemx SYNOPSIS
@@ -3112,6 +3268,7 @@ setlogmask $mask_priority, closelog
 @itemx BUGS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Text::Wrap - line wrapping to form simple paragraphs
 @table @asis
 @itemx SYNOPSIS 
@@ -3120,6 +3277,7 @@ setlogmask $mask_priority, closelog
 @itemx BUGS
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Tie::Hash, Tie::StdHash - base class definitions for tied hashes
 @table @asis
 @itemx SYNOPSIS
@@ -3130,6 +3288,7 @@ this, NEXTKEY this, lastkey, EXISTS this, key, DELETE this, key, CLEAR this
 @item CAVEATS
 @itemx MORE INFORMATION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Tie::RefHash - use references as hash keys
 @table @asis
 @itemx SYNOPSIS
@@ -3139,6 +3298,7 @@ this, NEXTKEY this, lastkey, EXISTS this, key, DELETE this, key, CLEAR this
 @itemx VERSION
 @itemx SEE ALSO
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Tie::Scalar, Tie::StdScalar - base class definitions for tied scalars
 @table @asis
 @itemx SYNOPSIS
@@ -3147,17 +3307,20 @@ TIESCALAR classname, LIST, FETCH this, STORE this, value, DESTROY this
 
 @item MORE INFORMATION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Tie::SubstrHash - Fixed-table-size, fixed-key-length hashing
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx CAVEATS
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Time::Local - efficiently compute time from local and GMT time
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Time::gmtime - by-name interface to Perl@'s built-in gmtime() function
 @table @asis
 @itemx SYNOPSIS
@@ -3165,6 +3328,7 @@ TIESCALAR classname, LIST, FETCH this, STORE this, value, DESTROY this
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Time::localtime - by-name interface to Perl@'s built-in localtime() function
 @table @asis
 @itemx SYNOPSIS
@@ -3172,12 +3336,14 @@ TIESCALAR classname, LIST, FETCH this, STORE this, value, DESTROY this
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec Time::tm - internal object used by Time::gmtime and Time::localtime
 @table @asis
 @itemx SYNOPSIS
 @itemx DESCRIPTION
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec UNIVERSAL - base class for ALL classes (blessed references)
 @table @asis
 @itemx SYNOPSIS
@@ -3186,6 +3352,7 @@ isa ( TYPE ), can ( METHOD ), VERSION ( [ REQUIRE ] ), isa ( VAL, TYPE ),
 can ( VAL, METHOD )
 
 @end table
+@unnumberedsubsec
 @unnumberedsubsec User::grent - by-name interface to Perl@'s built-in getgr*() functions
 @table @asis
 @item SYNOPSIS
@@ -3193,6 +3360,7 @@ can ( VAL, METHOD )
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsubsec User::pwent - by-name interface to Perl@'s built-in getpw*() functions
 @table @asis
 @itemx SYNOPSIS
@@ -3200,6 +3368,7 @@ can ( VAL, METHOD )
 @itemx NOTE
 @itemx AUTHOR
 @end table
+@unnumberedsubsec
 @unnumberedsec AUXILIARY DOCUMENTATION
 Here should be listed all the extra programs@' documentation, but they
 don@'t all have manual pages yet:
@@ -3215,8 +3384,7 @@ don@'t all have manual pages yet:
 @itemx pod2man
 @itemx wrapsuid
 @end table
-@end ignore
-
+@unnumberedsubsec
 @unnumberedsec AUTHOR
 Larry Wall <@file{larry@@wall.org}>, with the help of oodles
 of other folks.

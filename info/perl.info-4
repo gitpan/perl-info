@@ -128,7 +128,7 @@ Changes
 25/March/97
      Added more info to the binary distribution section of *Note
      Perlfaq2: perlfaq2.  Added Net::Telnet to *Note Perlfaq6:
-     perlfaq6.  Fixed typos in *Note Perlfaq8: perlfaq8,.  Added mail
+     perlfaq6.  Fixed typos in *Note Perlfaq8: perlfaq8.  Added mail
      sending example to *Note Perlfaq9: perlfaq9.  Added Merlyn's
      columns to *Note Perlfaq2: perlfaq2.
 
@@ -875,7 +875,7 @@ How do I learn about object-oriented Perl programming?
 ------------------------------------------------------
 
 *Note Perltoot: perltoot, (distributed with 5.004 or later) is a good
-place to start.  Also, *Note Perlobj: perlobj, *Note Perlref: perlref,,
+place to start.  Also, *Note Perlobj: perlobj, *Note Perlref: perlref,
 and *Note Perlmod: perlmod, are useful references, while *Note Perlbot:
 perlbot, has some excellent tips and tricks.
 

@@ -2,652 +2,967 @@ This is Info file perl.info, produced by Makeinfo-1.64 from the input
 file Pmaster.texi.
 
 
-File: perl.info,  Node: perlvar,  Next: perlsub,  Prev: perlfunc,  Up: Top
+File: perl.info,  Node: perlsub,  Next: perlmod,  Prev: perlvar,  Up: Top
 
 NAME
 ====
 
-perlvar - Perl predefined variables
+perlsub - Perl subroutines
+
+SYNOPSIS
+========
+
+To declare subroutines:
+
+     sub NAME;                 # A "forward" declaration.
+     sub NAME(PROTO);          #  ditto, but with prototypes
+     
+     sub NAME BLOCK            # A declaration and a definition.
+     sub NAME(PROTO) BLOCK #  ditto, but with prototypes
+
+To define an anonymous subroutine at runtime:
+
+     $subref = sub BLOCK;
+
+To import subroutines:
+
+     use PACKAGE qw(NAME1 NAME2 NAME3);
+
+To call subroutines:
+
+     NAME(LIST);        # & is optional with parentheses.
+     NAME LIST;         # Parentheses optional if predeclared/imported.
+     &NAME;     # Passes current @_ to subroutine.
 
 DESCRIPTION
 ===========
 
-Predefined Names
-----------------
-
-The following names have special meaning to Perl.  Most of the
-punctuation names have reasonable mnemonics, or analogues in one of the
-shells.  Nevertheless, if you wish to use the long variable names, you
-just need to say
-
-     use English;
-
-at the top of your program.  This will alias all the short names to the
-long names in the current package.  Some of them even have medium names,
-generally borrowed from *awk*.
-
-To go a step further, those variables that depend on the currently
-selected filehandle may instead be set by calling an object method on
-the FileHandle object.  (Summary lines below for this contain the word
-HANDLE.)  First you must say
-
-     use FileHandle;
-
-after which you may use either
-
-     method HANDLE EXPR
-
-or
-
-     HANDLE->method(EXPR)
-
-Each of the methods returns the old value of the FileHandle attribute.
-The methods each take an optional EXPR, which if supplied specifies the
-new value for the FileHandle attribute in question.  If not supplied,
-most of the methods do nothing to the current value, except for
-autoflush(), which will assume a 1 for you, just to be different.
-
-A few of these variables are considered "read-only".  This means that if
-you try to assign to this variable, either directly or indirectly
-through a reference, you'll raise a run-time exception.
-
-$ARG
-$_
-     The default input and pattern-searching space.  The following
-     pairs are equivalent:
-
-          while (<>) {...}      # equivalent in only while!
-          while (defined($_ = <>)) {...}
-          
-          /^Subject:/
-          $_ =~ /^Subject:/
-          
-          tr/a-z/A-Z/
-          $_ =~ tr/a-z/A-Z/
-          
-          chop
-          chop($_)
-
-     Here are the places where Perl will assume $_ even if you don't
-     use it:
-
-        * Various unary functions, including functions like ord() and
-          int(), as well as the all file tests (`-f', -d) except for
-          `-t', which defaults to STDIN.
-
-        * Various list functions like print() and unlink().
-
-        * The pattern matching operations m//, s///, and tr/// when used
-          without an `=~' operator.
-
-        * The default iterator variable in a `foreach' loop if no other
-          variable is supplied.
-
-        * The implicit iterator variable in the grep() and map()
-          functions.
-
-        * The default place to put an input record when a C<<FH>>
-          operation's result is tested by itself as the sole criterion
-          of a `while' test.  Note that outside of a `while' test, this
-          will not happen.
-
-     (Mnemonic: underline is understood in certain operations.)
-
-$<*digit*>
-     Contains the subpattern from the corresponding set of parentheses
-     in the last pattern matched, not counting patterns matched in
-     nested blocks that have been exited already.  (Mnemonic: like
-     \digit.) These variables are all read-only.
-
-$MATCH
-$&
-     The string matched by the last successful pattern match (not
-     counting any matches hidden within a BLOCK or eval() enclosed by
-     the current BLOCK).  (Mnemonic: like & in some editors.)  This
-     variable is read-only.
-
-$PREMATCH
-$`
-     The string preceding whatever was matched by the last successful
-     pattern match (not counting any matches hidden within a BLOCK or
-     eval enclosed by the current BLOCK).  (Mnemonic: ``' often
-     precedes a quoted string.)  This variable is read-only.
-
-$POSTMATCH
-$'
-     The string following whatever was matched by the last successful
-     pattern match (not counting any matches hidden within a BLOCK or
-     eval() enclosed by the current BLOCK).  (Mnemonic: `'' often
-     follows a quoted string.)  Example:
-
-          $_ = 'abcdefghi';
-          /def/;
-          print "$`:$&:$'\n";   # prints abc:def:ghi
-
-     This variable is read-only.
-
-$LAST_PAREN_MATCH
-$+
-     The last bracket matched by the last search pattern.  This is
-     useful if you don't know which of a set of alternative patterns
-     matched.  For example:
-
-          /Version: (.*)|Revision: (.*)/ && ($rev = $+);
-
-     (Mnemonic: be positive and forward looking.) This variable is
-     read-only.
-
-$MULTILINE_MATCHING
-$*
-     Set to 1 to do multi-line matching within a string, 0 to tell Perl
-     that it can assume that strings contain a single line, for the
-     purpose of optimizing pattern matches.  Pattern matches on strings
-     containing multiple newlines can produce confusing results when
-     "$*" is 0.  Default is 0.  (Mnemonic: * matches multiple things.)
-     Note that this variable influences the interpretation of only
-     "`^'" and "`$'".  A literal newline can be searched for even when
-     `$* == 0'.
-
-     Use of "$*" is deprecated in modern perls.
-
-input_line_number HANDLE EXPR
-$INPUT_LINE_NUMBER
-$NR
-$.
-     The current input line number for the last file handle from which
-     you read (or performed a seek or tell on).  An explicit close on a
-     filehandle resets the line number.  Because "C<<>>" never does an
-     explicit close, line numbers increase across ARGV files (but see
-     examples under eof()).  Localizing $. has the effect of also
-     localizing Perl's notion of "the last read filehandle".
-     (Mnemonic: many programs use "." to mean the current line number.)
-
-input_record_separator HANDLE EXPR
-$INPUT_RECORD_SEPARATOR
-$RS
-$/
-     The input record separator, newline by default.  Works like
-     *awk*'s RS variable, including treating empty lines as delimiters
-     if set to the null string.  (Note: An empty line cannot contain
-     any spaces or tabs.) You may set it to a multi-character string to
-     match a multi-character delimiter, or to undef to read to end of
-     file.  Note that setting it to `"\n\n"' means something slightly
-     different than setting it to `""', if the file contains
-     consecutive empty lines.  Setting it to `""' will treat two or
-     more consecutive empty lines as a single empty line.  Setting it
-     to `"\n\n"' will blindly assume that the next input character
-     belongs to the next paragraph, even if it's a newline.  (Mnemonic:
-     / is used to delimit line boundaries when quoting poetry.)
-
-          undef $/;
-          $_ = <FH>;              # whole file now here
-          s/\n[ \t]+/ /g;
-
-     Remember: the value of $/ is a string, not a regexp.  AWK has to be
-     better for something :-)
-
-autoflush HANDLE EXPR
-$OUTPUT_AUTOFLUSH
-$|
-     If set to nonzero, forces a flush right away and after every write
-     or print on the currently selected output channel.  Default is 0
-     (regardless of whether the channel is actually buffered by the
-     system or not; $| tells you only whether you've asked Perl
-     explicitly to flush after each write).  Note that STDOUT will
-     typically be line buffered if output is to the terminal and block
-     buffered otherwise.  Setting this variable is useful primarily
-     when you are outputting to a pipe, such as when you are running a
-     Perl script under rsh and want to see the output as it's
-     happening.  This has no effect on input buffering.  (Mnemonic:
-     when you want your pipes to be piping hot.)
-
-output_field_separator HANDLE EXPR
-$OUTPUT_FIELD_SEPARATOR
-$OFS
-$,
-     The output field separator for the print operator.  Ordinarily the
-     print operator simply prints out the comma-separated fields you
-     specify.  To get behavior more like *awk*, set this variable as
-     you would set *awk*'s OFS variable to specify what is printed
-     between fields.  (Mnemonic: what is printed when there is a , in
-     your print statement.)
-
-output_record_separator HANDLE EXPR
-$OUTPUT_RECORD_SEPARATOR
-$ORS
-$\
-     The output record separator for the print operator.  Ordinarily the
-     print operator simply prints out the comma-separated fields you
-     specify, with no trailing newline or record separator assumed.  To
-     get behavior more like *awk*, set this variable as you would set
-     *awk*'s ORS variable to specify what is printed at the end of the
-     print.  (Mnemonic: you set "$\" instead of adding \n at the end of
-     the print.  Also, it's just like $/, but it's what you get "back"
-     from Perl.)
-
-$LIST_SEPARATOR
-$"
-     This is like "$," except that it applies to array values
-     interpolated into a double-quoted string (or similar interpreted
-     string).  Default is a space.  (Mnemonic: obvious, I think.)
-
-$SUBSCRIPT_SEPARATOR
-$SUBSEP
-$;
-     The subscript separator for multidimensional array emulation.  If
-     you refer to a hash element as
-
-          $foo{$a,$b,$c}
-
-     it really means
-
-          $foo{join($;, $a, $b, $c)}
-
-     But don't put
-
-          @foo{$a,$b,$c}       # a slice--note the @
-
-     which means
-
-          ($foo{$a},$foo{$b},$foo{$c})
-
-     Default is "\034", the same as SUBSEP in *awk*.  Note that if your
-     keys contain binary data there might not be any safe value for
-     "$;".  (Mnemonic: comma (the syntactic subscript separator) is a
-     semi-semicolon.  Yeah, I know, it's pretty lame, but "$," is
-     already taken for something more important.)
-
-     Consider using "real" multidimensional arrays.
-
-$OFMT
-$#
-     The output format for printed numbers.  This variable is a
-     half-hearted attempt to emulate *awk*'s OFMT variable.  There are
-     times, however, when *awk* and Perl have differing notions of what
-     is in fact numeric.  The initial value is %.ng, where n is the
-     value of the macro DBL_DIG from your system's `float.h'.  This is
-     different from *awk*'s default OFMT setting of %.6g, so you need
-     to set "$#" explicitly to get *awk*'s value.  (Mnemonic: # is the
-     number sign.)
-
-     Use of "$#" is deprecated.
-
-format_page_number HANDLE EXPR
-$FORMAT_PAGE_NUMBER
-$%
-     The current page number of the currently selected output channel.
-     (Mnemonic: % is page number in *nroff*.)
-
-format_lines_per_page HANDLE EXPR
-$FORMAT_LINES_PER_PAGE
-$=
-     The current page length (printable lines) of the currently selected
-     output channel.  Default is 60.  (Mnemonic: = has horizontal
-     lines.)
-
-format_lines_left HANDLE EXPR
-$FORMAT_LINES_LEFT
-$-
-     The number of lines left on the page of the currently selected
-     output channel.  (Mnemonic: lines_on_page - lines_printed.)
-
-format_name HANDLE EXPR
-$FORMAT_NAME
-$~
-     The name of the current report format for the currently selected
-     output channel.  Default is name of the filehandle.  (Mnemonic:
-     brother to "$^".)
-
-format_top_name HANDLE EXPR
-$FORMAT_TOP_NAME
-$^
-     The name of the current top-of-page format for the currently
-     selected output channel.  Default is name of the filehandle with
-     _TOP appended.  (Mnemonic: points to top of page.)
-
-format_line_break_characters HANDLE EXPR
-$FORMAT_LINE_BREAK_CHARACTERS
-$:
-     The current set of characters after which a string may be broken to
-     fill continuation fields (starting with ^) in a format.  Default is
-     " \n-", to break on whitespace or hyphens.  (Mnemonic: a "colon" in
-     poetry is a part of a line.)
-
-format_formfeed HANDLE EXPR
-$FORMAT_FORMFEED
-$^L
-     What formats output to perform a form feed.  Default is \f.
-
-$ACCUMULATOR
-$^A
-     The current value of the write() accumulator for format() lines.
-     A format contains formline() commands that put their result into
-     $^A.  After calling its format, write() prints out the contents of
-     $^A and empties.  So you never actually see the contents of $^A
-     unless you call formline() yourself and then look at it.  See
-     *Note Perlform: perlform, and `formline()', *Note Perlfunc:
-     perlfunc.
-
-$CHILD_ERROR
-$?
-     The status returned by the last pipe close, backtick (```')
-     command, or system() operator.  Note that this is the status word
-     returned by the wait() system call (or else is made up to look
-     like it).  Thus, the exit value of the subprocess is actually
-     (C<$? >> 8>), and `$? & 255' gives which signal, if any, the
-     process died from, and whether there was a core dump.  (Mnemonic:
-     similar to *sh* and *ksh*.)
-
-     Note that if you have installed a signal handler for `SIGCHLD', the
-     value of $? will usually be wrong outside that handler.
-
-     Inside an END subroutine $? contains the value that is going to be
-     given to `exit()'.  You can modify $? in an END subroutine to
-     change the exit status of the script.
-
-     Under VMS, the pragma `use vmsish 'status'' makes $? reflect the
-     actual VMS exit status, instead of the default emulation of POSIX
-     status.
-
-$OS_ERROR
-$ERRNO
-$!
-     If used in a numeric context, yields the current value of errno,
-     with all the usual caveats.  (This means that you shouldn't depend
-     on the value of "$!" to be anything in particular unless you've
-     gotten a specific error return indicating a system error.)  If
-     used in a string context, yields the corresponding system error
-     string.  You can assign to "$!" to set *errno* if, for instance,
-     you want "$!" to return the string for error n, or you want to set
-     the exit value for the die() operator.  (Mnemonic: What just went
-     bang?)
-
-$EXTENDED_OS_ERROR
-$^E
-     More specific information about the last system error than that
-     provided by $!, if available.  (If not, it's just $! again, except
-     under OS/2.) At the moment, this differs from $! under only VMS
-     and OS/2, where it provides the VMS status value from the last
-     system error, and OS/2 error code of the last call to OS/2 API
-     which was not directed via CRT.  The caveats mentioned in the
-     description of $! apply here, too.  (Mnemonic: Extra error
-     explanation.)
-
-     Note that under OS/2 $! and $^E do not track each other, so if an
-     OS/2-specific call is performed, you may need to check both.
-
-$EVAL_ERROR
-$@
-     The Perl syntax error message from the last eval() command.  If
-     null, the last eval() parsed and executed correctly (although the
-     operations you invoked may have failed in the normal fashion).
-     (Mnemonic: Where was the syntax error "at"?)
-
-     Note that warning messages are not collected in this variable.
-     You can, however, set up a routine to process warnings by setting
-     `$SIG{__WARN__}' as described below.
-
-$PROCESS_ID
-$PID
-$$
-     The process number of the Perl running this script.  (Mnemonic:
-     same as shells.)
-
-$REAL_USER_ID
-$UID
-$<
-     The real uid of this process.  (Mnemonic: it's the uid you came
-     *FROM*, if you're running setuid.)
-
-$EFFECTIVE_USER_ID
-$EUID
-$>
-     The effective uid of this process.  Example:
-
-          $< = $>;                # set real to effective uid
-          ($<,$>) = ($>,$<);      # swap real and effective uid
-
-     (Mnemonic: it's the uid you went TO, if you're running setuid.)
-     Note: "C<$<>" and "C<$>>" can be swapped only on machines
-     supporting setreuid().
-
-$REAL_GROUP_ID
-$GID
-$(
-     The real gid of this process.  If you are on a machine that
-     supports membership in multiple groups simultaneously, gives a
-     space separated list of groups you are in.  The first number is
-     the one returned by getgid(), and the subsequent ones by
-     getgroups(), one of which may be the same as the first number.
-
-     However, a value assigned to "$(" must be a single number used to
-     set the real gid.  So the value given by "$(" should *not* be
-     assigned back to "$(" without being forced numeric, such as by
-     adding zero.
-
-     (Mnemonic: parentheses are used to *GROUP* things.  The real gid
-     is the group you *LEFT*, if you're running setgid.)
-
-$EFFECTIVE_GROUP_ID
-$EGID
-$)
-     The effective gid of this process.  If you are on a machine that
-     supports membership in multiple groups simultaneously, gives a
-     space separated list of groups you are in.  The first number is
-     the one returned by getegid(), and the subsequent ones by
-     getgroups(), one of which may be the same as the first number.
-
-     Similarly, a value assigned to "$)" must also be a space-separated
-     list of numbers.  The first number is used to set the effective
-     gid, and the rest (if any) are passed to setgroups().  To get the
-     effect of an empty list for setgroups(), just repeat the new
-     effective gid; that is, to force an effective gid of 5 and an
-     effectively empty setgroups() list, say ` $) = "5 5" '.
-
-     (Mnemonic: parentheses are used to *GROUP* things.  The effective
-     gid is the group that's *RIGHT* for you, if you're running setgid.)
-
-     Note: "C<$<>", "C<$>>", "$(" and "$)" can be set only on machines
-     that support the corresponding *set[re][ug]id()* routine.  "$("
-     and "$)" can be swapped only on machines supporting setregid().
-
-$PROGRAM_NAME
-$0
-     Contains the name of the file containing the Perl script being
-     executed.  On some operating systems assigning to "$0" modifies
-     the argument area that the ps(1) program sees.  This is more
-     useful as a way of indicating the current program state than it is
-     for hiding the program you're running.  (Mnemonic: same as *sh*
-     and *ksh*.)
-
-$[
-     The index of the first element in an array, and of the first
-     character in a substring.  Default is 0, but you could set it to 1
-     to make Perl behave more like *awk* (or Fortran) when subscripting
-     and when evaluating the index() and substr() functions.
-     (Mnemonic: [ begins subscripts.)
-
-     As of Perl 5, assignment to "$[" is treated as a compiler
-     directive, and cannot influence the behavior of any other file.
-     Its use is discouraged.
-
-$PERL_VERSION
-$]
-     The version + patchlevel / 1000 of the Perl interpreter.  This
-     variable can be used to determine whether the Perl interpreter
-     executing a script is in the right range of versions.  (Mnemonic:
-     Is this version of perl in the right bracket?)  Example:
-
-          warn "No checksumming!\n" if $] < 3.019;
-
-     See also the documentation of `use VERSION' and `require VERSION'
-     for a convenient way to fail if the Perl interpreter is too old.
-
-$DEBUGGING
-$^D
-     The current value of the debugging flags.  (Mnemonic: value of -D
-     switch.)
-
-$SYSTEM_FD_MAX
-$^F
-     The maximum system file descriptor, ordinarily 2.  System file
-     descriptors are passed to exec()ed processes, while higher file
-     descriptors are not.  Also, during an open(), system file
-     descriptors are preserved even if the open() fails.  (Ordinary
-     file descriptors are closed before the open() is attempted.)  Note
-     that the close-on-exec status of a file descriptor will be decided
-     according to the value of $^F at the time of the open, not the
-     time of the exec.
-
-$^H
-     The current set of syntax checks enabled by `use strict'.  See the
-     documentation of strict for more details.
-
-$INPLACE_EDIT
-$^I
-     The current value of the inplace-edit extension.  Use undef to
-     disable inplace editing.  (Mnemonic: value of -i switch.)
-
-$OSNAME
-$^O
-     The name of the operating system under which this copy of Perl was
-     built, as determined during the configuration process.  The value
-     is identical to `$Config{'osname'}'.
-
-$PERLDB
-$^P
-     The internal flag that the debugger clears so that it doesn't debug
-     itself.  You could conceivably disable debugging yourself by
-     clearing it.
-
-$BASETIME
-$^T
-     The time at which the script began running, in seconds since the
-     epoch (beginning of 1970).  The values returned by the -M, *-A*,
-     and *-C* filetests are based on this value.
-
-$WARNING
-$^W
-     The current value of the warning switch, either TRUE or FALSE.
-     (Mnemonic: related to the -w switch.)
-
-$EXECUTABLE_NAME
-$^X
-     The name that the Perl binary itself was executed as, from C's
-     `argv[0]'.
-
-$ARGV
-     contains the name of the current file when reading from <>.
-
-@ARGV
-     The array @ARGV contains the command line arguments intended for
-     the script.  Note that `$#ARGV' is the generally number of
-     arguments minus one, because `$ARGV[0]' is the first argument,
-     *NOT* the command name.  See "$0" for the command name.
-
-@INC
-     The array @INC contains the list of places to look for Perl
-     scripts to be evaluated by the `do EXPR', require, or use
-     constructs.  It initially consists of the arguments to any -I
-     command line switches, followed by the default Perl library,
-     probably `/usr/local/lib/perl', followed by ".", to represent the
-     current directory.  If you need to modify this at runtime, you
-     should use the `use lib' pragma to get the machine-dependent
-     library properly loaded also:
-
-          use lib '/mypath/libdir/';
-          use SomeMod;
-
-%INC
-     The hash %INC contains entries for each filename that has been
-     included via do or require.  The key is the filename you
-     specified, and the value is the location of the file actually
-     found.  The require command uses this array to determine whether a
-     given file has already been included.
-
-$ENV{expr}
-     The hash %ENV contains your current environment.  Setting a value
-     in `ENV' changes the environment for child processes.
-
-$SIG{expr}
-     The hash %SIG is used to set signal handlers for various signals.
-     Example:
-
-          sub handler {  # 1st argument is signal name
-                  local($sig) = @_;
-                  print "Caught a SIG$sig--shutting down\n";
-                  close(LOG);
-                  exit(0);
-          }
-          
-          $SIG{'INT'} = 'handler';
-          $SIG{'QUIT'} = 'handler';
-          ...
-          $SIG{'INT'} = 'DEFAULT';  # restore default action
-          $SIG{'QUIT'} = 'IGNORE';  # ignore SIGQUIT
-
-     The %SIG array contains values for only the signals actually set
-     within the Perl script.  Here are some other examples:
-
-          $SIG{PIPE} = Plumber;       # SCARY!!
-          $SIG{"PIPE"} = "Plumber";   # just fine, assumes main::Plumber
-          $SIG{"PIPE"} = \&Plumber;   # just fine; assume current Plumber
-          $SIG{"PIPE"} = Plumber();   # oops, what did Plumber() return??
-
-     The one marked scary is problematic because it's a bareword, which
-     means sometimes it's a string representing the function, and
-     sometimes it's going to call the subroutine call right then and
-     there!  Best to be sure and quote it or take a reference to it.
-     *Plumber works too.  See *Note Perlsub: perlsub.
-
-     If your system has the sigaction() function then signal handlers
-     are installed using it.  This means you get reliable signal
-     handling.  If your system has the SA_RESTART flag it is used when
-     signals handlers are installed.  This means that system calls for
-     which it is supported continue rather than returning when a signal
-     arrives.  If you want your system calls to be interrupted by
-     signal delivery then do something like this:
-
-          use POSIX ':signal_h';
-          
-          my $alarm = 0;
-          sigaction SIGALRM, new POSIX::SigAction sub { $alarm = 1 }
-                  or die "Error setting SIGALRM handler: $!\n";
-
-     See `POSIX' in this node.
-
-     Certain internal hooks can be also set using the %SIG hash.  The
-     routine indicated by `$SIG{__WARN__}' is called when a warning
-     message is about to be printed.  The warning message is passed as
-     the first argument.  The presence of a __WARN__ hook causes the
-     ordinary printing of warnings to STDERR to be suppressed.  You can
-     use this to save warnings in a variable, or turn warnings into
-     fatal errors, like this:
-
-          local $SIG{__WARN__} = sub { die $_[0] };
-          eval $proggie;
-
-     The routine indicated by `$SIG{__DIE__}' is called when a fatal
-     exception is about to be thrown.  The error message is passed as
-     the first argument.  When a __DIE__ hook routine returns, the
-     exception processing continues as it would have in the absence of
-     the hook, unless the hook routine itself exits via a goto, a loop
-     exit, or a die().  The `__DIE__' handler is explicitly disabled
-     during the call, so that you can die from a `__DIE__' handler.
-     Similarly for `__WARN__'.  See `die', *Note Perlfunc: perlfunc,
-     `warn', *Note Perlfunc: perlfunc, and `eval', *Note Perlfunc:
-     perlfunc,.
-
-$^M
-     By default, running out of memory it is not trappable.  However, if
-     compiled for this, Perl may use the contents of $^M as an emergency
-     pool after die()ing with this message.  Suppose that your Perl were
-     compiled with -DEMERGENCY_SBRK and used Perl's malloc.  Then
-
-          $^M = 'a' x (1<<16);
-
-     would allocate a 64K buffer for use when in emergency.  See the
-     `INSTALL' file for information on how to enable this option.  As a
-     disincentive to casual use of this advanced feature, there is no
-     `English' in this node long name for this variable.
+Like many languages, Perl provides for user-defined subroutines.  These
+may be located anywhere in the main program, loaded in from other files
+via the do, require, or use keywords, or even generated on the fly
+using eval or anonymous subroutines (closures).  You can even call a
+function indirectly using a variable containing its name or a CODE
+reference to it, as in `$var = \&function'.
+
+The Perl model for function call and return values is simple: all
+functions are passed as parameters one single flat list of scalars, and
+all functions likewise return to their caller one single flat list of
+scalars.  Any arrays or hashes in these call and return lists will
+collapse, losing their identities-but you may always use
+pass-by-reference instead to avoid this.  Both call and return lists may
+contain as many or as few scalar elements as you'd like.  (Often a
+function without an explicit return statement is called a subroutine,
+but there's really no difference from the language's perspective.)
+
+Any arguments passed to the routine come in as the array @_.  Thus if
+you called a function with two arguments, those would be stored in
+`$_[0]' and `$_[1]'.  The array @_ is a local array, but its elements
+are aliases for the actual scalar parameters.  In particular, if an
+element `$_[0]' is updated, the corresponding argument is updated (or
+an error occurs if it is not updatable).  If an argument is an array or
+hash element which did not exist when the function was called, that
+element is created only when (and if) it is modified or if a reference
+to it is taken.  (Some earlier versions of Perl created the element
+whether or not it was assigned to.)  Note that assigning to the whole
+array @_ removes the aliasing, and does not update any arguments.
+
+The return value of the subroutine is the value of the last expression
+evaluated.  Alternatively, a return statement may be used to exit the
+subroutine, optionally specifying the returned value, which will be
+evaluated in the appropriate context (list, scalar, or void) depending
+on the context of the subroutine call.  If you specify no return value,
+the subroutine will return an empty list in a list context, an undefined
+value in a scalar context, or nothing in a void context.  If you return
+one or more arrays and/or hashes, these will be flattened together into
+one large indistinguishable list.
+
+Perl does not have named formal parameters, but in practice all you do
+is assign to a my() list of these.  Any variables you use in the
+function that aren't declared private are global variables.  For the
+gory details on creating private variables, see `"Private Variables via
+my()"' in this node and `"Temporary Values via local()"' in this node.
+To create protected environments for a set of functions in a separate
+package (and probably a separate file), see `"Packages"', *Note
+Perlmod: perlmod.
+
+Example:
+
+     sub max {
+             my $max = shift(@_);
+             foreach $foo (@_) {
+                 $max = $foo if $max < $foo;
+             }
+             return $max;
+     }
+     $bestday = max($mon,$tue,$wed,$thu,$fri);
+
+Example:
+
+     # get a line, combining continuation lines
+     #  that start with whitespace
+     
+     sub get_line {
+             $thisline = $lookahead;  # GLOBAL VARIABLES!!
+             LINE: while (defined($lookahead = <STDIN>)) {
+                 if ($lookahead =~ /^[ \t]/) {
+                     $thisline .= $lookahead;
+                 }
+                 else {
+                     last LINE;
+                 }
+             }
+             $thisline;
+     }
+     
+     $lookahead = <STDIN>;   # get first line
+     while ($_ = get_line()) {
+             ...
+     }
+
+Use array assignment to a local list to name your formal arguments:
+
+     sub maybeset {
+             my($key, $value) = @_;
+             $Foo{$key} = $value unless $Foo{$key};
+     }
+
+This also has the effect of turning call-by-reference into
+call-by-value, because the assignment copies the values.  Otherwise a
+function is free to do in-place modifications of @_ and change its
+caller's values.
+
+     upcase_in($v1, $v2);  # this changes $v1 and $v2
+     sub upcase_in {
+             for (@_) { tr/a-z/A-Z/ }
+     }
+
+You aren't allowed to modify constants in this way, of course.  If an
+argument were actually literal and you tried to change it, you'd take a
+(presumably fatal) exception.   For example, this won't work:
+
+     upcase_in("frederick");
+
+It would be much safer if the upcase_in() function were written to
+return a copy of its parameters instead of changing them in place:
+
+     ($v3, $v4) = upcase($v1, $v2);  # this doesn't
+     sub upcase {
+             return unless defined wantarray;  # void context, do nothing
+             my @parms = @_;
+             for (@parms) { tr/a-z/A-Z/ }
+             return wantarray ? @parms : $parms[0];
+     }
+
+Notice how this (unprototyped) function doesn't care whether it was
+passed real scalars or arrays.  Perl will see everything as one big
+long flat @_ parameter list.  This is one of the ways where Perl's
+simple argument-passing style shines.  The upcase() function would work
+perfectly well without changing the upcase() definition even if we fed
+it things like this:
+
+     @newlist   = upcase(@list1, @list2);
+     @newlist   = upcase( split /:/, $var );
+
+Do not, however, be tempted to do this:
+
+     (@a, @b)   = upcase(@list1, @list2);
+
+Because like its flat incoming parameter list, the return list is also
+flat.  So all you have managed to do here is stored everything in @a and
+made @b an empty list.  See "Pass by Reference" for alternatives.
+
+A subroutine may be called using the "&" prefix.  The "&" is optional
+in modern Perls, and so are the parentheses if the subroutine has been
+predeclared.  (Note, however, that the "&" is *NOT* optional when
+you're just naming the subroutine, such as when it's used as an
+argument to defined() or undef().  Nor is it optional when you want to
+do an indirect subroutine call with a subroutine name or reference
+using the `&$subref()' or `&{$subref}()' constructs.  See *Note
+Perlref: perlref, for more on that.)
+
+Subroutines may be called recursively.  If a subroutine is called using
+the "&" form, the argument list is optional, and if omitted, no @_
+array is set up for the subroutine: the @_ array at the time of the
+call is visible to subroutine instead.  This is an efficiency mechanism
+that new users may wish to avoid.
+
+     &foo(1,2,3);    # pass three arguments
+     foo(1,2,3);             # the same
+     
+     foo();          # pass a null list
+     &foo();         # the same
+     
+     &foo;           # foo() get current args, like foo(@_) !!
+     foo;            # like foo() IFF sub foo predeclared, else "foo"
+
+Not only does the "&" form make the argument list optional, but it also
+disables any prototype checking on the arguments you do provide.  This
+is partly for historical reasons, and partly for having a convenient way
+to cheat if you know what you're doing.  See the section on Prototypes
+below.
+
+Private Variables via my()
+--------------------------
+
+Synopsis:
+
+     my $foo;                # declare $foo lexically local
+     my (@wid, %get);       # declare list of variables local
+     my $foo = "flurp";      # declare $foo lexical, and init it
+     my @oof = @bar;       # declare @oof lexical, and init it
+
+A "my" declares the listed variables to be confined (lexically) to the
+enclosing block, conditional (`if/unless/elsif/else'), loop
+(`for/foreach/while/until/continue'), subroutine, eval, or
+`do/require/use''d file.  If more than one value is listed, the list
+must be placed in parentheses.  All listed elements must be legal
+lvalues.  Only alphanumeric identifiers may be lexically scoped-magical
+builtins like $/ must currently be localized with "local" instead.
+
+Unlike dynamic variables created by the "local" statement, lexical
+variables declared with "my" are totally hidden from the outside world,
+including any called subroutines (even if it's the same subroutine
+called from itself or elsewhere-every call gets its own copy).
+
+(An eval(), however, can see the lexical variables of the scope it is
+being evaluated in so long as the names aren't hidden by declarations
+within the eval() itself.  See *Note Perlref: perlref.)
+
+The parameter list to my() may be assigned to if desired, which allows
+you to initialize your variables.  (If no initializer is given for a
+particular variable, it is created with the undefined value.)  Commonly
+this is used to name the parameters to a subroutine.  Examples:
+
+     $arg = "fred";    # "global" variable
+     $n = cube_root(27);
+     print "$arg thinks the root is $n\n";
+      fred thinks the root is 3
+     
+     sub cube_root {
+             my $arg = shift;  # name doesn't matter
+             $arg **= 1/3;
+             return $arg;
+     }
+
+The "my" is simply a modifier on something you might assign to.  So when
+you do assign to the variables in its argument list, the "my" doesn't
+change whether those variables is viewed as a scalar or an array.  So
+
+     my ($foo) = <STDIN>;
+     my @FOO = <STDIN>;
+
+both supply a list context to the right-hand side, while
+
+     my $foo = <STDIN>;
+
+supplies a scalar context.  But the following declares only one
+variable:
+
+     my $foo, $bar = 1;
+
+That has the same effect as
+
+     my $foo;
+     $bar = 1;
+
+The declared variable is not introduced (is not visible) until after
+the current statement.  Thus,
+
+     my $x = $x;
+
+can be used to initialize the new $x with the value of the old $x, and
+the expression
+
+     my $x = 123 and $x == 123
+
+is false unless the old $x happened to have the value 123.
+
+Lexical scopes of control structures are not bounded precisely by the
+braces that delimit their controlled blocks; control expressions are
+part of the scope, too.  Thus in the loop
+
+     while (defined(my $line = <>)) {
+         $line = lc $line;
+     } continue {
+         print $line;
+     }
+
+the scope of $line extends from its declaration throughout the rest of
+the loop construct (including the continue clause), but not beyond it.
+Similarly, in the conditional
+
+     if ((my $answer = <STDIN>) =~ /^yes$/i) {
+         user_agrees();
+     } elsif ($answer =~ /^no$/i) {
+         user_disagrees();
+     } else {
+             chomp $answer;
+         die "'$answer' is neither 'yes' nor 'no'";
+     }
+
+the scope of $answer extends from its declaration throughout the rest
+of the conditional (including `elsif' and `else' clauses, if any), but
+not beyond it.
+
+(None of the foregoing applies to `if/unless' or `while/until'
+modifiers appended to simple statements.  Such modifiers are not
+control structures and have no effect on scoping.)
+
+The `foreach' loop defaults to scoping its index variable dynamically
+(in the manner of local; see below).  However, if the index variable is
+prefixed with the keyword "my", then it is lexically scoped instead.
+Thus in the loop
+
+     for my $i (1, 2, 3) {
+         some_function();
+     }
+
+the scope of $i extends to the end of the loop, but not beyond it, and
+so the value of $i is unavailable in some_function().
+
+Some users may wish to encourage the use of lexically scoped variables.
+As an aid to catching implicit references to package variables, if you
+say
+
+     use strict 'vars';
+
+then any variable reference from there to the end of the enclosing
+block must either refer to a lexical variable, or must be fully
+qualified with the package name.  A compilation error results
+otherwise.  An inner block may countermand this with "no strict 'vars'".
+
+A my() has both a compile-time and a run-time effect.  At compile time,
+the compiler takes notice of it; the principle usefulness of this is to
+quiet `use strict 'vars''.  The actual initialization is delayed until
+run time, so it gets executed appropriately; every time through a loop,
+for example.
+
+Variables declared with "my" are not part of any package and are
+therefore never fully qualified with the package name.  In particular,
+you're not allowed to try to make a package variable (or other global)
+lexical:
+
+     my $pack::var;  # ERROR!  Illegal syntax
+     my $_;          # also illegal (currently)
+
+In fact, a dynamic variable (also known as package or global variables)
+are still accessible using the fully qualified :: notation even while a
+lexical of the same name is also visible:
+
+     package main;
+     local $x = 10;
+     my    $x = 20;
+     print "$x and $::x\n";
+
+That will print out 20 and 10.
+
+You may declare "my" variables at the outermost scope of a file to hide
+any such identifiers totally from the outside world.  This is similar
+to C's static variables at the file level.  To do this with a subroutine
+requires the use of a closure (anonymous function).  If a block (such as
+an eval(), function, or package) wants to create a private subroutine
+that cannot be called from outside that block, it can declare a lexical
+variable containing an anonymous sub reference:
+
+     my $secret_version = '1.001-beta';
+     my $secret_sub = sub { print $secret_version };
+     &$secret_sub();
+
+As long as the reference is never returned by any function within the
+module, no outside module can see the subroutine, because its name is
+not in any package's symbol table.  Remember that it's not *REALLY*
+called $some_pack::secret_version or anything; it's just
+$secret_version, unqualified and unqualifiable.
+
+This does not work with object methods, however; all object methods have
+to be in the symbol table of some package to be found.
+
+Just because the lexical variable is lexically (also called statically)
+scoped doesn't mean that within a function it works like a C static.  It
+normally works more like a C auto.  But here's a mechanism for giving a
+function private variables with both lexical scoping and a static
+lifetime.  If you do want to create something like C's static variables,
+just enclose the whole function in an extra block, and put the static
+variable outside the function but in the block.
+
+     {
+             my $secret_val = 0;
+             sub gimme_another {
+                 return ++$secret_val;
+             }
+     }
+     # $secret_val now becomes unreachable by the outside
+     # world, but retains its value between calls to gimme_another
+
+If this function is being sourced in from a separate file via require
+or use, then this is probably just fine.  If it's all in the main
+program, you'll need to arrange for the my() to be executed early,
+either by putting the whole block above your main program, or more
+likely, placing merely a BEGIN sub around it to make sure it gets
+executed before your program starts to run:
+
+     sub BEGIN {
+             my $secret_val = 0;
+             sub gimme_another {
+                 return ++$secret_val;
+             }
+     }
+
+See *Note Perlrun: perlrun, about the BEGIN function.
+
+Temporary Values via local()
+----------------------------
+
+NOTE: In general, you should be using "my" instead of "local", because
+it's faster and safer.  Exceptions to this include the global
+punctuation variables, filehandles and formats, and direct manipulation
+of the Perl symbol table itself.  Format variables often use "local"
+though, as do other variables whose current value must be visible to
+called subroutines.
+
+Synopsis:
+
+     local $foo;                     # declare $foo dynamically local
+     local (@wid, %get);    # declare list of variables local
+     local $foo = "flurp";   # declare $foo dynamic, and init it
+     local @oof = @bar;            # declare @oof dynamic, and init it
+     
+     local *FH;                      # localize $FH, @FH, %FH, &FH  ...
+     local *merlyn = *randal;        # now $merlyn is really $randal, plus
+                                 #     @merlyn is really @randal, etc
+     local *merlyn = 'randal';     # SAME THING: promote 'randal' to *randal
+     local *merlyn = \$randal;   # just alias $merlyn, not @merlyn etc
+
+A local() modifies its listed variables to be local to the enclosing
+block, (or subroutine, `eval{}', or do) and *any called from within
+that block*.  A local() just gives temporary values to global (meaning
+package) variables.  This is known as dynamic scoping.  Lexical scoping
+is done with "my", which works more like C's auto declarations.
+
+If more than one variable is given to local(), they must be placed in
+parentheses.  All listed elements must be legal lvalues.  This operator
+works by saving the current values of those variables in its argument
+list on a hidden stack and restoring them upon exiting the block,
+subroutine, or eval.  This means that called subroutines can also
+reference the local variable, but not the global one.  The argument
+list may be assigned to if desired, which allows you to initialize your
+local variables.  (If no initializer is given for a particular
+variable, it is created with an undefined value.)  Commonly this is
+used to name the parameters to a subroutine.  Examples:
+
+     for $i ( 0 .. 9 ) {
+             $digits{$i} = $i;
+     }
+     # assume this function uses global %digits hash
+     parse_num();
+     
+     # now temporarily add to %digits hash
+     if ($base12) {
+             # (NOTE: not claiming this is efficient!)
+             local %digits  = (%digits, 't' => 10, 'e' => 11);
+             parse_num();  # parse_num gets this new %digits!
+     }
+     # old %digits restored here
+
+Because local() is a run-time command, it gets executed every time
+through a loop.  In releases of Perl previous to 5.0, this used more
+stack storage each time until the loop was exited.  Perl now reclaims
+the space each time through, but it's still more efficient to declare
+your variables outside the loop.
+
+A local is simply a modifier on an lvalue expression.  When you assign
+to a localized variable, the local doesn't change whether its list is
+viewed as a scalar or an array.  So
+
+     local($foo) = <STDIN>;
+     local @FOO = <STDIN>;
+
+both supply a list context to the right-hand side, while
+
+     local $foo = <STDIN>;
+
+supplies a scalar context.
+
+A note about `local()' and composite types is in order.  Something like
+`local(%foo)' works by temporarily placing a brand new hash in the
+symbol table.  The old hash is left alone, but is hidden "behind" the
+new one.
+
+This means the old variable is completely invisible via the symbol
+table (i.e. the hash entry in the `*foo' typeglob) for the duration of
+the dynamic scope within which the `local()' was seen.  This has the
+effect of allowing one to temporarily occlude any magic on composite
+types.  For instance, this will briefly alter a tied hash to some other
+implementation:
+
+     tie %ahash, 'APackage';
+     [...]
+     {
+        local %ahash;
+        tie %ahash, 'BPackage';
+        [..called code will see %ahash tied to 'BPackage'..]
+        {
+           local %ahash;
+           [..%ahash is a normal (untied) hash here..]
+        }
+     }
+     [..%ahash back to its initial tied self again..]
+
+As another example, a custom implementation of `%ENV' might look like
+this:
+
+     {
+         local %ENV;
+         tie %ENV, 'MyOwnEnv';
+         [..do your own fancy %ENV manipulation here..]
+     }
+     [..normal %ENV behavior here..]
+
+Passing Symbol Table Entries (typeglobs)
+----------------------------------------
+
+[Note:  The mechanism described in this section was originally the only
+way to simulate pass-by-reference in older versions of Perl.  While it
+still works fine in modern versions, the new reference mechanism is
+generally easier to work with.  See below.]
+
+Sometimes you don't want to pass the value of an array to a subroutine
+but rather the name of it, so that the subroutine can modify the global
+copy of it rather than working with a local copy.  In perl you can
+refer to all objects of a particular name by prefixing the name with a
+star: `*foo'.  This is often known as a "typeglob", because the star on
+the front can be thought of as a wildcard match for all the funny
+prefix characters on variables and subroutines and such.
+
+When evaluated, the typeglob produces a scalar value that represents
+all the objects of that name, including any filehandle, format, or
+subroutine.  When assigned to, it causes the name mentioned to refer to
+whatever "*" value was assigned to it.  Example:
+
+     sub doubleary {
+             local(*someary) = @_;
+             foreach $elem (@someary) {
+                 $elem *= 2;
+             }
+     }
+     doubleary(*foo);
+     doubleary(*bar);
+
+Note that scalars are already passed by reference, so you can modify
+scalar arguments without using this mechanism by referring explicitly
+to `$_[0]' etc.  You can modify all the elements of an array by passing
+all the elements as scalars, but you have to use the * mechanism (or
+the equivalent reference mechanism) to push, pop, or change the size of
+an array.  It will certainly be faster to pass the typeglob (or
+reference).
+
+Even if you don't want to modify an array, this mechanism is useful for
+passing multiple arrays in a single LIST, because normally the LIST
+mechanism will merge all the array values so that you can't extract out
+the individual arrays.  For more on typeglobs, see `"Typeglobs and
+Filehandles"', *Note Perldata: perldata.
+
+Pass by Reference
+-----------------
+
+If you want to pass more than one array or hash into a function-or
+return them from it-and have them maintain their integrity, then you're
+going to have to use an explicit pass-by-reference.  Before you do
+that, you need to understand references as detailed in *Note Perlref:
+perlref.  This section may not make much sense to you otherwise.
+
+Here are a few simple examples.  First, let's pass in several arrays to
+a function and have it pop all of then, return a new list of all their
+former last elements:
+
+     @tailings = popmany ( \@a, \@b, \@c, \@d );
+     
+     sub popmany {
+             my $aref;
+             my @retlist = ();
+             foreach $aref ( @_ ) {
+                 push @retlist, pop @$aref;
+             }
+             return @retlist;
+     }
+
+Here's how you might write a function that returns a list of keys
+occurring in all the hashes passed to it:
+
+     @common = inter( \%foo, \%bar, \%joe );
+     sub inter {
+             my ($k, $href, %seen); # locals
+             foreach $href (@_) {
+                 while ( $k = each %$href ) {
+                     $seen{$k}++;
+                 }
+             }
+             return grep { $seen{$_} == @_ } keys %seen;
+     }
+
+So far, we're using just the normal list return mechanism.  What
+happens if you want to pass or return a hash?  Well, if you're using
+only one of them, or you don't mind them concatenating, then the normal
+calling convention is ok, although a little expensive.
+
+Where people get into trouble is here:
+
+     (@a, @b) = func(@c, @d);
+     or
+     (%a, %b) = func(%c, %d);
+
+That syntax simply won't work.  It sets just @a or %a and clears the @b
+or %b.  Plus the function didn't get passed into two separate arrays or
+hashes: it got one long list in @_, as always.
+
+If you can arrange for everyone to deal with this through references,
+it's cleaner code, although not so nice to look at.  Here's a function
+that takes two array references as arguments, returning the two array
+elements in order of how many elements they have in them:
+
+     ($aref, $bref) = func(\@c, \@d);
+     print "@$aref has more than @$bref\n";
+     sub func {
+             my ($cref, $dref) = @_;
+             if (@$cref > @$dref) {
+                 return ($cref, $dref);
+             } else {
+                 return ($dref, $cref);
+             }
+     }
+
+It turns out that you can actually do this also:
+
+     (*a, *b) = func(\@c, \@d);
+     print "@a has more than @b\n";
+     sub func {
+             local (*c, *d) = @_;
+             if (@c > @d) {
+                 return (\@c, \@d);
+             } else {
+                 return (\@d, \@c);
+             }
+     }
+
+Here we're using the typeglobs to do symbol table aliasing.  It's a tad
+subtle, though, and also won't work if you're using my() variables,
+because only globals (well, and local()s) are in the symbol table.
+
+If you're passing around filehandles, you could usually just use the
+bare typeglob, like *STDOUT, but typeglobs references would be better
+because they'll still work properly under `use strict 'refs''.  For
+example:
+
+     splutter(\*STDOUT);
+     sub splutter {
+             my $fh = shift;
+             print $fh "her um well a hmmm\n";
+     }
+     
+     $rec = get_rec(\*STDIN);
+     sub get_rec {
+             my $fh = shift;
+             return scalar <$fh>;
+     }
+
+Another way to do this is using *HANDLE{IO}, see *Note Perlref:
+perlref, for usage and caveats.
+
+If you're planning on generating new filehandles, you could do this:
+
+     sub openit {
+             my $name = shift;
+             local *FH;
+             return open (FH, $path) ? *FH : undef;
+     }
+
+Although that will actually produce a small memory leak.  See the bottom
+of `open()', *Note Perlfunc: perlfunc, for a somewhat cleaner way using
+the IO::Handle package.
+
+Prototypes
+----------
+
+As of the 5.002 release of perl, if you declare
+
+     sub mypush (\@@)
+
+then mypush() takes arguments exactly like push() does.  The declaration
+of the function to be called must be visible at compile time.  The
+prototype affects only the interpretation of new-style calls to the
+function, where new-style is defined as not using the `&' character.
+In other words, if you call it like a builtin function, then it behaves
+like a builtin function.  If you call it like an old-fashioned
+subroutine, then it behaves like an old-fashioned subroutine.  It
+naturally falls out from this rule that prototypes have no influence on
+subroutine references like `\&foo' or on indirect subroutine calls like
+`&{$subref}'.
+
+Method calls are not influenced by prototypes either, because the
+function to be called is indeterminate at compile time, because it
+depends on inheritance.
+
+Because the intent is primarily to let you define subroutines that work
+like builtin commands, here are the prototypes for some other functions
+that parse almost exactly like the corresponding builtins.
+
+     Declared as                     Called as
+     
+     sub mylink ($$)         mylink $old, $new
+     sub myvec ($$$)         myvec $var, $offset, 1
+     sub myindex ($$;$)              myindex &getstring, "substr"
+     sub mysyswrite ($$$;$)  mysyswrite $buf, 0, length($buf) - $off, $off
+     sub myreverse (@)              myreverse $a,$b,$c
+     sub myjoin ($@)                myjoin ":",$a,$b,$c
+     sub mypop (\@)         mypop @array
+     sub mysplice (\@$$@)  mysplice @array,@array,0,@pushme
+     sub mykeys (\%)         mykeys %{$hashref}
+     sub myopen (*;$)                myopen HANDLE, $name
+     sub mypipe (**)         mypipe READHANDLE, WRITEHANDLE
+     sub mygrep (&@)                mygrep { /foo/ } $a,$b,$c
+     sub myrand ($)          myrand 42
+     sub mytime ()           mytime
+
+Any backslashed prototype character represents an actual argument that
+absolutely must start with that character.  The value passed to the
+subroutine (as part of `@_') will be a reference to the actual argument
+given in the subroutine call, obtained by applying `\' to that argument.
+
+Unbackslashed prototype characters have special meanings.  Any
+unbackslashed @ or % eats all the rest of the arguments, and forces
+list context.  An argument represented by $ forces scalar context.  An
+& requires an anonymous subroutine, which, if passed as the first
+argument, does not require the "sub" keyword or a subsequent comma.  A
+* does whatever it has to do to turn the argument into a reference to a
+symbol table entry.
+
+A semicolon separates mandatory arguments from optional arguments.  (It
+is redundant before @ or %.)
+
+Note how the last three examples above are treated specially by the
+parser.  mygrep() is parsed as a true list operator, myrand() is parsed
+as a true unary operator with unary precedence the same as rand(), and
+mytime() is truly without arguments, just like time().  That is, if you
+say
+
+     mytime +2;
+
+you'll get mytime() + 2, not mytime(2), which is how it would be parsed
+without the prototype.
+
+The interesting thing about & is that you can generate new syntax with
+it:
+
+     sub try (&@) {
+             my($try,$catch) = @_;
+             eval { &$try };
+             if ($@) {
+                 local $_ = $@;
+                 &$catch;
+             }
+     }
+     sub catch (&) { $_[0] }
+     
+     try {
+             die "phooey";
+     } catch {
+             /phooey/ and print "unphooey\n";
+     };
+
+That prints "unphooey".  (Yes, there are still unresolved issues having
+to do with the visibility of @_.  I'm ignoring that question for the
+moment.  (But note that if we make @_ lexically scoped, those anonymous
+subroutines can act like closures... (Gee, is this sounding a little
+Lispish?  (Never mind.))))
+
+And here's a reimplementation of grep:
+
+     sub mygrep (&@) {
+             my $code = shift;
+             my @result;
+             foreach $_ (@_) {
+                 push(@result, $_) if &$code;
+             }
+             @result;
+     }
+
+Some folks would prefer full alphanumeric prototypes.  Alphanumerics
+have been intentionally left out of prototypes for the express purpose
+of someday in the future adding named, formal parameters.  The current
+mechanism's main goal is to let module writers provide better
+diagnostics for module users.  Larry feels the notation quite
+understandable to Perl programmers, and that it will not intrude
+greatly upon the meat of the module, nor make it harder to read.  The
+line noise is visually encapsulated into a small pill that's easy to
+swallow.
+
+It's probably best to prototype new functions, not retrofit prototyping
+into older ones.  That's because you must be especially careful about
+silent impositions of differing list versus scalar contexts.  For
+example, if you decide that a function should take just one parameter,
+like this:
+
+     sub func ($) {
+             my $n = shift;
+             print "you gave me $n\n";
+     }
+
+and someone has been calling it with an array or expression returning a
+list:
+
+     func(@foo);
+     func( split /:/ );
+
+Then you've just supplied an automatic scalar() in front of their
+argument, which can be more than a bit surprising.  The old @foo which
+used to hold one thing doesn't get passed in.  Instead, the func() now
+gets passed in 1, that is, the number of elements in @foo.  And the
+split() gets called in a scalar context and starts scribbling on your
+@_ parameter list.
+
+This is all very powerful, of course, and should be used only in
+moderation to make the world a better place.
+
+Constant Functions
+------------------
+
+Functions with a prototype of `()' are potential candidates for
+inlining.  If the result after optimization and constant folding is
+either a constant or a lexically-scoped scalar which has no other
+references, then it will be used in place of function calls made
+without `&' or do. Calls made using `&' or do are never inlined.  (See
+constant.pm for an easy way to declare most constants.)
+
+All of the following functions would be inlined.
+
+     sub pi ()               { 3.14159 }           # Not exact, but close.
+     sub PI ()               { 4 * atan2 1, 1 }    # As good as it gets,
+                                                     # and it's inlined, too!
+     sub ST_DEV ()   { 0 }
+     sub ST_INO ()   { 1 }
+     
+     sub FLAG_FOO () { 1 << 8 }
+     sub FLAG_BAR () { 1 << 9 }
+     sub FLAG_MASK ()        { FLAG_FOO | FLAG_BAR }
+     
+     sub OPT_BAZ ()  { not (0x1B58 & FLAG_MASK) }
+     sub BAZ_VAL () {
+             if (OPT_BAZ) {
+                 return 23;
+             }
+             else {
+                 return 42;
+             }
+     }
+     
+     sub N () { int(BAZ_VAL) / 3 }
+     BEGIN {
+             my $prod = 1;
+             for (1..N) { $prod *= $_ }
+             sub N_FACTORIAL () { $prod }
+     }
+
+If you redefine a subroutine which was eligible for inlining you'll get
+a mandatory warning.  (You can use this warning to tell whether or not a
+particular subroutine is considered constant.)  The warning is
+considered severe enough not to be optional because previously compiled
+invocations of the function will still be using the old value of the
+function.  If you need to be able to redefine the subroutine you need to
+ensure that it isn't inlined, either by dropping the `()' prototype
+(which changes the calling semantics, so beware) or by thwarting the
+inlining mechanism in some other way, such as
+
+     sub not_inlined () {
+             23 if $];
+     }
+
+Overriding Builtin Functions
+----------------------------
+
+Many builtin functions may be overridden, though this should be tried
+only occasionally and for good reason.  Typically this might be done by
+a package attempting to emulate missing builtin functionality on a
+non-Unix system.
+
+Overriding may be done only by importing the name from a
+module-ordinary predeclaration isn't good enough.  However, the subs
+pragma (compiler directive) lets you, in effect, predeclare subs via
+the import syntax, and these names may then override the builtin ones:
+
+     use subs 'chdir', 'chroot', 'chmod', 'chown';
+     chdir $somewhere;
+     sub chdir { ... }
+
+Library modules should not in general export builtin names like "open"
+or "chdir" as part of their default @EXPORT list, because these may
+sneak into someone else's namespace and change the semantics
+unexpectedly.  Instead, if the module adds the name to the @EXPORT_OK
+list, then it's possible for a user to import the name explicitly, but
+not implicitly.  That is, they could say
+
+     use Module 'open';
+
+and it would import the open override, but if they said
+
+     use Module;
+
+they would get the default imports without the overrides.
+
+Autoloading
+-----------
+
+If you call a subroutine that is undefined, you would ordinarily get an
+immediate fatal error complaining that the subroutine doesn't exist.
+(Likewise for subroutines being used as methods, when the method
+doesn't exist in any of the base classes of the class package.) If,
+however, there is an `AUTOLOAD' subroutine defined in the package or
+packages that were searched for the original subroutine, then that
+`AUTOLOAD' subroutine is called with the arguments that would have been
+passed to the original subroutine.  The fully qualified name of the
+original subroutine magically appears in the $AUTOLOAD variable in the
+same package as the `AUTOLOAD' routine.  The name is not passed as an
+ordinary argument because, er, well, just because, that's why...
+
+Most `AUTOLOAD' routines will load in a definition for the subroutine in
+question using eval, and then execute that subroutine using a special
+form of "goto" that erases the stack frame of the `AUTOLOAD' routine
+without a trace.  (See the standard AutoLoader module, for example.)
+But an `AUTOLOAD' routine can also just emulate the routine and never
+define it.   For example, let's pretend that a function that wasn't
+defined should just call system() with those arguments.  All you'd do
+is this:
+
+     sub AUTOLOAD {
+             my $program = $AUTOLOAD;
+             $program =~ s/.*:://;
+             system($program, @_);
+     }
+     date();
+     who('am', 'i');
+     ls('-l');
+
+In fact, if you predeclare the functions you want to call that way, you
+don't even need the parentheses:
+
+     use subs qw(date who ls);
+     date;
+     who "am", "i";
+     ls -l;
+
+A more complete example of this is the standard Shell module, which can
+treat undefined subroutine calls as calls to Unix programs.
+
+Mechanisms are available for modules writers to help split the modules
+up into autoloadable files.  See the standard AutoLoader module
+described in `AutoLoader' in this node and in `AutoSplit' in this node,
+the standard SelfLoader modules in `SelfLoader' in this node, and the
+document on adding C functions to perl code in *Note Perlxs: perlxs.
+
+SEE ALSO
+========
+
+See *Note Perlref: perlref, for more on references.  See *Note Perlxs:
+perlxs, if you'd like to learn about calling C subroutines from perl.
+See *Note Perlmod: perlmod, to learn about bundling up your functions in
+separate files.
 

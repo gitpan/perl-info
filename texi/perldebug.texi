@@ -308,7 +308,7 @@ If 0, allows @emph{stepping off} the end of the script.
 affects printing of return value after @code{r} command.
 
 @item @code{ornaments}
-affects screen appearance of the command line (see @samp{Term::Readline} in this node).
+affects screen appearance of the command line (see @samp{Term::ReadLine} in this node).
 
 @item @code{frame}
 affects printing messages on entry and exit from subroutines.  If

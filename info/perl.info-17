@@ -2,932 +2,1304 @@ This is Info file perl.info, produced by Makeinfo-1.64 from the input
 file Pmaster.texi.
 
 
-File: perl.info,  Node: perlsub,  Next: perlmod,  Prev: perlvar,  Up: Top
+File: perl.info,  Node: perlmod,  Next: perlmodlib,  Prev: perlsub,  Up: Top
 
 NAME
 ====
 
-perlsub - Perl subroutines
-
-SYNOPSIS
-========
-
-To declare subroutines:
-
-     sub NAME;                 # A "forward" declaration.
-     sub NAME(PROTO);          #  ditto, but with prototypes
-     
-     sub NAME BLOCK            # A declaration and a definition.
-     sub NAME(PROTO) BLOCK #  ditto, but with prototypes
-
-To define an anonymous subroutine at runtime:
-
-     $subref = sub BLOCK;
-
-To import subroutines:
-
-     use PACKAGE qw(NAME1 NAME2 NAME3);
-
-To call subroutines:
-
-     NAME(LIST);        # & is optional with parentheses.
-     NAME LIST;         # Parentheses optional if predeclared/imported.
-     &NAME;     # Passes current @_ to subroutine.
+perlmod - Perl modules (packages and symbol tables)
 
 DESCRIPTION
 ===========
 
-Like many languages, Perl provides for user-defined subroutines.  These
-may be located anywhere in the main program, loaded in from other files
-via the do, require, or use keywords, or even generated on the fly
-using eval or anonymous subroutines (closures).  You can even call a
-function indirectly using a variable containing its name or a CODE
-reference to it, as in `$var = \&function'.
+Packages
+--------
 
-The Perl model for function call and return values is simple: all
-functions are passed as parameters one single flat list of scalars, and
-all functions likewise return to their caller one single flat list of
-scalars.  Any arrays or hashes in these call and return lists will
-collapse, losing their identities-but you may always use
-pass-by-reference instead to avoid this.  Both call and return lists may
-contain as many or as few scalar elements as you'd like.  (Often a
-function without an explicit return statement is called a subroutine,
-but there's really no difference from the language's perspective.)
+Perl provides a mechanism for alternative namespaces to protect packages
+from stomping on each other's variables.  In fact, apart from certain
+magical variables, there's really no such thing as a global variable in
+Perl.  The package statement declares the compilation unit as being in
+the given namespace.  The scope of the package declaration is from the
+declaration itself through the end of the enclosing block, eval, sub,
+or end of file, whichever comes first (the same scope as the my() and
+local() operators).  All further unqualified dynamic identifiers will
+be in this namespace.  A package statement affects only dynamic
+variables-including those you've used local() on-but *not* lexical
+variables created with my().  Typically it would be the first
+declaration in a file to be included by the require or use operator.
+You can switch into a package in more than one place; it influences
+merely which symbol table is used by the compiler for the rest of that
+block.  You can refer to variables and filehandles in other packages by
+prefixing the identifier with the package name and a double colon:
+`$Package::Variable'.  If the package name is null, the `main' package
+is assumed.  That is, `$::sail' is equivalent to `$main::sail'.
 
-Any arguments passed to the routine come in as the array @_.  Thus if
-you called a function with two arguments, those would be stored in
-`$_[0]' and `$_[1]'.  The array @_ is a local array, but its elements
-are aliases for the actual scalar parameters.  In particular, if an
-element `$_[0]' is updated, the corresponding argument is updated (or
-an error occurs if it is not updatable).  If an argument is an array or
-hash element which did not exist when the function was called, that
-element is created only when (and if) it is modified or if a reference
-to it is taken.  (Some earlier versions of Perl created the element
-whether or not it was assigned to.)  Note that assigning to the whole
-array @_ removes the aliasing, and does not update any arguments.
+(The old package delimiter was a single quote, but double colon is now
+the preferred delimiter, in part because it's more readable to humans,
+and in part because it's more readable to *emacs* macros.  It also
+makes C++ programmers feel like they know what's going on.)
 
-The return value of the subroutine is the value of the last expression
-evaluated.  Alternatively, a return statement may be used exit the
-subroutine, optionally specifying the returned value, which will be
-evaluated in the appropriate context (list, scalar, or void) depending
-on the context of the subroutine call.  If you specify no return value,
-the subroutine will return an empty list in a list context, an undefined
-value in a scalar context, or nothing in a void context.  If you return
-one or more arrays and/or hashes, these will be flattened together into
-one large indistinguishable list.
+Packages may be nested inside other packages: `$OUTER::INNER::var'.
+This implies nothing about the order of name lookups, however.  All
+symbols are either local to the current package, or must be fully
+qualified from the outer package name down.  For instance, there is
+nowhere within package `OUTER' that `$INNER::var' refers to
+`$OUTER::INNER::var'.  It would treat package `INNER' as a totally
+separate global package.
 
-Perl does not have named formal parameters, but in practice all you do
-is assign to a my() list of these.  Any variables you use in the
-function that aren't declared private are global variables.  For the
-gory details on creating private variables, see `"Private Variables via
-my()"' in this node and `"Temporary Values via local()"' in this node.
-To create protected environments for a set of functions in a separate
-package (and probably a separate file), see `"Packages"', *Note
-Perlmod: perlmod.
+Only identifiers starting with letters (or underscore) are stored in a
+package's symbol table.  All other symbols are kept in package `main',
+including all of the punctuation variables like $_.  In addition, the
+identifiers STDIN, STDOUT, STDERR, ARGV, ARGVOUT, ENV, INC, and SIG are
+forced to be in package `main', even when used for other purposes than
+their builtin one.  Note also that, if you have a package called m, s,
+or `y', then you can't use the qualified form of an identifier because
+it will be interpreted instead as a pattern match, a substitution, or a
+translation.
 
-Example:
+(Variables beginning with underscore used to be forced into package
+main, but we decided it was more useful for package writers to be able
+to use leading underscore to indicate private variables and method
+names.  $_ is still global though.)
 
-     sub max {
-             my $max = shift(@_);
-             foreach $foo (@_) {
-                 $max = $foo if $max < $foo;
-             }
-             return $max;
-     }
-     $bestday = max($mon,$tue,$wed,$thu,$fri);
+Eval()ed strings are compiled in the package in which the eval() was
+compiled.  (Assignments to `$SIG{}', however, assume the signal handler
+specified is in the `main' package.  Qualify the signal handler name if
+you wish to have a signal handler in a package.)  For an example,
+examine `perldb.pl' in the Perl library.  It initially switches to the
+`DB' package so that the debugger doesn't interfere with variables in
+the script you are trying to debug.  At various points, however, it
+temporarily switches back to the `main' package to evaluate various
+expressions in the context of the `main' package (or wherever you came
+from).  See *Note Perldebug: perldebug.
 
-Example:
+The special symbol __PACKAGE__ contains the current package, but cannot
+(easily) be used to construct variables.
 
-     # get a line, combining continuation lines
-     #  that start with whitespace
+See *Note Perlsub: perlsub, for other scoping issues related to my()
+and local(), and *Note Perlref: perlref, regarding closures.
+
+Symbol Tables
+-------------
+
+The symbol table for a package happens to be stored in the hash of that
+name with two colons appended.  The main symbol table's name is thus
+`%main::', or `%::' for short.  Likewise symbol table for the nested
+package mentioned earlier is named `%OUTER::INNER::'.
+
+The value in each entry of the hash is what you are referring to when
+you use the `*name' typeglob notation.  In fact, the following have the
+same effect, though the first is more efficient because it does the
+symbol table lookups at compile time:
+
+     local *main::foo    = *main::bar;
+     local $main::{foo}  = $main::{bar};
+
+You can use this to print out all the variables in a package, for
+instance.  Here is `dumpvar.pl' from the Perl library:
+
+     package dumpvar;
+     sub main::dumpvar {
+         ($package) = @_;
+         local(*stab) = eval("*${package}::");
+         while (($key,$val) = each(%stab)) {
+                local(*entry) = $val;
+                if (defined $entry) {
+                    print "\$$key = '$entry'\n";
+                }
      
-     sub get_line {
-             $thisline = $lookahead;  # GLOBAL VARIABLES!!
-             LINE: while (defined($lookahead = <STDIN>)) {
-                 if ($lookahead =~ /^[ \t]/) {
-                     $thisline .= $lookahead;
-                 }
-                 else {
-                     last LINE;
-                 }
-             }
-             $thisline;
-     }
-     
-     $lookahead = <STDIN>;   # get first line
-     while ($_ = get_line()) {
-             ...
-     }
-
-Use array assignment to a local list to name your formal arguments:
-
-     sub maybeset {
-             my($key, $value) = @_;
-             $Foo{$key} = $value unless $Foo{$key};
-     }
-
-This also has the effect of turning call-by-reference into
-call-by-value, because the assignment copies the values.  Otherwise a
-function is free to do in-place modifications of @_ and change its
-caller's values.
-
-     upcase_in($v1, $v2);  # this changes $v1 and $v2
-     sub upcase_in {
-             for (@_) { tr/a-z/A-Z/ }
-     }
-
-You aren't allowed to modify constants in this way, of course.  If an
-argument were actually literal and you tried to change it, you'd take a
-(presumably fatal) exception.   For example, this won't work:
-
-     upcase_in("frederick");
-
-It would be much safer if the upcase_in() function were written to
-return a copy of its parameters instead of changing them in place:
-
-     ($v3, $v4) = upcase($v1, $v2);  # this doesn't
-     sub upcase {
-             return unless defined wantarray;  # void context, do nothing
-             my @parms = @_;
-             for (@parms) { tr/a-z/A-Z/ }
-             return wantarray ? @parms : $parms[0];
-     }
-
-Notice how this (unprototyped) function doesn't care whether it was
-passed real scalars or arrays.  Perl will see everything as one big
-long flat @_ parameter list.  This is one of the ways where Perl's
-simple argument-passing style shines.  The upcase() function would work
-perfectly well without changing the upcase() definition even if we fed
-it things like this:
-
-     @newlist   = upcase(@list1, @list2);
-     @newlist   = upcase( split /:/, $var );
-
-Do not, however, be tempted to do this:
-
-     (@a, @b)   = upcase(@list1, @list2);
-
-Because like its flat incoming parameter list, the return list is also
-flat.  So all you have managed to do here is stored everything in @a and
-made @b an empty list.  See `' in this node for alternatives.
-
-A subroutine may be called using the "&" prefix.  The "&" is optional
-in modern Perls, and so are the parentheses if the subroutine has been
-predeclared.  (Note, however, that the "&" is *NOT* optional when
-you're just naming the subroutine, such as when it's used as an
-argument to defined() or undef().  Nor is it optional when you want to
-do an indirect subroutine call with a subroutine name or reference
-using the `&$subref()' or `&{$subref}()' constructs.  See *Note
-Perlref: perlref, for more on that.)
-
-Subroutines may be called recursively.  If a subroutine is called using
-the "&" form, the argument list is optional, and if omitted, no @_
-array is set up for the subroutine: the @_ array at the time of the
-call is visible to subroutine instead.  This is an efficiency mechanism
-that new users may wish to avoid.
-
-     &foo(1,2,3);    # pass three arguments
-     foo(1,2,3);             # the same
-     
-     foo();          # pass a null list
-     &foo();         # the same
-     
-     &foo;           # foo() get current args, like foo(@_) !!
-     foo;            # like foo() IFF sub foo predeclared, else "foo"
-
-Not only does the "&" form make the argument list optional, but it also
-disables any prototype checking on the arguments you do provide.  This
-is partly for historical reasons, and partly for having a convenient way
-to cheat if you know what you're doing.  See the section on Prototypes
-below.
-
-Private Variables via my()
---------------------------
-
-Synopsis:
-
-     my $foo;                # declare $foo lexically local
-     my (@wid, %get);       # declare list of variables local
-     my $foo = "flurp";      # declare $foo lexical, and init it
-     my @oof = @bar;       # declare @oof lexical, and init it
-
-A "my" declares the listed variables to be confined (lexically) to the
-enclosing block, conditional (`if/unless/elsif/else'), loop
-(`for/foreach/while/until/continue'), subroutine, eval, or
-`do/require/use''d file.  If more than one value is listed, the list
-must be placed in parentheses.  All listed elements must be legal
-lvalues.  Only alphanumeric identifiers may be lexically scoped-magical
-builtins like $/ must currently be localized with "local" instead.
-
-Unlike dynamic variables created by the "local" statement, lexical
-variables declared with "my" are totally hidden from the outside world,
-including any called subroutines (even if it's the same subroutine
-called from itself or elsewhere-every call gets its own copy).
-
-(An eval(), however, can see the lexical variables of the scope it is
-being evaluated in so long as the names aren't hidden by declarations
-within the eval() itself.  See *Note Perlref: perlref.)
-
-The parameter list to my() may be assigned to if desired, which allows
-you to initialize your variables.  (If no initializer is given for a
-particular variable, it is created with the undefined value.)  Commonly
-this is used to name the parameters to a subroutine.  Examples:
-
-     $arg = "fred";    # "global" variable
-     $n = cube_root(27);
-     print "$arg thinks the root is $n\n";
-      fred thinks the root is 3
-     
-     sub cube_root {
-             my $arg = shift;  # name doesn't matter
-             $arg **= 1/3;
-             return $arg;
-     }
-
-The "my" is simply a modifier on something you might assign to.  So when
-you do assign to the variables in its argument list, the "my" doesn't
-change whether those variables is viewed as a scalar or an array.  So
-
-     my ($foo) = <STDIN>;
-     my @FOO = <STDIN>;
-
-both supply a list context to the right-hand side, while
-
-     my $foo = <STDIN>;
-
-supplies a scalar context.  But the following declares only one
-variable:
-
-     my $foo, $bar = 1;
-
-That has the same effect as
-
-     my $foo;
-     $bar = 1;
-
-The declared variable is not introduced (is not visible) until after
-the current statement.  Thus,
-
-     my $x = $x;
-
-can be used to initialize the new $x with the value of the old $x, and
-the expression
-
-     my $x = 123 and $x == 123
-
-is false unless the old $x happened to have the value 123.
-
-Lexical scopes of control structures are not bounded precisely by the
-braces that delimit their controlled blocks; control expressions are
-part of the scope, too.  Thus in the loop
-
-     while (defined(my $line = <>)) {
-         $line = lc $line;
-     } continue {
-         print $line;
-     }
-
-the scope of $line extends from its declaration throughout the rest of
-the loop construct (including the continue clause), but not beyond it.
-Similarly, in the conditional
-
-     if ((my $answer = <STDIN>) =~ /^yes$/i) {
-         user_agrees();
-     } elsif ($answer =~ /^no$/i) {
-         user_disagrees();
-     } else {
-             chomp $answer;
-         die "'$answer' is neither 'yes' nor 'no'";
-     }
-
-the scope of $answer extends from its declaration throughout the rest
-of the conditional (including `elsif' and `else' clauses, if any), but
-not beyond it.
-
-(None of the foregoing applies to `if/unless' or `while/until'
-modifiers appended to simple statements.  Such modifiers are not
-control structures and have no effect on scoping.)
-
-The `foreach' loop defaults to scoping its index variable dynamically
-(in the manner of local; see below).  However, if the index variable is
-prefixed with the keyword "my", then it is lexically scoped instead.
-Thus in the loop
-
-     for my $i (1, 2, 3) {
-         some_function();
-     }
-
-the scope of $i extends to the end of the loop, but not beyond it, and
-so the value of $i is unavailable in some_function().
-
-Some users may wish to encourage the use of lexically scoped variables.
-As an aid to catching implicit references to package variables, if you
-say
-
-     use strict 'vars';
-
-then any variable reference from there to the end of the enclosing
-block must either refer to a lexical variable, or must be fully
-qualified with the package name.  A compilation error results
-otherwise.  An inner block may countermand this with "no strict 'vars'".
-
-A my() has both a compile-time and a run-time effect.  At compile time,
-the compiler takes notice of it; the principle usefulness of this is to
-quiet `use strict 'vars''.  The actual initialization is delayed until
-run time, so it gets executed appropriately; every time through a loop,
-for example.
-
-Variables declared with "my" are not part of any package and are
-therefore never fully qualified with the package name.  In particular,
-you're not allowed to try to make a package variable (or other global)
-lexical:
-
-     my $pack::var;  # ERROR!  Illegal syntax
-     my $_;          # also illegal (currently)
-
-In fact, a dynamic variable (also known as package or global variables)
-are still accessible using the fully qualified :: notation even while a
-lexical of the same name is also visible:
-
-     package main;
-     local $x = 10;
-     my    $x = 20;
-     print "$x and $::x\n";
-
-That will print out 20 and 10.
-
-You may declare "my" variables at the outermost scope of a file to hide
-any such identifiers totally from the outside world.  This is similar
-to C's static variables at the file level.  To do this with a subroutine
-requires the use of a closure (anonymous function).  If a block (such as
-an eval(), function, or package) wants to create a private subroutine
-that cannot be called from outside that block, it can declare a lexical
-variable containing an anonymous sub reference:
-
-     my $secret_version = '1.001-beta';
-     my $secret_sub = sub { print $secret_version };
-     &$secret_sub();
-
-As long as the reference is never returned by any function within the
-module, no outside module can see the subroutine, because its name is
-not in any package's symbol table.  Remember that it's not *REALLY*
-called $some_pack::secret_version or anything; it's just
-$secret_version, unqualified and unqualifiable.
-
-This does not work with object methods, however; all object methods have
-to be in the symbol table of some package to be found.
-
-Just because the lexical variable is lexically (also called statically)
-scoped doesn't mean that within a function it works like a C static.  It
-normally works more like a C auto.  But here's a mechanism for giving a
-function private variables with both lexical scoping and a static
-lifetime.  If you do want to create something like C's static variables,
-just enclose the whole function in an extra block, and put the static
-variable outside the function but in the block.
-
-     {
-             my $secret_val = 0;
-             sub gimme_another {
-                 return ++$secret_val;
-             }
-     }
-     # $secret_val now becomes unreachable by the outside
-     # world, but retains its value between calls to gimme_another
-
-If this function is being sourced in from a separate file via require
-or use, then this is probably just fine.  If it's all in the main
-program, you'll need to arrange for the my() to be executed early,
-either by putting the whole block above your main program, or more
-likely, placing merely a BEGIN sub around it to make sure it gets
-executed before your program starts to run:
-
-     sub BEGIN {
-             my $secret_val = 0;
-             sub gimme_another {
-                 return ++$secret_val;
-             }
-     }
-
-See *Note Perlrun: perlrun, about the BEGIN function.
-
-Temporary Values via local()
-----------------------------
-
-NOTE: In general, you should be using "my" instead of "local", because
-it's faster and safer.  Exceptions to this include the global
-punctuation variables, filehandles and formats, and direct manipulation
-of the Perl symbol table itself.  Format variables often use "local"
-though, as do other variables whose current value must be visible to
-called subroutines.
-
-Synopsis:
-
-     local $foo;                     # declare $foo dynamically local
-     local (@wid, %get);    # declare list of variables local
-     local $foo = "flurp";   # declare $foo dynamic, and init it
-     local @oof = @bar;            # declare @oof dynamic, and init it
-     
-     local *FH;                      # localize $FH, @FH, %FH, &FH  ...
-     local *merlyn = *randal;        # now $merlyn is really $randal, plus
-                                 #     @merlyn is really @randal, etc
-     local *merlyn = 'randal';     # SAME THING: promote 'randal' to *randal
-     local *merlyn = \$randal;   # just alias $merlyn, not @merlyn etc
-
-A local() modifies its listed variables to be local to the enclosing
-block, (or subroutine, `eval{}', or do) and *any called from within
-that block*.  A local() just gives temporary values to global (meaning
-package) variables.  This is known as dynamic scoping.  Lexical scoping
-is done with "my", which works more like C's auto declarations.
-
-If more than one variable is given to local(), they must be placed in
-parentheses.  All listed elements must be legal lvalues.  This operator
-works by saving the current values of those variables in its argument
-list on a hidden stack and restoring them upon exiting the block,
-subroutine, or eval.  This means that called subroutines can also
-reference the local variable, but not the global one.  The argument
-list may be assigned to if desired, which allows you to initialize your
-local variables.  (If no initializer is given for a particular
-variable, it is created with an undefined value.)  Commonly this is
-used to name the parameters to a subroutine.  Examples:
-
-     for $i ( 0 .. 9 ) {
-             $digits{$i} = $i;
-     }
-     # assume this function uses global %digits hash
-     parse_num();
-     
-     # now temporarily add to %digits hash
-     if ($base12) {
-             # (NOTE: not claiming this is efficient!)
-             local %digits  = (%digits, 't' => 10, 'e' => 11);
-             parse_num();  # parse_num gets this new %digits!
-     }
-     # old %digits restored here
-
-Because local() is a run-time command, it gets executed every time
-through a loop.  In releases of Perl previous to 5.0, this used more
-stack storage each time until the loop was exited.  Perl now reclaims
-the space each time through, but it's still more efficient to declare
-your variables outside the loop.
-
-A local is simply a modifier on an lvalue expression.  When you assign
-to a localized variable, the local doesn't change whether its list is
-viewed as a scalar or an array.  So
-
-     local($foo) = <STDIN>;
-     local @FOO = <STDIN>;
-
-both supply a list context to the right-hand side, while
-
-     local $foo = <STDIN>;
-
-supplies a scalar context.
-
-Passing Symbol Table Entries (typeglobs)
-----------------------------------------
-
-[Note:  The mechanism described in this section was originally the only
-way to simulate pass-by-reference in older versions of Perl.  While it
-still works fine in modern versions, the new reference mechanism is
-generally easier to work with.  See below.]
-
-Sometimes you don't want to pass the value of an array to a subroutine
-but rather the name of it, so that the subroutine can modify the global
-copy of it rather than working with a local copy.  In perl you can
-refer to all objects of a particular name by prefixing the name with a
-star: `*foo'.  This is often known as a "typeglob", because the star on
-the front can be thought of as a wildcard match for all the funny
-prefix characters on variables and subroutines and such.
-
-When evaluated, the typeglob produces a scalar value that represents
-all the objects of that name, including any filehandle, format, or
-subroutine.  When assigned to, it causes the name mentioned to refer to
-whatever "*" value was assigned to it.  Example:
-
-     sub doubleary {
-             local(*someary) = @_;
-             foreach $elem (@someary) {
-                 $elem *= 2;
-             }
-     }
-     doubleary(*foo);
-     doubleary(*bar);
-
-Note that scalars are already passed by reference, so you can modify
-scalar arguments without using this mechanism by referring explicitly
-to `$_[0]' etc.  You can modify all the elements of an array by passing
-all the elements as scalars, but you have to use the * mechanism (or
-the equivalent reference mechanism) to push, pop, or change the size of
-an array.  It will certainly be faster to pass the typeglob (or
-reference).
-
-Even if you don't want to modify an array, this mechanism is useful for
-passing multiple arrays in a single LIST, because normally the LIST
-mechanism will merge all the array values so that you can't extract out
-the individual arrays.  For more on typeglobs, see `"Typeglobs and
-Filehandles"', *Note Perldata: perldata.
-
-Pass by Reference
------------------
-
-If you want to pass more than one array or hash into a function-or
-return them from it-and have them maintain their integrity, then you're
-going to have to use an explicit pass-by-reference.  Before you do
-that, you need to understand references as detailed in *Note Perlref:
-perlref.  This section may not make much sense to you otherwise.
-
-Here are a few simple examples.  First, let's pass in several arrays to
-a function and have it pop all of then, return a new list of all their
-former last elements:
-
-     @tailings = popmany ( \@a, \@b, \@c, \@d );
-     
-     sub popmany {
-             my $aref;
-             my @retlist = ();
-             foreach $aref ( @_ ) {
-                 push @retlist, pop @$aref;
-             }
-             return @retlist;
-     }
-
-Here's how you might write a function that returns a list of keys
-occurring in all the hashes passed to it:
-
-     @common = inter( \%foo, \%bar, \%joe );
-     sub inter {
-             my ($k, $href, %seen); # locals
-             foreach $href (@_) {
-                 while ( $k = each %$href ) {
-                     $seen{$k}++;
-                 }
-             }
-             return grep { $seen{$_} == @_ } keys %seen;
-     }
-
-So far, we're using just the normal list return mechanism.  What
-happens if you want to pass or return a hash?  Well, if you're using
-only one of them, or you don't mind them concatenating, then the normal
-calling convention is ok, although a little expensive.
-
-Where people get into trouble is here:
-
-     (@a, @b) = func(@c, @d);
-     or
-     (%a, %b) = func(%c, %d);
-
-That syntax simply won't work.  It sets just @a or %a and clears the @b
-or %b.  Plus the function didn't get passed into two separate arrays or
-hashes: it got one long list in @_, as always.
-
-If you can arrange for everyone to deal with this through references,
-it's cleaner code, although not so nice to look at.  Here's a function
-that takes two array references as arguments, returning the two array
-elements in order of how many elements they have in them:
-
-     ($aref, $bref) = func(\@c, \@d);
-     print "@$aref has more than @$bref\n";
-     sub func {
-             my ($cref, $dref) = @_;
-             if (@$cref > @$dref) {
-                 return ($cref, $dref);
-             } else {
-                 return ($dref, $cref);
-             }
-     }
-
-It turns out that you can actually do this also:
-
-     (*a, *b) = func(\@c, \@d);
-     print "@a has more than @b\n";
-     sub func {
-             local (*c, *d) = @_;
-             if (@c > @d) {
-                 return (\@c, \@d);
-             } else {
-                 return (\@d, \@c);
-             }
-     }
-
-Here we're using the typeglobs to do symbol table aliasing.  It's a tad
-subtle, though, and also won't work if you're using my() variables,
-because only globals (well, and local()s) are in the symbol table.
-
-If you're passing around filehandles, you could usually just use the
-bare typeglob, like *STDOUT, but typeglobs references would be better
-because they'll still work properly under `use strict 'refs''.  For
-example:
-
-     splutter(\*STDOUT);
-     sub splutter {
-             my $fh = shift;
-             print $fh "her um well a hmmm\n";
+     if (defined @entry) {
+         print "\@$key = (\n";
+         foreach $num ($[ .. $#entry) {
+                        print "  $num\t'",$entry[$num],"'\n";
+         }
+         print ")\n";
      }
      
-     $rec = get_rec(\*STDIN);
-     sub get_rec {
-             my $fh = shift;
-             return scalar <$fh>;
+     if ($key ne "${package}::" && defined %entry) {
+         print "\%$key = (\n";
+         foreach $key (sort keys(%entry)) {
+                        print "  $key\t'",$entry{$key},"'\n";
+         }
+         print ")\n";
+     }
+            }
+        }
+
+Note that even though the subroutine is compiled in package `dumpvar',
+the name of the subroutine is qualified so that its name is inserted
+into package `main'.  While popular many years ago, this is now
+considered very poor style; in general, you should be writing modules
+and using the normal export mechanism instead of hammering someone
+else's namespace, even main's.
+
+Assignment to a typeglob performs an aliasing operation, i.e.,
+
+     *dick = *richard;
+
+causes variables, subroutines, and file handles accessible via the
+identifier `richard' to also be accessible via the identifier `dick'.
+If you want to alias only a particular variable or subroutine, you can
+assign a reference instead:
+
+     *dick = \$richard;
+
+makes $richard and $dick the same variable, but leaves @richard and
+@dick as separate arrays.  Tricky, eh?
+
+This mechanism may be used to pass and return cheap references into or
+from subroutines if you won't want to copy the whole thing.
+
+     %some_hash = ();
+     *some_hash = fn( \%another_hash );
+     sub fn {
+             local *hashsym = shift;
+             # now use %hashsym normally, and you
+             # will affect the caller's %another_hash
+             my %nhash = (); # do what you want
+             return \%nhash;
      }
 
-Another way to do this is using *HANDLE{IO}, see *Note Perlref:
-perlref, for usage and caveats.
+On return, the reference will overwrite the hash slot in the symbol
+table specified by the *some_hash typeglob.  This is a somewhat tricky
+way of passing around references cheaply when you won't want to have to
+remember to dereference variables explicitly.
 
-If you're planning on generating new filehandles, you could do this:
+Another use of symbol tables is for making "constant"  scalars.
 
-     sub openit {
-             my $name = shift;
-             local *FH;
-             return open (FH, $path) ? *FH : undef;
+     *PI = \3.14159265358979;
+
+Now you cannot alter $PI, which is probably a good thing all in all.
+This isn't the same as a constant subroutine (one prototyped to take no
+arguments and to return a constant expression), which is subject to
+optimization at compile-time.  This isn't.  See *Note Perlsub: perlsub,
+for details on these.
+
+You can say `*foo{PACKAGE}' and `*foo{NAME}' to find out what name and
+package the *foo symbol table entry comes from.  This may be useful in
+a subroutine which is passed typeglobs as arguments
+
+     sub identify_typeglob {
+         my $glob = shift;
+         print 'You gave me ', *{$glob}{PACKAGE}, '::', *{$glob}{NAME}, "\n";
      }
+     identify_typeglob *foo;
+     identify_typeglob *bar::baz;
 
-Although that will actually produce a small memory leak.  See the bottom
-of `open()', *Note Perlfunc: perlfunc, for a somewhat cleaner way using
-the IO::Handle package.
+This prints
 
-Prototypes
-----------
+     You gave me main::foo
+     You gave me bar::baz
 
-As of the 5.002 release of perl, if you declare
+The *foo{THING} notation can also be used to obtain references to the
+individual elements of *foo, see *Note Perlref: perlref.
 
-     sub mypush (\@@)
+Package Constructors and Destructors
+------------------------------------
 
-then mypush() takes arguments exactly like push() does.  The declaration
-of the function to be called must be visible at compile time.  The
-prototype affects only the interpretation of new-style calls to the
-function, where new-style is defined as not using the `&' character.
-In other words, if you call it like a builtin function, then it behaves
-like a builtin function.  If you call it like an old-fashioned
-subroutine, then it behaves like an old-fashioned subroutine.  It
-naturally falls out from this rule that prototypes have no influence on
-subroutine references like `\&foo' or on indirect subroutine calls like
-`&{$subref}'.
+There are two special subroutine definitions that function as package
+constructors and destructors.  These are the BEGIN and END routines.
+The sub is optional for these routines.
 
-Method calls are not influenced by prototypes either, because the
-function to be called is indeterminate at compile time, because it
-depends on inheritance.
+A BEGIN subroutine is executed as soon as possible, that is, the moment
+it is completely defined, even before the rest of the containing file
+is parsed.  You may have multiple BEGIN blocks within a file-they will
+execute in order of definition.  Because a BEGIN block executes
+immediately, it can pull in definitions of subroutines and such from
+other files in time to be visible to the rest of the file.  Once a BEGIN
+has run, it is immediately undefined and any code it used is returned to
+Perl's memory pool.  This means you can't ever explicitly call a BEGIN.
 
-Because the intent is primarily to let you define subroutines that work
-like builtin commands, here are the prototypes for some other functions
-that parse almost exactly like the corresponding builtins.
+An END subroutine is executed as late as possible, that is, when the
+interpreter is being exited, even if it is exiting as a result of a
+die() function.  (But not if it's is being blown out of the water by a
+signal-you have to trap that yourself (if you can).)  You may have
+multiple END blocks within a file-they will execute in reverse order of
+definition; that is: last in, first out (LIFO).
 
-     Declared as                     Called as
+Inside an END subroutine $? contains the value that the script is going
+to pass to `exit()'.  You can modify $? to change the exit value of the
+script.  Beware of changing $? by accident (e.g. by running something
+via system).
+
+Note that when you use the -n and -p switches to Perl, BEGIN and END
+work just as they do in *awk*, as a degenerate case.
+
+Perl Classes
+------------
+
+There is no special class syntax in Perl, but a package may function as
+a class if it provides subroutines that function as methods.  Such a
+package may also derive some of its methods from another class package
+by listing the other package name in its @ISA array.
+
+For more on this, see *Note Perltoot: perltoot, and *Note Perlobj:
+perlobj.
+
+Perl Modules
+------------
+
+A module is just a package that is defined in a library file of the
+same name, and is designed to be reusable.  It may do this by providing
+a mechanism for exporting some of its symbols into the symbol table of
+any package using it.  Or it may function as a class definition and
+make its semantics available implicitly through method calls on the
+class and its objects, without explicit exportation of any symbols.  Or
+it can do a little of both.
+
+For example, to start a normal module called Some::Module, create a
+file called Some/Module.pm and start with this template:
+
+     package Some::Module;  # assumes Some/Module.pm
      
-     sub mylink ($$)         mylink $old, $new
-     sub myvec ($$$)         myvec $var, $offset, 1
-     sub myindex ($$;$)              myindex &getstring, "substr"
-     sub mysyswrite ($$$;$)  mysyswrite $buf, 0, length($buf) - $off, $off
-     sub myreverse (@)              myreverse $a,$b,$c
-     sub myjoin ($@)                myjoin ":",$a,$b,$c
-     sub mypop (\@)         mypop @array
-     sub mysplice (\@$$@)  mysplice @array,@array,0,@pushme
-     sub mykeys (\%)         mykeys %{$hashref}
-     sub myopen (*;$)                myopen HANDLE, $name
-     sub mypipe (**)         mypipe READHANDLE, WRITEHANDLE
-     sub mygrep (&@)                mygrep { /foo/ } $a,$b,$c
-     sub myrand ($)          myrand 42
-     sub mytime ()           mytime
-
-Any backslashed prototype character represents an actual argument that
-absolutely must start with that character.  The value passed to the
-subroutine (as part of `@_') will be a reference to the actual argument
-given in the subroutine call, obtained by applying `\' to that argument.
-
-Unbackslashed prototype characters have special meanings.  Any
-unbackslashed @ or % eats all the rest of the arguments, and forces
-list context.  An argument represented by $ forces scalar context.  An
-& requires an anonymous subroutine, which, if passed as the first
-argument, does not require the "sub" keyword or a subsequent comma.  A
-* does whatever it has to do to turn the argument into a reference to a
-symbol table entry.
-
-A semicolon separates mandatory arguments from optional arguments.  (It
-is redundant before @ or %.)
-
-Note how the last three examples above are treated specially by the
-parser.  mygrep() is parsed as a true list operator, myrand() is parsed
-as a true unary operator with unary precedence the same as rand(), and
-mytime() is truly without arguments, just like time().  That is, if you
-say
-
-     mytime +2;
-
-you'll get mytime() + 2, not mytime(2), which is how it would be parsed
-without the prototype.
-
-The interesting thing about & is that you can generate new syntax with
-it:
-
-     sub try (&@) {
-             my($try,$catch) = @_;
-             eval { &$try };
-             if ($@) {
-                 local $_ = $@;
-                 &$catch;
-             }
-     }
-     sub catch (&) { $_[0] }
+     use strict;
      
-     try {
-             die "phooey";
-     } catch {
-             /phooey/ and print "unphooey\n";
-     };
-
-That prints "unphooey".  (Yes, there are still unresolved issues having
-to do with the visibility of @_.  I'm ignoring that question for the
-moment.  (But note that if we make @_ lexically scoped, those anonymous
-subroutines can act like closures... (Gee, is this sounding a little
-Lispish?  (Never mind.))))
-
-And here's a reimplementation of grep:
-
-     sub mygrep (&@) {
-             my $code = shift;
-             my @result;
-             foreach $_ (@_) {
-                 push(@result, $_) if &$code;
-             }
-             @result;
-     }
-
-Some folks would prefer full alphanumeric prototypes.  Alphanumerics
-have been intentionally left out of prototypes for the express purpose
-of someday in the future adding named, formal parameters.  The current
-mechanism's main goal is to let module writers provide better
-diagnostics for module users.  Larry feels the notation quite
-understandable to Perl programmers, and that it will not intrude
-greatly upon the meat of the module, nor make it harder to read.  The
-line noise is visually encapsulated into a small pill that's easy to
-swallow.
-
-It's probably best to prototype new functions, not retrofit prototyping
-into older ones.  That's because you must be especially careful about
-silent impositions of differing list versus scalar contexts.  For
-example, if you decide that a function should take just one parameter,
-like this:
-
-     sub func ($) {
-             my $n = shift;
-             print "you gave me $n\n";
-     }
-
-and someone has been calling it with an array or expression returning a
-list:
-
-     func(@foo);
-     func( split /:/ );
-
-Then you've just supplied an automatic scalar() in front of their
-argument, which can be more than a bit surprising.  The old @foo which
-used to hold one thing doesn't get passed in.  Instead, the func() now
-gets passed in 1, that is, the number of elements in @foo.  And the
-split() gets called in a scalar context and starts scribbling on your
-@_ parameter list.
-
-This is all very powerful, of course, and should be used only in
-moderation to make the world a better place.
-
-Constant Functions
-------------------
-
-Functions with a prototype of `()' are potential candidates for
-inlining.  If the result after optimization and constant folding is
-either a constant or a lexically-scoped scalar which has no other
-references, then it will be used in place of function calls made
-without `&' or do. Calls made using `&' or do are never inlined.  (See
-constant.pm for an easy way to declare most constants.)
-
-All of the following functions would be inlined.
-
-     sub pi ()               { 3.14159 }           # Not exact, but close.
-     sub PI ()               { 4 * atan2 1, 1 }    # As good as it gets,
-                                                     # and it's inlined, too!
-     sub ST_DEV ()   { 0 }
-     sub ST_INO ()   { 1 }
-     
-     sub FLAG_FOO () { 1 << 8 }
-     sub FLAG_BAR () { 1 << 9 }
-     sub FLAG_MASK ()        { FLAG_FOO | FLAG_BAR }
-     
-     sub OPT_BAZ ()  { not (0x1B58 & FLAG_MASK) }
-     sub BAZ_VAL () {
-             if (OPT_BAZ) {
-                 return 23;
-             }
-             else {
-                 return 42;
-             }
-     }
-     
-     sub N () { int(BAZ_VAL) / 3 }
      BEGIN {
-             my $prod = 1;
-             for (1..N) { $prod *= $_ }
-             sub N_FACTORIAL () { $prod }
-     }
+         use Exporter   ();
+         use vars       qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
+     
+     # set the version for version checking
+     $VERSION     = 1.00;
+     # if using RCS/CVS, this may be preferred
+     $VERSION = do { my @r = (q$Revision: 2.21 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; # must be all one line, for MakeMaker
+     
+     @ISA         = qw(Exporter);
+     @EXPORT      = qw(&func1 &func2 &func4);
+     %EXPORT_TAGS = ( );     # eg: TAG => [ qw!name1 name2! ],
+     
+     # your exported package globals go here,
+     # as well as any optionally exported functions
+     @EXPORT_OK   = qw($Var1 %Hashit &func3);
+         }
+         use vars      @EXPORT_OK;
+     
+     # non-exported package globals go here
+     use vars      qw(@more $stuff);
+     
+     # initalize package globals, first exported ones
+     $Var1   = '';
+     %Hashit = ();
+     
+     # then the others (which are still accessible as $Some::Module::stuff)
+     $stuff  = '';
+     @more   = ();
+     
+     # all file-scoped lexicals must be created before
+     # the functions below that use them.
+     
+     # file-private lexicals go here
+     my $priv_var    = '';
+     my %secret_hash = ();
+     
+     # here's a file-private function as a closure,
+     # callable as &$priv_func;  it cannot be prototyped.
+     my $priv_func = sub {
+         # stuff goes here.
+     };
+     
+     # make all your functions, whether exported or not;
+     # remember to put something interesting in the {} stubs
+     sub func1      {}    # no prototype
+     sub func2()    {}    # proto'd void
+     sub func3($$)  {}    # proto'd to 2 scalars
+     
+     # this one isn't exported, but could be called!
+     sub func4(\%)  {}    # proto'd to 1 hash ref
+     
+     END { }       # module clean-up code here (global destructor)
 
-If you redefine a subroutine which was eligible for inlining you'll get
-a mandatory warning.  (You can use this warning to tell whether or not a
-particular subroutine is considered constant.)  The warning is
-considered severe enough not to be optional because previously compiled
-invocations of the function will still be using the old value of the
-function.  If you need to be able to redefine the subroutine you need to
-ensure that it isn't inlined, either by dropping the `()' prototype
-(which changes the calling semantics, so beware) or by thwarting the
-inlining mechanism in some other way, such as
+Then go on to declare and use your variables in functions without any
+qualifications.  See `Exporter' in this node and the *Note Perlmodlib:
+perlmodlib, for details on mechanics and style issues in module
+creation.
 
-     sub not_inlined () {
-             23 if $];
-     }
-
-Overriding Builtin Functions
-----------------------------
-
-Many builtin functions may be overridden, though this should be tried
-only occasionally and for good reason.  Typically this might be done by
-a package attempting to emulate missing builtin functionality on a
-non-Unix system.
-
-Overriding may be done only by importing the name from a
-module-ordinary predeclaration isn't good enough.  However, the subs
-pragma (compiler directive) lets you, in effect, predeclare subs via
-the import syntax, and these names may then override the builtin ones:
-
-     use subs 'chdir', 'chroot', 'chmod', 'chown';
-     chdir $somewhere;
-     sub chdir { ... }
-
-Library modules should not in general export builtin names like "open"
-or "chdir" as part of their default @EXPORT list, because these may
-sneak into someone else's namespace and change the semantics
-unexpectedly.  Instead, if the module adds the name to the @EXPORT_OK
-list, then it's possible for a user to import the name explicitly, but
-not implicitly.  That is, they could say
-
-     use Module 'open';
-
-and it would import the open override, but if they said
+Perl modules are included into your program by saying
 
      use Module;
 
-they would get the default imports without the overrides.
+or
 
-Autoloading
------------
+     use Module LIST;
 
-If you call a subroutine that is undefined, you would ordinarily get an
-immediate fatal error complaining that the subroutine doesn't exist.
-(Likewise for subroutines being used as methods, when the method
-doesn't exist in any of the base classes of the class package.) If,
-however, there is an `AUTOLOAD' subroutine defined in the package or
-packages that were searched for the original subroutine, then that
-`AUTOLOAD' subroutine is called with the arguments that would have been
-passed to the original subroutine.  The fully qualified name of the
-original subroutine magically appears in the $AUTOLOAD variable in the
-same package as the `AUTOLOAD' routine.  The name is not passed as an
-ordinary argument because, er, well, just because, that's why...
+This is exactly equivalent to
 
-Most `AUTOLOAD' routines will load in a definition for the subroutine in
-question using eval, and then execute that subroutine using a special
-form of "goto" that erases the stack frame of the `AUTOLOAD' routine
-without a trace.  (See the standard AutoLoader module, for example.)
-But an `AUTOLOAD' routine can also just emulate the routine and never
-define it.   For example, let's pretend that a function that wasn't
-defined should just call system() with those arguments.  All you'd do
-is this:
+     BEGIN { require "Module.pm"; import Module; }
 
-     sub AUTOLOAD {
-             my $program = $AUTOLOAD;
-             $program =~ s/.*:://;
-             system($program, @_);
-     }
-     date();
-     who('am', 'i');
-     ls('-l');
+or
 
-In fact, if you predeclare the functions you want to call that way, you
-don't even need the parentheses:
+     BEGIN { require "Module.pm"; import Module LIST; }
 
-     use subs qw(date who ls);
-     date;
-     who "am", "i";
-     ls -l;
+As a special case
 
-A more complete example of this is the standard Shell module, which can
-treat undefined subroutine calls as calls to Unix programs.
+     use Module ();
 
-Mechanisms are available for modules writers to help split the modules
-up into autoloadable files.  See the standard AutoLoader module
-described in `AutoLoader' in this node and in `AutoSplit' in this node,
-the standard SelfLoader modules in `SelfLoader' in this node, and the
-document on adding C functions to perl code in *Note Perlxs: perlxs.
+is exactly equivalent to
+
+     BEGIN { require "Module.pm"; }
+
+All Perl module files have the extension `.pm'.  use assumes this so
+that you don't have to spell out "`Module.pm'" in quotes.  This also
+helps to differentiate new modules from old `.pl' and `.ph' files.
+Module names are also capitalized unless they're functioning as pragmas,
+"Pragmas" are in effect compiler directives, and are sometimes called
+"pragmatic modules" (or even "pragmata" if you're a classicist).
+
+Because the use statement implies a BEGIN block, the importation of
+semantics happens at the moment the use statement is compiled, before
+the rest of the file is compiled.  This is how it is able to function
+as a pragma mechanism, and also how modules are able to declare
+subroutines that are then visible as list operators for the rest of the
+current file.  This will not work if you use require instead of use.
+With require you can get into this problem:
+
+     require Cwd;            # make Cwd:: accessible
+     $here = Cwd::getcwd();
+     
+     use Cwd;                        # import names from Cwd::
+     $here = getcwd();
+     
+     require Cwd;            # make Cwd:: accessible
+     $here = getcwd();               # oops! no main::getcwd()
+
+In general `use Module ();' is recommended over `require Module;'.
+
+Perl packages may be nested inside other package names, so we can have
+package names containing `::'.  But if we used that package name
+directly as a filename it would makes for unwieldy or impossible
+filenames on some systems.  Therefore, if a module's name is, say,
+Text::Soundex, then its definition is actually found in the library
+file `Text/Soundex.pm'.
+
+Perl modules always have a `.pm' file, but there may also be dynamically
+linked executables or autoloaded subroutine definitions associated with
+the module.  If so, these will be entirely transparent to the user of
+the module.  It is the responsibility of the `.pm' file to load (or
+arrange to autoload) any additional functionality.  The POSIX module
+happens to do both dynamic loading and autoloading, but the user can
+say just `use POSIX' to get it all.
+
+For more information on writing extension modules, see *Note Perlxstut:
+perlxstut, and *Note Perlguts: perlguts.
 
 SEE ALSO
 ========
 
-See *Note Perlref: perlref, for more on references.  See *Note Perlxs:
-perlxs, if you'd like to learn about calling C subroutines from perl.
-See *Note Perlmod: perlmod, to learn about bundling up your functions in
-separate files.
+See *Note Perlmodlib: perlmodlib, for general style issues related to
+building Perl modules and classes as well as descriptions of the
+standard library and CPAN, `Exporter' in this node for how Perl's
+standard import/export mechanism works, *Note Perltoot: perltoot, for
+an in-depth tutorial on creating classes, *Note Perlobj: perlobj, for a
+hard-core reference document on objects, and *Note Perlsub: perlsub,
+for an explanation of functions and scoping.
+
+
+File: perl.info,  Node: perlmodlib,  Next: perlform,  Prev: perlmod,  Up: Top
+
+NAME
+====
+
+perlmodlib - constructing new Perl modules and finding existing ones
+
+DESCRIPTION
+===========
+
+THE PERL MODULE LIBRARY
+=======================
+
+A number of modules are included the Perl distribution.  These are
+described below, and all end in `.pm'.  You may also discover files in
+the library directory that end in either `.pl' or `.ph'.  These are old
+libraries supplied so that old programs that use them still run.  The
+`.pl' files will all eventually be converted into standard modules, and
+the `.ph' files made by h2ph will probably end up as extension modules
+made by h2xs.  (Some `.ph' values may already be available through the
+POSIX module.)  The *pl2pm* file in the distribution may help in your
+conversion, but it's just a mechanical process and therefore far from
+bulletproof.
+
+Pragmatic Modules
+-----------------
+
+They work somewhat like pragmas in that they tend to affect the
+compilation of your program, and thus will usually work well only when
+used within a use, or no.  Most of these are locally scoped, so an
+inner BLOCK may countermand any of these by saying:
+
+     no integer;
+     no strict 'refs';
+
+which lasts until the end of that BLOCK.
+
+Unlike the pragmas that effect the $^H hints variable, the `use vars'
+and `use subs' declarations are not BLOCK-scoped.  They allow you to
+predeclare a variables or subroutines within a particular *file* rather
+than just a block.  Such declarations are effective for the entire file
+for which they were declared.  You cannot rescind them with `no vars'
+or `no subs'.
+
+The following pragmas are defined (and have their own documentation).
+
+use autouse MODULE => qw(sub1 sub2 sub3)
+     Defers `require MODULE' until someone calls one of the specified
+     subroutines (which must be exported by MODULE).  This pragma
+     should be used with caution, and only when necessary.
+
+blib
+     manipulate @INC at compile time to use MakeMaker's uninstalled
+     version of a package
+
+diagnostics
+     force verbose warning diagnostics
+
+integer
+     compute arithmetic in integer instead of double
+
+less
+     request less of something from the compiler
+
+lib
+     manipulate @INC at compile time
+
+locale
+     use or ignore current locale for builtin operations (see *Note
+     Perllocale: perllocale,)
+
+ops
+     restrict named opcodes when compiling or running Perl code
+
+overload
+     overload basic Perl operations
+
+sigtrap
+     enable simple signal handling
+
+strict
+     restrict unsafe constructs
+
+subs
+     predeclare sub names
+
+vmsish
+     adopt certain VMS-specific behaviors
+
+vars
+     predeclare global variable names
+
+Standard Modules
+----------------
+
+Standard, bundled modules are all expected to behave in a well-defined
+manner with respect to namespace pollution because they use the
+Exporter module.  See their own documentation for details.
+
+AnyDBM_File
+     provide framework for multiple DBMs
+
+AutoLoader
+     load functions only on demand
+
+AutoSplit
+     split a package for autoloading
+
+Benchmark
+     benchmark running times of code
+
+CPAN
+     interface to Comprehensive Perl Archive Network
+
+CPAN::FirstTime
+     create a CPAN configuration file
+
+CPAN::Nox
+     run CPAN while avoiding compiled extensions
+
+Carp
+     warn of errors (from perspective of caller)
+
+Class::Struct
+     declare struct-like datatypes
+
+Config
+     access Perl configuration information
+
+Cwd
+     get pathname of current working directory
+
+DB_File
+     access to Berkeley DB
+
+Devel::SelfStubber
+     generate stubs for a SelfLoading module
+
+DirHandle
+     supply object methods for directory handles
+
+DynaLoader
+     dynamically load C libraries into Perl code
+
+English
+     use nice English (or awk) names for ugly punctuation variables
+
+Env
+     import environment variables
+
+Exporter
+     implements default import method for modules
+
+ExtUtils::Embed
+     utilities for embedding Perl in C/C++ applications
+
+ExtUtils::Install
+     install files from here to there
+
+ExtUtils::Liblist
+     determine libraries to use and how to use them
+
+ExtUtils::MM_OS2
+     methods to override Unix behaviour in ExtUtils::MakeMaker
+
+ExtUtils::MM_Unix
+     methods used by ExtUtils::MakeMaker
+
+ExtUtils::MM_VMS
+     methods to override Unix behaviour in ExtUtils::MakeMaker
+
+ExtUtils::MakeMaker
+     create an extension Makefile
+
+ExtUtils::Manifest
+     utilities to write and check a MANIFEST file
+
+ExtUtils::Mkbootstrap
+     make a bootstrap file for use by DynaLoader
+
+ExtUtils::Mksymlists
+     write linker options files for dynamic extension
+
+ExtUtils::testlib
+     add blib/* directories to @INC
+
+Fcntl
+     load the C Fcntl.h defines
+
+File::Basename
+     split a pathname into pieces
+
+File::CheckTree
+     run many filetest checks on a tree
+
+File::Compare
+     compare files or filehandles
+
+File::Copy
+     copy files or filehandles
+
+File::Find
+     traverse a file tree
+
+File::Path
+     create or remove a series of directories
+
+File::stat
+     by-name interface to Perl's builtin stat() functions
+
+FileCache
+     keep more files open than the system permits
+
+FileHandle
+     supply object methods for filehandles
+
+FindBin
+     locate directory of original perl script
+
+GDBM_File
+     access to the gdbm library
+
+Getopt::Long
+     extended processing of command line options
+
+Getopt::Std
+     process single-character switches with switch clustering
+
+I18N::Collate
+     compare 8-bit scalar data according to the current locale
+
+IO
+     load various IO modules
+
+IO::File
+     supply object methods for filehandles
+
+IO::Handle
+     supply object methods for I/O handles
+
+IO::Pipe
+     supply object methods for pipes
+
+IO::Seekable
+     supply seek based methods for I/O objects
+
+IO::Select
+     OO interface to the select system call
+
+IO::Socket
+     object interface to socket communications
+
+IPC::Open2
+     open a process for both reading and writing
+
+IPC::Open3
+     open a process for reading, writing, and error handling
+
+Math::BigFloat
+     arbitrary length float math package
+
+Math::BigInt
+     arbitrary size integer math package
+
+Math::Complex
+     complex numbers and associated mathematical functions
+
+Math::Trig
+     simple interface to parts of Math::Complex for those who need
+     trigonometric functions only for real numbers
+
+NDBM_File
+     tied access to ndbm files
+
+Net::Ping
+     Hello, anybody home?
+
+Net::hostent
+     by-name interface to Perl's builtin gethost*() functions
+
+Net::netent
+     by-name interface to Perl's builtin getnet*() functions
+
+Net::protoent
+     by-name interface to Perl's builtin getproto*() functions
+
+Net::servent
+     by-name interface to Perl's builtin getserv*() functions
+
+Opcode
+     disable named opcodes when compiling or running perl code
+
+Pod::Text
+     convert POD data to formatted ASCII text
+
+POSIX
+     interface to IEEE Standard 1003.1
+
+SDBM_File
+     tied access to sdbm files
+
+Safe
+     compile and execute code in restricted compartments
+
+Search::Dict
+     search for key in dictionary file
+
+SelectSaver
+     save and restore selected file handle
+
+SelfLoader
+     load functions only on demand
+
+Shell
+     run shell commands transparently within perl
+
+Socket
+     load the C socket.h defines and structure manipulators
+
+Symbol
+     manipulate Perl symbols and their names
+
+Sys::Hostname
+     try every conceivable way to get hostname
+
+Sys::Syslog
+     interface to the Unix syslog(3) calls
+
+Term::Cap
+     termcap interface
+
+Term::Complete
+     word completion module
+
+Term::ReadLine
+     interface to various `readline' packages
+
+Test::Harness
+     run perl standard test scripts with statistics
+
+Text::Abbrev
+     create an abbreviation table from a list
+
+Text::ParseWords
+     parse text into an array of tokens
+
+Text::Soundex
+     implementation of the Soundex Algorithm as described by Knuth
+
+Text::Tabs
+     expand and unexpand tabs per the Unix expand(1) and unexpand(1)
+
+Text::Wrap
+     line wrapping to form simple paragraphs
+
+Tie::Hash
+     base class definitions for tied hashes
+
+Tie::RefHash
+     base class definitions for tied hashes with references as keys
+
+Tie::Scalar
+     base class definitions for tied scalars
+
+Tie::SubstrHash
+     fixed-table-size, fixed-key-length hashing
+
+Time::Local
+     efficiently compute time from local and GMT time
+
+Time::gmtime
+     by-name interface to Perl's builtin gmtime() function
+
+Time::localtime
+     by-name interface to Perl's builtin localtime() function
+
+Time::tm
+     internal object used by Time::gmtime and Time::localtime
+
+UNIVERSAL
+     base class for ALL classes (blessed references)
+
+User::grent
+     by-name interface to Perl's builtin getgr*() functions
+
+User::pwent
+     by-name interface to Perl's builtin getpw*() functions
+
+To find out *all* the modules installed on your system, including those
+without documentation or outside the standard release, do this:
+
+     find `perl -e 'print "@INC"'` -name '*.pm' -print
+
+They should all have their own documentation installed and accessible
+via your system man(1) command.  If that fails, try the *perldoc*
+program.
+
+Extension Modules
+-----------------
+
+Extension modules are written in C (or a mix of Perl and C) and may be
+statically linked or in general are dynamically loaded into Perl if and
+when you need them.  Supported extension modules include the Socket,
+Fcntl, and POSIX modules.
+
+Many popular C extension modules do not come bundled (at least, not
+completely) due to their sizes, volatility, or simply lack of time for
+adequate testing and configuration across the multitude of platforms on
+which Perl was beta-tested.  You are encouraged to look for them in
+archie(1L), the Perl FAQ or Meta-FAQ, the WWW page, and even with their
+authors before randomly posting asking for their present condition and
+disposition.
+
+CPAN
+====
+
+CPAN stands for the Comprehensive Perl Archive Network.  This is a
+globally replicated collection of all known Perl materials, including
+hundreds of unbundled modules.  Here are the major categories of
+modules:
+
+   * Language Extensions and Documentation Tools
+
+   * Development Support
+
+   * Operating System Interfaces
+
+   * Networking, Device Control (modems) and InterProcess Communication
+
+   * Data Types and Data Type Utilities
+
+   * Database Interfaces
+
+   * User Interfaces
+
+   * Interfaces to / Emulations of Other Programming Languages
+
+   * File Names, File Systems and File Locking (see also File Handles)
+
+   * String Processing, Language Text Processing, Parsing, and Searching
+
+   * Option, Argument, Parameter, and Configuration File Processing
+
+   * Internationalization and Locale
+
+   * Authentication, Security, and Encryption
+
+   * World Wide Web, HTML, HTTP, CGI, MIME
+
+   * Server and Daemon Utilities
+
+   * Archiving and Compression
+
+   * Images, Pixmap and Bitmap Manipulation, Drawing, and Graphing
+
+   * Mail and Usenet News
+
+   * Control Flow Utilities (callbacks and exceptions etc)
+
+   * File Handle and Input/Output Stream Utilities
+
+   * Miscellaneous Modules
+
+The registered CPAN sites as of this writing include the following.
+You should try to choose one close to you:
+
+   * Africa
+
+          South Africa    ftp://ftp.is.co.za/programming/perl/CPAN/
+
+   * Asia
+
+          Hong Kong       ftp://ftp.hkstar.com/pub/CPAN/
+          Japan           ftp://ftp.jaist.ac.jp/pub/lang/perl/CPAN/
+                          ftp://ftp.lab.kdd.co.jp/lang/perl/CPAN/
+          South Korea     ftp://ftp.nuri.net/pub/CPAN/
+          Taiwan          ftp://dongpo.math.ncu.edu.tw/perl/CPAN/
+                          ftp://ftp.wownet.net/pub2/PERL/
+
+   * Australasia
+
+          Australia       ftp://ftp.netinfo.com.au/pub/perl/CPAN/
+          New Zealand     ftp://ftp.tekotago.ac.nz/pub/perl/CPAN/
+
+   * Europe
+
+          Austria         ftp://ftp.tuwien.ac.at/pub/languages/perl/CPAN/
+          Belgium         ftp://ftp.kulnet.kuleuven.ac.be/pub/mirror/CPAN/
+          Czech Republic  ftp://sunsite.mff.cuni.cz/Languages/Perl/CPAN/
+          Denmark         ftp://sunsite.auc.dk/pub/languages/perl/CPAN/
+          Finland         ftp://ftp.funet.fi/pub/languages/perl/CPAN/
+          France          ftp://ftp.ibp.fr/pub/perl/CPAN/
+                          ftp://ftp.pasteur.fr/pub/computing/unix/perl/CPAN/
+          Germany         ftp://ftp.gmd.de/packages/CPAN/
+                          ftp://ftp.leo.org/pub/comp/programming/languages/perl/CPAN/
+                          ftp://ftp.mpi-sb.mpg.de/pub/perl/CPAN/
+                          ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/
+                          ftp://ftp.uni-erlangen.de/pub/source/Perl/CPAN/
+                          ftp://ftp.uni-hamburg.de/pub/soft/lang/perl/CPAN/
+          Greece          ftp://ftp.ntua.gr/pub/lang/perl/
+          Hungary         ftp://ftp.kfki.hu/pub/packages/perl/CPAN/
+          Italy           ftp://cis.utovrm.it/CPAN/
+          the Netherlands ftp://ftp.cs.ruu.nl/pub/PERL/CPAN/
+                          ftp://ftp.EU.net/packages/cpan/
+          Norway          ftp://ftp.uit.no/pub/languages/perl/cpan/
+          Poland          ftp://ftp.pk.edu.pl/pub/lang/perl/CPAN/
+                          ftp://sunsite.icm.edu.pl/pub/CPAN/
+          Portugal        ftp://ftp.ci.uminho.pt/pub/lang/perl/
+                          ftp://ftp.telepac.pt/pub/CPAN/
+          Russia          ftp://ftp.sai.msu.su/pub/lang/perl/CPAN/
+          Slovenia        ftp://ftp.arnes.si/software/perl/CPAN/
+          Spain           ftp://ftp.etse.urv.es/pub/mirror/perl/
+                          ftp://ftp.rediris.es/mirror/CPAN/
+          Sweden          ftp://ftp.sunet.se/pub/lang/perl/CPAN/
+          UK              ftp://ftp.demon.co.uk/pub/mirrors/perl/CPAN/
+                          ftp://sunsite.doc.ic.ac.uk/packages/CPAN/
+                          ftp://unix.hensa.ac.uk/mirrors/perl-CPAN/
+
+   * North America
+
+          Ontario         ftp://ftp.utilis.com/public/CPAN/
+                          ftp://enterprise.ic.gc.ca/pub/perl/CPAN/
+          Manitoba        ftp://theory.uwinnipeg.ca/pub/CPAN/
+          California      ftp://ftp.digital.com/pub/plan/perl/CPAN/
+                          ftp://ftp.cdrom.com/pub/perl/CPAN/
+          Colorado        ftp://ftp.cs.colorado.edu/pub/perl/CPAN/
+          Florida         ftp://ftp.cis.ufl.edu/pub/perl/CPAN/
+          Illinois        ftp://uiarchive.uiuc.edu/pub/lang/perl/CPAN/
+          Massachusetts   ftp://ftp.iguide.com/pub/mirrors/packages/perl/CPAN/
+          New York        ftp://ftp.rge.com/pub/languages/perl/
+          North Carolina  ftp://ftp.duke.edu/pub/perl/
+          Oklahoma        ftp://ftp.ou.edu/mirrors/CPAN/
+          Oregon          http://www.perl.org/CPAN/
+                          ftp://ftp.orst.edu/pub/packages/CPAN/
+          Pennsylvania    ftp://ftp.epix.net/pub/languages/perl/
+          Texas           ftp://ftp.sedl.org/pub/mirrors/CPAN/
+                          ftp://ftp.metronet.com/pub/perl/
+
+   * South America
+
+          Chile           ftp://sunsite.dcc.uchile.cl/pub/Lang/perl/CPAN/
+
+For an up-to-date listing of CPAN sites, see
+`http://www.perl.com/perl/CPAN' or `ftp://ftp.perl.com/perl/'.
+
+Modules: Creation, Use, and Abuse
+=================================
+
+(The following section is borrowed directly from Tim Bunce's modules
+file, available at your nearest CPAN site.)
+
+Perl implements a class using a package, but the presence of a package
+doesn't imply the presence of a class.  A package is just a namespace.
+A class is a package that provides subroutines that can be used as
+methods.  A method is just a subroutine that expects, as its first
+argument, either the name of a package (for "static" methods), or a
+reference to something (for "virtual" methods).
+
+A module is a file that (by convention) provides a class of the same
+name (sans the .pm), plus an import method in that class that can be
+called to fetch exported symbols.  This module may implement some of
+its methods by loading dynamic C or C++ objects, but that should be
+totally transparent to the user of the module.  Likewise, the module
+might set up an AUTOLOAD function to slurp in subroutine definitions on
+demand, but this is also transparent.  Only the `.pm' file is required
+to exist.  See *Note Perlsub: perlsub, *Note Perltoot: perltoot, and
+`AutoLoader' in this node for details about the AUTOLOAD mechanism.
+
+Guidelines for Module Creation
+------------------------------
+
+Do similar modules already exist in some form?
+     If so, please try to reuse the existing modules either in whole or
+     by inheriting useful features into a new class.  If this is not
+     practical try to get together with the module authors to work on
+     extending or enhancing the functionality of the existing modules.
+     A perfect example is the plethora of packages in perl4 for dealing
+     with command line options.
+
+     If you are writing a module to expand an already existing set of
+     modules, please coordinate with the author of the package.  It
+     helps if you follow the same naming scheme and module interaction
+     scheme as the original author.
+
+Try to design the new module to be easy to extend and reuse.
+     Use blessed references.  Use the two argument form of bless to
+     bless into the class name given as the first parameter of the
+     constructor, e.g.,:
+
+          sub new {
+                  my $class = shift;
+                  return bless {}, $class;
+          }
+
+     or even this if you'd like it to be used as either a static or a
+     virtual method.
+
+          sub new {
+                  my $self  = shift;
+                  my $class = ref($self) || $self;
+                  return bless {}, $class;
+          }
+
+     Pass arrays as references so more parameters can be added later
+     (it's also faster).  Convert functions into methods where
+     appropriate.  Split large methods into smaller more flexible ones.
+     Inherit methods from other modules if appropriate.
+
+     Avoid class name tests like: `die "Invalid" unless ref $ref eq
+     'FOO''.  Generally you can delete the "`eq 'FOO''" part with no
+     harm at all.  Let the objects look after themselves! Generally,
+     avoid hard-wired class names as far as possible.
+
+     Avoid C<$r->Class::func()> where using `@ISA=qw(... Class ...)' and
+     C<$r->func()> would work (see *Note Perlbot: perlbot, for more
+     details).
+
+     Use autosplit so little used or newly added functions won't be a
+     burden to programs which don't use them. Add test functions to the
+     module after __END__ either using AutoSplit or by saying:
+
+          eval join('',<main::DATA>) || die $@ unless caller();
+
+     Does your module pass the 'empty subclass' test? If you say
+     "`@SUBCLASS::ISA = qw(YOURCLASS);'" your applications should be
+     able to use SUBCLASS in exactly the same way as YOURCLASS.  For
+     example, does your application still work if you change:  `$obj =
+     new YOURCLASS;' into: `$obj = new SUBCLASS;' ?
+
+     Avoid keeping any state information in your packages. It makes it
+     difficult for multiple other packages to use yours. Keep state
+     information in objects.
+
+     Always use -w. Try to `use strict;' (or `use strict qw(...);').
+     Remember that you can add `no strict qw(...);' to individual blocks
+     of code which need less strictness. Always use -w. Always use -w!
+     Follow the guidelines in the perlstyle(1) manual.
+
+Some simple style guidelines
+     The perlstyle manual supplied with perl has many helpful points.
+
+     Coding style is a matter of personal taste. Many people evolve
+     their style over several years as they learn what helps them write
+     and maintain good code.  Here's one set of assorted suggestions
+     that seem to be widely used by experienced developers:
+
+     Use underscores to separate words.  It is generally easier to read
+     $var_names_like_this than $VarNamesLikeThis, especially for
+     non-native speakers of English. It's also a simple rule that works
+     consistently with VAR_NAMES_LIKE_THIS.
+
+     Package/Module names are an exception to this rule. Perl informally
+     reserves lowercase module names for 'pragma' modules like integer
+     and strict. Other modules normally begin with a capital letter and
+     use mixed case with no underscores (need to be short and portable).
+
+     You may find it helpful to use letter case to indicate the scope
+     or nature of a variable. For example:
+
+          $ALL_CAPS_HERE   constants only (beware clashes with perl vars)
+          $Some_Caps_Here  package-wide global/static
+          $no_caps_here    function scope my() or local() variables
+
+     Function and method names seem to work best as all lowercase.
+     e.g., C<$obj->as_string()>.
+
+     You can use a leading underscore to indicate that a variable or
+     function should not be used outside the package that defined it.
+
+Select what to export.
+     Do NOT export method names!
+
+     Do NOT export anything else by default without a good reason!
+
+     Exports pollute the namespace of the module user.  If you must
+     export try to use @EXPORT_OK in preference to @EXPORT and avoid
+     short or common names to reduce the risk of name clashes.
+
+     Generally anything not exported is still accessible from outside
+     the module using the ModuleName::item_name (or
+     C<$blessed_ref->method>) syntax.  By convention you can use a
+     leading underscore on names to indicate informally that they are
+     'internal' and not for public use.
+
+     (It is actually possible to get private functions by saying: `my
+     $subref = sub { ... };  &$subref;'.  But there's no way to call
+     that directly as a method, because a method must have a name in
+     the symbol table.)
+
+     As a general rule, if the module is trying to be object oriented
+     then export nothing. If it's just a collection of functions then
+     @EXPORT_OK anything but use @EXPORT with caution.
+
+Select a name for the module.
+     This name should be as descriptive, accurate, and complete as
+     possible.  Avoid any risk of ambiguity. Always try to use two or
+     more whole words.  Generally the name should reflect what is
+     special about what the module does rather than how it does it.
+     Please use nested module names to group informally or categorize a
+     module.  There should be a very good reason for a module not to
+     have a nested name.  Module names should begin with a capital
+     letter.
+
+     Having 57 modules all called Sort will not make life easy for
+     anyone (though having 23 called Sort::Quick is only marginally
+     better :-).  Imagine someone trying to install your module
+     alongside many others.  If in any doubt ask for suggestions in
+     comp.lang.perl.misc.
+
+     If you are developing a suite of related modules/classes it's good
+     practice to use nested classes with a common prefix as this will
+     avoid namespace clashes. For example: Xyz::Control, Xyz::View,
+     Xyz::Model etc. Use the modules in this list as a naming guide.
+
+     If adding a new module to a set, follow the original author's
+     standards for naming modules and the interface to methods in those
+     modules.
+
+     To be portable each component of a module name should be limited to
+     11 characters. If it might be used on MS-DOS then try to ensure
+     each is unique in the first 8 characters. Nested modules make this
+     easier.
+
+Have you got it right?
+     How do you know that you've made the right decisions? Have you
+     picked an interface design that will cause problems later? Have
+     you picked the most appropriate name? Do you have any questions?
+
+     The best way to know for sure, and pick up many helpful
+     suggestions, is to ask someone who knows. Comp.lang.perl.misc is
+     read by just about all the people who develop modules and it's the
+     best place to ask.
+
+     All you need to do is post a short summary of the module, its
+     purpose and interfaces. A few lines on each of the main methods is
+     probably enough. (If you post the whole module it might be ignored
+     by busy people - generally the very people you want to read it!)
+
+     Don't worry about posting if you can't say when the module will be
+     ready - just say so in the message. It might be worth inviting
+     others to help you, they may be able to complete it for you!
+
+README and other Additional Files.
+     It's well known that software developers usually fully document the
+     software they write. If, however, the world is in urgent need of
+     your software and there is not enough time to write the full
+     documentation please at least provide a README file containing:
+
+        * A description of the module/package/extension etc.
+
+        * A copyright notice - see below.
+
+        * Prerequisites - what else you may need to have.
+
+        * How to build it - possible changes to Makefile.PL etc.
+
+        * How to install it.
+
+        * Recent changes in this release, especially incompatibilities
+
+        * Changes / enhancements you plan to make in the future.
+
+     If the README file seems to be getting too large you may wish to
+     split out some of the sections into separate files: INSTALL,
+     Copying, ToDo etc.
+
+Adding a Copyright Notice.
+     How you choose to license your work is a personal decision.  The
+     general mechanism is to assert your Copyright and then make a
+     declaration of how others may copy/use/modify your work.
+
+     Perl, for example, is supplied with two types of licence: The GNU
+     GPL and The Artistic Licence (see the files README, Copying, and
+     Artistic).  Larry has good reasons for NOT just using the GNU GPL.
+
+     My personal recommendation, out of respect for Larry, Perl, and the
+     perl community at large is to state something simply like:
+
+          Copyright (c) 1995 Your Name. All rights reserved.
+          This program is free software; you can redistribute it and/or
+          modify it under the same terms as Perl itself.
+
+     This statement should at least appear in the README file. You may
+     also wish to include it in a Copying file and your source files.
+     Remember to include the other words in addition to the Copyright.
+
+Give the module a version/issue/release number.
+     To be fully compatible with the Exporter and MakeMaker modules you
+     should store your module's version number in a non-my package
+     variable called $VERSION.  This should be a floating point number
+     with at least two digits after the decimal (i.e., hundredths, e.g,
+     `$VERSION = "0.01"').  Don't use a "1.3.2" style version.  See
+     Exporter.pm in Perl5.001m or later for details.
+
+     It may be handy to add a function or method to retrieve the number.
+     Use the number in announcements and archive file names when
+     releasing the module (ModuleName-1.02.tar.Z).  See perldoc
+     ExtUtils::MakeMaker.pm for details.
+
+How to release and distribute a module.
+     It's good idea to post an announcement of the availability of your
+     module (or the module itself if small) to the
+     comp.lang.perl.announce Usenet newsgroup.  This will at least
+     ensure very wide once-off distribution.
+
+     If possible you should place the module into a major ftp archive
+     and include details of its location in your announcement.
+
+     Some notes about ftp archives: Please use a long descriptive file
+     name which includes the version number. Most incoming directories
+     will not be readable/listable, i.e., you won't be able to see your
+     file after uploading it. Remember to send your email notification
+     message as soon as possible after uploading else your file may get
+     deleted automatically. Allow time for the file to be processed
+     and/or check the file has been processed before announcing its
+     location.
+
+     FTP Archives for Perl Modules:
+
+     Follow the instructions and links on
+
+          http://franz.ww.tu-berlin.de/modulelist
+
+     or upload to one of these sites:
+
+          ftp://franz.ww.tu-berlin.de/incoming
+          ftp://ftp.cis.ufl.edu/incoming
+
+     and notify <`upload@franz.ww.tu-berlin.de'>.
+
+     By using the WWW interface you can ask the Upload Server to mirror
+     your modules from your ftp or WWW site into your own directory on
+     CPAN!
+
+     Please remember to send me an updated entry for the Module list!
+
+Take care when changing a released module.
+     Always strive to remain compatible with previous released versions
+     (see 2.2 above) Otherwise try to add a mechanism to revert to the
+     old behaviour if people rely on it. Document incompatible changes.
+
+Guidelines for Converting Perl 4 Library Scripts into Modules
+-------------------------------------------------------------
+
+There is no requirement to convert anything.
+     If it ain't broke, don't fix it! Perl 4 library scripts should
+     continue to work with no problems. You may need to make some minor
+     changes (like escaping non-array @'s in double quoted strings) but
+     there is no need to convert a .pl file into a Module for just that.
+
+Consider the implications.
+     All the perl applications which make use of the script will need to
+     be changed (slightly) if the script is converted into a module.  Is
+     it worth it unless you plan to make other changes at the same time?
+
+Make the most of the opportunity.
+     If you are going to convert the script to a module you can use the
+     opportunity to redesign the interface. The 'Guidelines for Module
+     Creation' above include many of the issues you should consider.
+
+The pl2pm utility will get you started.
+     This utility will read *.pl files (given as parameters) and write
+     corresponding *.pm files. The pl2pm utilities does the following:
+
+        * Adds the standard Module prologue lines
+
+        * Converts package specifiers from ' to ::
+
+        * Converts die(...) to croak(...)
+
+        * Several other minor changes
+
+     Being a mechanical process pl2pm is not bullet proof. The converted
+     code will need careful checking, especially any package statements.
+     Don't delete the original .pl file till the new .pm one works!
+
+Guidelines for Reusing Application Code
+---------------------------------------
+
+Complete applications rarely belong in the Perl Module Library.
+Many applications contain some perl code which could be reused.
+     Help save the world! Share your code in a form that makes it easy
+     to reuse.
+
+Break-out the reusable code into one or more separate module files.
+Take the opportunity to reconsider and redesign the interfaces.
+In some cases the 'application' can then be reduced to a small
+     fragment of code built on top of the reusable modules. In these
+     cases the application could invoked as:
+
+          perl -e 'use Module::Name; method(@ARGV)' ...
+          or
+          perl -mModule::Name ...    (in perl5.002 or higher)
+
+NOTE
+====
+
+Perl does not enforce private and public parts of its modules as you may
+have been used to in other languages like C++, Ada, or Modula-17.  Perl
+doesn't have an infatuation with enforced privacy.  It would prefer
+that you stayed out of its living room because you weren't invited, not
+because it has a shotgun.
+
+The module and its user have a contract, part of which is common law,
+and part of which is "written".  Part of the common law contract is
+that a module doesn't pollute any namespace it wasn't asked to.  The
+written contract for the module (A.K.A. documentation) may make other
+provisions.  But then you know when you `use RedefineTheWorld' that
+you're redefining the world and willing to take the consequences.
 

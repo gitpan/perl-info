@@ -457,8 +457,8 @@ http://www.perl.com/CPAN/doc/FMTEYEWTK/ .
 
 @unnumberedsubsec Where can I learn about linking C with Perl? [h2xs, xsubpp]
 If you want to call C from Perl, start with @xref{perlxstut,Perlxstut},
-moving on to @xref{perlxs,Perlxs}, @samp{xsubpp} in this node, and @xref{perlguts,Perlguts},.  If you want to
-call Perl from C, then read @xref{perlembed,Perlembed}, @xref{perlcall,Perlcall},, and
+moving on to @xref{perlxs,Perlxs}, @samp{xsubpp} in this node, and @xref{perlguts,Perlguts}.  If you want to
+call Perl from C, then read @xref{perlembed,Perlembed}, @xref{perlcall,Perlcall}, and
 @xref{perlguts,Perlguts}.  Don@'t forget that you can learn a lot from looking at
 how the authors of existing extension modules wrote their code and
 solved their problems.

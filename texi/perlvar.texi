@@ -674,7 +674,7 @@ processing continues as it would have in the absence of the hook,
 unless the hook routine itself exits via a goto, a loop exit, or a die().
 The @code{__DIE__} handler is explicitly disabled during the call, so that you
 can die from a @code{__DIE__} handler.  Similarly for @code{__WARN__}.  See
-@samp{die}, @xref{perlfunc,Perlfunc}, @samp{warn}, @xref{perlfunc,Perlfunc}, and @samp{eval}, @xref{perlfunc,Perlfunc},.
+@samp{die}, @xref{perlfunc,Perlfunc}, @samp{warn}, @xref{perlfunc,Perlfunc}, and @samp{eval}, @xref{perlfunc,Perlfunc}.
 
 @item $^M
 By default, running out of memory it is not trappable.  However, if

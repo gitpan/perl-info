@@ -8,7 +8,7 @@ Do you want to:
 
 @table @asis
 @item @strong{Use C from Perl?}
-Read @xref{perlcall,Perlcall}, and @xref{perlxs,Perlxs},.
+Read @xref{perlcall,Perlcall}, and @xref{perlxs,Perlxs}.
 
 @item @strong{Use a Unix program from Perl?}
 Read about back-quotes and about system and exec in @xref{perlfunc,Perlfunc}.
@@ -27,7 +27,7 @@ Read on...
 @unnumberedsubsec ROADMAP
 @samp{Compiling your C program} in this node
 
-There@'s one example in each of the eight sections:
+There@'s one example in each of the nine sections:
 
 @samp{Adding a Perl interpreter to your C program} in this node
 
@@ -45,8 +45,7 @@ There@'s one example in each of the eight sections:
 
 @samp{Using Perl modules, which themselves use C libraries, from your C program} in this node
 
-This documentation is Unix specific; if you have information about how
-to embed Perl on other platforms, please send e-mail to <@file{orwant@@tpj.com}>.
+@samp{Embedding Perl under Win32} in this node
 
 @unnumberedsubsec Compiling your C program
 If you have trouble compiling the scripts in this documentation,
@@ -295,7 +294,7 @@ your C program} in this node.
 
 @unnumberedsubsec Evaluating a Perl statement from your C program
 Perl provides two API functions to evaluate pieces of Perl code.
-These are @samp{perl_eval_sv()}, @xref{perlguts,Perlguts}, and @samp{perl_eval_pv()}, @xref{perlguts,Perlguts},.
+These are @samp{perl_eval_sv()}, @xref{perlguts,Perlguts}, and @samp{perl_eval_pv()}, @xref{perlguts,Perlguts}.
 
 Arguably, these are the only routines you@'ll ever need to execute
 snippets of Perl code from within your C program.  Your code can be
@@ -1032,6 +1031,47 @@ ExtUtils::Embed can also automate writing the @emph{xs_init} glue code.
 @end example
 
 Consult @xref{perlxs,Perlxs}, and @xref{perlguts,Perlguts}, for more details.
+
+@unnumberedsec Embedding Perl under Win32
+At the time of this writing, there are two versions of Perl which run
+under Win32.  Interfacing to Activeware@'s Perl library is quite
+different from the examples in this documentation, as significant
+changes were made to the internal Perl API.  However, it is possible
+to embed Activeware@'s Perl runtime, see the Perl for Win32 FAQ:
+http://www.perl.com/perl/faq/win32/Perl_for_Win32_FAQ.html
+
+With the "official" Perl version 5.004 or higher, all the examples
+within this documentation will compile and run untouched, although,
+the build process is slightly different between Unix and Win32.  
+
+For starters, backticks don@'t work under the Win32 native command shell!
+The ExtUtils::Embed kit on CPAN ships with a script called
+@strong{genmake}, which generates a simple makefile to build a program from
+a single C source file.  It can be used like so:
+
+
+@example
+C:\ExtUtils-Embed\eg> perl genmake interp.c
+C:\ExtUtils-Embed\eg> nmake
+C:\ExtUtils-Embed\eg> interp -e "print qq@{I@'m embedded in Win32!\n@}"
+@end example
+
+You may wish to use a more robust environment such as the MS Developer
+stdio.  In this case, to generate perlxsi.c run:
+
+
+@example
+perl -MExtUtils::Embed -e xsinit
+@end example
+
+Create a new project, Insert -> Files into Project: perlxsi.c, perl.lib,
+and your own source files, e.g. interp.c.  Typically you@'ll find
+perl.lib in @strong{C:\perl\lib\CORE}, if not, you should see the @strong{CORE}
+directory relative to @code{perl -V:archlib}.
+The studio will also need this path so it knows where to find Perl
+include files.  This path can be added via the Tools -> Options ->
+Directories menu.  Finnally, select Build -> Build interp.exe and
+you@'re ready to go!
 
 @unnumberedsec MORAL
 You can sometimes @emph{write faster code} in C, but
